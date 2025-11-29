@@ -1,0 +1,415 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/prospect.dart';
+import '../providers/auth_provider.dart';
+import '../providers/prospect_provider.dart';
+import 'add_prospect_screen.dart';
+
+class ProspectDetailScreen extends StatefulWidget {
+  final Prospect prospect;
+
+  const ProspectDetailScreen({Key? key, required this.prospect})
+      : super(key: key);
+
+  @override
+  State<ProspectDetailScreen> createState() => _ProspectDetailScreenState();
+}
+
+class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
+  final _descriptionController = TextEditingController();
+  String _selectedType = 'Appel';
+  late Prospect _currentProspect;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentProspect = widget.prospect;
+    _loadInteractions();
+  }
+
+  void _loadInteractions() {
+    final prospectProvider = context.read<ProspectProvider>();
+    prospectProvider.loadInteractions(_currentProspect.id);
+  }
+
+  void _handleAddInteraction() async {
+    final authProvider = context.read<AuthProvider>();
+    final prospectProvider = context.read<ProspectProvider>();
+
+    if (authProvider.currentUser == null) return;
+
+    await prospectProvider.createInteraction(
+      _currentProspect.id,
+      authProvider.currentUser!.id,
+      _selectedType,
+      _descriptionController.text,
+      DateTime.now(),
+    );
+
+    _descriptionController.clear();
+    _loadInteractions();
+  }
+
+  void _changeStatus(String newStatus) async {
+    final authProvider = context.read<AuthProvider>();
+    final prospectProvider = context.read<ProspectProvider>();
+
+    if (authProvider.currentUser == null) return;
+
+    final success = await prospectProvider.updateProspect(
+      authProvider.currentUser!.id,
+      _currentProspect.id,
+      {
+        'nomp': _currentProspect.nom,
+        'prenomp': _currentProspect.prenom,
+        'email': _currentProspect.email,
+        'telephone': _currentProspect.telephone,
+        'adresse': _currentProspect.adresse,
+        'type': _currentProspect.type,
+        'status': newStatus,
+      },
+    );
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Statut changé en: $newStatus'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      // Mettre à jour le prospect local
+      _currentProspect = Prospect(
+        id: _currentProspect.id,
+        nom: _currentProspect.nom,
+        prenom: _currentProspect.prenom,
+        email: _currentProspect.email,
+        telephone: _currentProspect.telephone,
+        adresse: _currentProspect.adresse,
+        type: _currentProspect.type,
+        status: newStatus,
+        creation: _currentProspect.creation,
+        dateUpdate: DateTime.now(),
+        assignation: _currentProspect.assignation,
+      );
+      setState(() {});
+    }
+  }
+
+  void _handleDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmer la suppression'),
+        content: const Text('Êtes-vous sûr de vouloir supprimer ce prospect?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final authProvider = context.read<AuthProvider>();
+      final prospectProvider = context.read<ProspectProvider>();
+
+      if (authProvider.currentUser != null) {
+        final success = await prospectProvider.deleteProspect(
+          authProvider.currentUser!.id,
+          _currentProspect.id,
+        );
+        if (success && mounted) {
+          Navigator.of(context).pop();
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_currentProspect.fullName),
+        elevation: 0,
+        actions: [
+          PopupMenuButton(
+            onSelected: (value) {
+              if (value == 'edit') {
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            AddProspectScreen(prospect: _currentProspect),
+                      ),
+                    )
+                    .then((_) => _loadInteractions());
+              } else if (value == 'delete') {
+                _handleDelete();
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit),
+                    SizedBox(width: 8),
+                    Text('Éditer'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Supprimer', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Informations du prospect
+            Card(
+              margin: const EdgeInsets.all(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // En-tête avec nom et statut
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _currentProspect.fullName,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _currentProspect.type,
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Bouton pour changer le statut
+                        PopupMenuButton<String>(
+                          onSelected: (value) => _changeStatus(value),
+                          itemBuilder: (BuildContext context) => [
+                            'nouveau',
+                            'interesse',
+                            'negociation',
+                            'perdu',
+                            'converti'
+                          ]
+                              .map(
+                                (status) => PopupMenuItem(
+                                  value: status,
+                                  child: Text(status),
+                                ),
+                              )
+                              .toList(),
+                          child: Chip(
+                            label: Text(_currentProspect.status),
+                            backgroundColor: _getStatusColor(
+                              _currentProspect.status,
+                            ),
+                            labelPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    _buildInfoRow('Email', _currentProspect.email),
+                    _buildInfoRow('Téléphone', _currentProspect.telephone),
+                    _buildInfoRow('Adresse', _currentProspect.adresse),
+                    _buildInfoRow(
+                      'Créé le',
+                      '${_currentProspect.creation.day}/${_currentProspect.creation.month}/${_currentProspect.creation.year}',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Interactions
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Interactions',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Formulaire d'ajout d'interaction
+            Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedType,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedType = value ?? 'Appel';
+                        });
+                      },
+                      items: ['Appel', 'Email', 'Réunion', 'Message']
+                          .map(
+                            (type) => DropdownMenuItem(
+                              value: type,
+                              child: Text(type),
+                            ),
+                          )
+                          .toList(),
+                      decoration: InputDecoration(
+                        labelText: 'Type d\'interaction',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _descriptionController,
+                      decoration: InputDecoration(
+                        labelText: 'Description',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _handleAddInteraction,
+                        child: const Text('Ajouter interaction'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Liste des interactions
+            Consumer<ProspectProvider>(
+              builder: (context, prospectProvider, _) {
+                if (prospectProvider.interactions.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      'Aucune interaction',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: prospectProvider.interactions.length,
+                  itemBuilder: (context, index) {
+                    final interaction = prospectProvider.interactions[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      child: ListTile(
+                        leading: Icon(
+                          _getInteractionIcon(interaction.type),
+                        ),
+                        title: Text(interaction.type),
+                        subtitle: Text(interaction.note),
+                        trailing: Text(
+                          '${interaction.dateInteraction.day}/${interaction.dateInteraction.month}/${interaction.dateInteraction.year}',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+          Expanded(child: Text(value.isEmpty ? '-' : value)),
+        ],
+      ),
+    );
+  }
+
+  IconData _getInteractionIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'appel':
+        return Icons.call;
+      case 'email':
+        return Icons.email;
+      case 'réunion':
+        return Icons.people;
+      default:
+        return Icons.message;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'nouveau':
+        return Colors.blue[100]!;
+      case 'interesse':
+        return Colors.amber[100]!;
+      case 'negociation':
+        return Colors.orange[100]!;
+      case 'converti':
+        return Colors.green[100]!;
+      case 'perdu':
+        return Colors.red[100]!;
+      default:
+        return Colors.grey[100]!;
+    }
+  }
+}
