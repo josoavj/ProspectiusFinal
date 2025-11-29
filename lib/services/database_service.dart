@@ -51,7 +51,7 @@ class DatabaseService {
       }
 
       final user = Account(
-        id: row['id'] as int,
+        id: row['id_compte'] as int,
         nom: row['nom'] as String,
         prenom: row['prenom'] as String,
         email: row['email'] as String,
@@ -99,11 +99,11 @@ class DatabaseService {
       }
 
       AppLogger.logRequest(
-          'REGISTER', 'SELECT id FROM Account WHERE username = ?', [username]);
+          'REGISTER', 'SELECT id_compte FROM Account WHERE username = ?', [username]);
 
       // Vérifier l'unicité du username
       final existingUser = await _mysqlService.query(
-        'SELECT id FROM Account WHERE username = ?',
+        'SELECT id_compte FROM Account WHERE username = ?',
         [username],
       );
 
