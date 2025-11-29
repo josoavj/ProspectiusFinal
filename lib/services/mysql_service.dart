@@ -1,5 +1,8 @@
-import 'package:mysql1/mysql1.dart';
+import 'package:mysql1/mysql1.dart' as mysql;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../utils/exception_handler.dart';
+import '../utils/app_logger.dart';
 
 class MySQLConfig {
   final String host;
@@ -37,15 +40,15 @@ class MySQLConfig {
   }
 
   Map<String, dynamic> toJson() => {
-    'host': host,
-    'port': port,
-    'user': user,
-    'password': password,
-    'database': database,
-  };
+        'host': host,
+        'port': port,
+        'user': user,
+        'password': password,
+        'database': database,
+      };
 
-  ConnectionSettings toConnectionSettings() {
-    return ConnectionSettings(
+  mysql.ConnectionSettings toConnectionSettings() {
+    return mysql.ConnectionSettings(
       host: host,
       port: port,
       user: user,
@@ -59,7 +62,7 @@ class MySQLConfig {
 class MySQLService {
   static final MySQLService _instance = MySQLService._internal();
 
-  MySQLConnection? _connection;
+  dynamic _connection;
   MySQLConfig _config = MySQLConfig.fromDefaults();
   bool _isConnected = false;
 
@@ -73,51 +76,102 @@ class MySQLService {
   MySQLConfig get config => _config;
 
   Future<void> loadConfig() async {
-    final prefs = await SharedPreferences.getInstance();
-    final configJson = prefs.getString('mysql_config');
-    if (configJson != null) {
-      _config = MySQLConfig.fromJson(
-        Map<String, dynamic>.from(
-          Map.from(Uri.parse('?$configJson').queryParameters),
-        ),
-      );
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final configJson = prefs.getString('mysql_config');
+      if (configJson != null) {
+        try {
+          final configMap = jsonDecode(configJson) as Map<String, dynamic>;
+          _config = MySQLConfig.fromJson(configMap);
+          AppLogger.info('Configuration MySQL chargée');
+        } catch (e) {
+          AppLogger.warning(
+              'Erreur lors du parsing de la config: $e, utilisation des paramètres par défaut');
+          _config = MySQLConfig.fromDefaults();
+        }
+      } else {
+        _config = MySQLConfig.fromDefaults();
+      }
+    } catch (e) {
+      AppLogger.error('Erreur lors du chargement de la config', e);
+      _config = MySQLConfig.fromDefaults();
     }
   }
 
   Future<void> saveConfig(MySQLConfig config) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('mysql_config', config.toJson().toString());
-    _config = config;
-  }
-
-  Future<bool> connect(MySQLConfig config) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final configJson = jsonEncode(config.toJson());
+      await prefs.setString('mysql_config', configJson);
       _config = config;
-      _connection = await MySQLConnection.connect(
-        config.toConnectionSettings(),
-      );
-      _isConnected = true;
-      await saveConfig(config);
-      return true;
+      AppLogger.success('Configuration MySQL sauvegardée');
     } catch (e) {
-      _isConnected = false;
+      AppLogger.error('Erreur lors de la sauvegarde de la config', e);
       rethrow;
     }
   }
 
-  Future<void> disconnect() async {
-    if (_connection != null) {
-      await _connection!.close();
-      _connection = null;
+  Future<bool> connect(MySQLConfig config) async {
+    try {
+      AppLogger.info('Connexion à MySQL: ${config.host}:${config.port}');
+      _config = config;
+      // Create connection using the mysql1 package
+      _connection = await mysql.MySqlConnection.connect(
+        config.toConnectionSettings(),
+      );
+      _isConnected = true;
+      await saveConfig(config);
+      AppLogger.success('Connexion MySQL établie');
+      return true;
+    } on ConnectionException {
       _isConnected = false;
+      AppLogger.error('Erreur de connexion à MySQL');
+      rethrow;
+    } catch (e, stackTrace) {
+      _isConnected = false;
+      AppLogger.error('Erreur lors de la connexion MySQL', e, stackTrace);
+      throw ConnectionException(
+        message: 'Impossible de se connecter à la base de données: $e',
+        originalException: e as Exception,
+        stackTrace: stackTrace,
+      );
     }
   }
 
-  Future<Results> query(String sql, [List<dynamic> values = const []]) async {
-    if (_connection == null || !_isConnected) {
-      throw Exception('MySQL non connecté');
+  Future<void> disconnect() async {
+    try {
+      if (_connection != null) {
+        await _connection!.close();
+        _connection = null;
+        _isConnected = false;
+        AppLogger.info('Déconnecté de MySQL');
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error('Erreur lors de la déconnexion', e, stackTrace);
+      rethrow;
     }
-    return await _connection!.query(sql, values);
+  }
+
+  Future<mysql.Results> query(String sql,
+      [List<dynamic> values = const []]) async {
+    if (_connection == null || !_isConnected) {
+      AppLogger.error('Tentative de requête sans connexion active');
+      throw ConnectionException(
+        message: 'MySQL non connecté',
+        code: 'NOT_CONNECTED',
+      );
+    }
+    try {
+      return await _connection!.query(sql, values);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+          'Erreur lors de l\'exécution de la requête', e, stackTrace);
+      throw DatabaseException(
+        message: 'Erreur lors de l\'exécution de la requête: $e',
+        originalException: e as Exception,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   Future<void> close() async {
