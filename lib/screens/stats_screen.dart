@@ -124,7 +124,7 @@ class _StatsScreenState extends State<StatsScreen> {
                           .map(
                             (stat) => _buildStatItem(
                               context,
-                              stat.statut,
+                              stat.status,
                               stat.count,
                             ),
                           )
@@ -143,14 +143,16 @@ class _StatsScreenState extends State<StatsScreen> {
     );
   }
 
-  Widget _buildStatItem(BuildContext context, String statut, int count) {
+  Widget _buildStatItem(BuildContext context, String status, int count) {
     final colors = {
-      'En cours': Colors.blue,
-      'Converti': Colors.green,
-      'Perdu': Colors.red,
+      'nouveau': Colors.blue,
+      'interesse': Colors.amber,
+      'negociation': Colors.orange,
+      'converti': Colors.green,
+      'perdu': Colors.red,
     };
 
-    final color = colors[statut] ?? Colors.grey;
+    final color = colors[status] ?? Colors.grey;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -164,7 +166,7 @@ class _StatsScreenState extends State<StatsScreen> {
               decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 12),
-            Expanded(child: Text(statut)),
+            Expanded(child: Text(status)),
             Text(
               count.toString(),
               style: Theme.of(

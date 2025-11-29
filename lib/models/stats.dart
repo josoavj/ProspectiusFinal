@@ -1,12 +1,12 @@
 class ProspectStats {
-  final String statut;
+  final String status;
   final int count;
 
-  ProspectStats({required this.statut, required this.count});
+  ProspectStats({required this.status, required this.count});
 
   factory ProspectStats.fromJson(Map<String, dynamic> json) {
     return ProspectStats(
-      statut: json['statut'] as String,
+      status: json['status'] as String,
       count: json['count'] as int,
     );
   }

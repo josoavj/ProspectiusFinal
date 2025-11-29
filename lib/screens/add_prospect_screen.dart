@@ -18,11 +18,9 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   late TextEditingController _prenomController;
   late TextEditingController _emailController;
   late TextEditingController _telephoneController;
-  late TextEditingController _entrepriseController;
-  late TextEditingController _posteController;
-  late TextEditingController _sourceController;
-  late TextEditingController _notesController;
-  String _selectedStatut = 'En cours';
+  late TextEditingController _adresseController;
+  String _selectedType = 'prospect';
+  String _selectedStatus = 'nouveau';
 
   @override
   void initState() {
@@ -37,19 +35,11 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _telephoneController = TextEditingController(
       text: widget.prospect?.telephone ?? '',
     );
-    _entrepriseController = TextEditingController(
-      text: widget.prospect?.entreprise ?? '',
+    _adresseController = TextEditingController(
+      text: widget.prospect?.adresse ?? '',
     );
-    _posteController = TextEditingController(
-      text: widget.prospect?.poste ?? '',
-    );
-    _sourceController = TextEditingController(
-      text: widget.prospect?.source ?? '',
-    );
-    _notesController = TextEditingController(
-      text: widget.prospect?.notes ?? '',
-    );
-    _selectedStatut = widget.prospect?.statut ?? 'En cours';
+    _selectedType = widget.prospect?.type ?? 'prospect';
+    _selectedStatus = widget.prospect?.status ?? 'nouveau';
   }
 
   @override
@@ -58,10 +48,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _prenomController.dispose();
     _emailController.dispose();
     _telephoneController.dispose();
-    _entrepriseController.dispose();
-    _posteController.dispose();
-    _sourceController.dispose();
-    _notesController.dispose();
+    _adresseController.dispose();
     super.dispose();
   }
 
@@ -74,16 +61,14 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     if (widget.prospect != null) {
       await prospectProvider
           .updateProspect(authProvider.currentUser!.id, widget.prospect!.id, {
-            'nom': _nomController.text,
-            'prenom': _prenomController.text,
-            'email': _emailController.text,
-            'telephone': _telephoneController.text,
-            'entreprise': _entrepriseController.text,
-            'poste': _posteController.text,
-            'statut': _selectedStatut,
-            'source': _sourceController.text,
-            'notes': _notesController.text,
-          });
+        'nomp': _nomController.text,
+        'prenomp': _prenomController.text,
+        'email': _emailController.text,
+        'telephone': _telephoneController.text,
+        'adresse': _adresseController.text,
+        'type': _selectedType,
+        'status': _selectedStatus,
+      });
     } else {
       await prospectProvider.createProspect(
         authProvider.currentUser!.id,
@@ -91,11 +76,8 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
         _prenomController.text,
         _emailController.text,
         _telephoneController.text,
-        _entrepriseController.text,
-        _posteController.text,
-        _selectedStatut,
-        _sourceController.text,
-        _notesController.text,
+        _adresseController.text,
+        _selectedType,
       );
     }
 
@@ -160,19 +142,9 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
               ),
               const SizedBox(height: 16),
               TextField(
-                controller: _entrepriseController,
+                controller: _adresseController,
                 decoration: InputDecoration(
-                  labelText: 'Entreprise',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _posteController,
-                decoration: InputDecoration(
-                  labelText: 'Poste',
+                  labelText: 'Adresse',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -180,13 +152,40 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                initialValue: _selectedStatut,
+                initialValue: _selectedType,
                 onChanged: (value) {
                   setState(() {
-                    _selectedStatut = value ?? 'En cours';
+                    _selectedType = value ?? 'prospect';
                   });
                 },
-                items: ['En cours', 'Converti', 'Perdu']
+                items: ['prospect', 'client', 'fournisseur']
+                    .map(
+                      (type) =>
+                          DropdownMenuItem(value: type, child: Text(type)),
+                    )
+                    .toList(),
+                decoration: InputDecoration(
+                  labelText: 'Type',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedStatus,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedStatus = value ?? 'nouveau';
+                  });
+                },
+                items: [
+                  'nouveau',
+                  'interesse',
+                  'negociation',
+                  'converti',
+                  'perdu'
+                ]
                     .map(
                       (status) =>
                           DropdownMenuItem(value: status, child: Text(status)),
@@ -198,27 +197,6 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _sourceController,
-                decoration: InputDecoration(
-                  labelText: 'Source',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _notesController,
-                decoration: InputDecoration(
-                  labelText: 'Notes',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                maxLines: 3,
               ),
               const SizedBox(height: 24),
               SizedBox(

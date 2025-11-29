@@ -74,13 +74,13 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
                   leading: CircleAvatar(child: Text(prospect.prenom[0])),
                   title: Text(prospect.fullName),
                   subtitle: Text(
-                    prospect.entreprise.isEmpty
+                    prospect.adresse.isEmpty
                         ? prospect.email
-                        : prospect.entreprise,
+                        : prospect.adresse,
                   ),
                   trailing: Chip(
-                    label: Text(prospect.statut),
-                    backgroundColor: _getStatusColor(prospect.statut),
+                    label: Text(prospect.status),
+                    backgroundColor: _getStatusColor(prospect.status),
                   ),
                   onTap: () {
                     context.read<ProspectProvider>().selectProspect(prospect);
@@ -111,10 +111,14 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
     );
   }
 
-  Color _getStatusColor(String statut) {
-    switch (statut.toLowerCase()) {
-      case 'en cours':
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'nouveau':
         return Colors.blue[100]!;
+      case 'interesse':
+        return Colors.amber[100]!;
+      case 'negociation':
+        return Colors.orange[100]!;
       case 'converti':
         return Colors.green[100]!;
       case 'perdu':

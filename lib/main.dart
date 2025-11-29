@@ -16,7 +16,6 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -29,6 +28,7 @@ class MyApp extends StatelessWidget {
         title: 'Prospectius',
         theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
         home: const AuthWrapper(),
+        debugShowCheckedModeBanner: false,
         routes: {
           '/config': (_) => const DatabaseConfigScreen(),
           '/login': (_) => const LoginScreen(),

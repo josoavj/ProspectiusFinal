@@ -149,12 +149,13 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
                   children: [
                     _buildInfoRow('Email', widget.prospect.email),
                     _buildInfoRow('Téléphone', widget.prospect.telephone),
-                    _buildInfoRow('Entreprise', widget.prospect.entreprise),
-                    _buildInfoRow('Poste', widget.prospect.poste),
-                    _buildInfoRow('Statut', widget.prospect.statut),
-                    _buildInfoRow('Source', widget.prospect.source),
-                    if (widget.prospect.notes.isNotEmpty)
-                      _buildInfoRow('Notes', widget.prospect.notes),
+                    _buildInfoRow('Adresse', widget.prospect.adresse),
+                    _buildInfoRow('Type', widget.prospect.type),
+                    _buildInfoRow('Statut', widget.prospect.status),
+                    _buildInfoRow(
+                      'Créé le',
+                      '${widget.prospect.creation.day}/${widget.prospect.creation.month}/${widget.prospect.creation.year}',
+                    ),
                   ],
                 ),
               ),
@@ -249,10 +250,10 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
                       ),
                       child: ListTile(
                         leading: Icon(
-                          _getInteractionIcon(interaction.typeInteraction),
+                          _getInteractionIcon(interaction.type),
                         ),
-                        title: Text(interaction.typeInteraction),
-                        subtitle: Text(interaction.description),
+                        title: Text(interaction.type),
+                        subtitle: Text(interaction.note),
                         trailing: Text(
                           '${interaction.dateInteraction.day}/${interaction.dateInteraction.month}/${interaction.dateInteraction.year}',
                           style: TextStyle(color: Colors.grey[600]),

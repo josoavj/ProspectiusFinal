@@ -150,10 +150,10 @@ class DatabaseService {
   Future<List<Prospect>> getProspects(int userId) async {
     try {
       AppLogger.logRequest('PROSPECTS',
-          'SELECT * FROM Prospect WHERE id_utilisateur = ?', [userId]);
+          'SELECT * FROM Prospect WHERE assignation = ?', [userId]);
 
       final results = await _mysqlService.query(
-        'SELECT * FROM Prospect WHERE id_utilisateur = ? ORDER BY date_creation DESC',
+        'SELECT * FROM Prospect WHERE assignation = ? ORDER BY creation DESC',
         [userId],
       );
 
@@ -162,21 +162,17 @@ class DatabaseService {
       return results
           .map(
             (row) => Prospect(
-              id: row['id'] as int,
-              nom: row['nom'] as String,
-              prenom: row['prenom'] as String,
-              email: row['email'] as String,
+              id: row['id_prospect'] as int,
+              nom: row['nomp'] as String? ?? '',
+              prenom: row['prenomp'] as String? ?? '',
+              email: row['email'] as String? ?? '',
               telephone: row['telephone'] as String? ?? '',
-              entreprise: row['entreprise'] as String? ?? '',
-              poste: row['poste'] as String? ?? '',
-              statut: row['statut'] as String? ?? 'En cours',
-              source: row['source'] as String? ?? '',
-              notes: row['notes'] as String? ?? '',
-              idUtilisateur: row['id_utilisateur'] as int,
-              dateCreation: DateTime.parse(row['date_creation'].toString()),
-              dateModification: row['date_modification'] != null
-                  ? DateTime.parse(row['date_modification'].toString())
-                  : null,
+              adresse: row['adresse'] as String? ?? '',
+              type: row['type'] as String? ?? '',
+              status: row['status'] as String? ?? 'nouveau',
+              creation: DateTime.parse(row['creation'].toString()),
+              dateUpdate: DateTime.parse(row['date_update'].toString()),
+              assignation: row['assignation'] as int? ?? 0,
             ),
           )
           .toList();
@@ -197,22 +193,12 @@ class DatabaseService {
     String prenom,
     String email,
     String telephone,
-    String entreprise,
-    String poste,
-    String statut,
-    String source,
-    String notes,
+    String adresse,
+    String type,
   ) async {
     try {
       // Valider les données
-      final validationResult = Validators.validateProspect(
-        nom: nom,
-        prenom: prenom,
-        email: email,
-        telephone: telephone,
-        entreprise: entreprise,
-      );
-
+      final validationResult = Validators.validateName(nom, 'Nom');
       if (!validationResult.isValid) {
         throw ValidationException(
           message: validationResult.error!,
@@ -225,28 +211,22 @@ class DatabaseService {
         prenom,
         email,
         telephone,
-        entreprise,
-        poste,
-        statut,
-        source,
-        notes,
+        adresse,
+        type,
         userId,
       ]);
 
       await _mysqlService.query(
         '''INSERT INTO Prospect 
-           (nom, prenom, email, telephone, entreprise, poste, statut, source, notes, id_utilisateur, date_creation)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())''',
+           (nomp, prenomp, email, telephone, adresse, type, assignation, status, creation, date_update)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'nouveau', NOW(), NOW())''',
         [
           nom,
           prenom,
           email,
           telephone,
-          entreprise,
-          poste,
-          statut,
-          source,
-          notes,
+          adresse,
+          type,
           userId,
         ],
       );
@@ -284,7 +264,7 @@ class DatabaseService {
           'UPDATE Prospect SET ${updates.join(", ")}', values);
 
       await _mysqlService.query(
-        'UPDATE Prospect SET ${updates.join(", ")}, date_modification = NOW() WHERE id = ?',
+        'UPDATE Prospect SET ${updates.join(", ")}, date_update = NOW() WHERE id_prospect = ?',
         values,
       );
 
@@ -304,11 +284,11 @@ class DatabaseService {
 
   Future<void> deleteProspect(int prospectId) async {
     try {
-      AppLogger.logRequest(
-          'DELETE_PROSPECT', 'DELETE FROM Prospect WHERE id = ?', [prospectId]);
+      AppLogger.logRequest('DELETE_PROSPECT',
+          'DELETE FROM Prospect WHERE id_prospect = ?', [prospectId]);
 
       await _mysqlService.query(
-        'DELETE FROM Interaction WHERE id_prospect = ?',
+        'DELETE FROM Prospect WHERE id_prospect = ?',
         [prospectId],
       );
       await _mysqlService.query('DELETE FROM Prospect WHERE id = ?', [
@@ -348,15 +328,14 @@ class DatabaseService {
       return results
           .map(
             (row) => Interaction(
-              id: row['id'] as int,
+              id: row['id_interaction'] as int,
               idProspect: row['id_prospect'] as int,
-              idUtilisateur: row['id_utilisateur'] as int,
-              typeInteraction: row['type_interaction'] as String,
-              description: row['description'] as String,
+              idCompte: row['id_compte'] as int,
+              type: row['type'] as String,
+              note: row['note'] as String,
               dateInteraction: DateTime.parse(
                 row['date_interaction'].toString(),
               ),
-              dateCreation: DateTime.parse(row['date_creation'].toString()),
             ),
           )
           .toList();
@@ -374,31 +353,31 @@ class DatabaseService {
   Future<void> createInteraction(
     int prospectId,
     int userId,
-    String typeInteraction,
-    String description,
+    String type,
+    String note,
     DateTime dateInteraction,
   ) async {
     try {
-      if (description.isEmpty) {
+      if (note.isEmpty) {
         throw ValidationException(
-          message: 'La description est obligatoire',
-          code: 'EMPTY_DESCRIPTION',
+          message: 'La note est obligatoire',
+          code: 'EMPTY_NOTE',
         );
       }
 
       AppLogger.logRequest('CREATE_INTERACTION', 'INSERT INTO Interaction', [
         prospectId,
         userId,
-        typeInteraction,
-        description,
+        type,
+        note,
         dateInteraction,
       ]);
 
       await _mysqlService.query(
         '''INSERT INTO Interaction 
-           (id_prospect, id_utilisateur, type_interaction, description, date_interaction, date_creation)
-           VALUES (?, ?, ?, ?, ?, NOW())''',
-        [prospectId, userId, typeInteraction, description, dateInteraction],
+           (id_prospect, id_compte, type, note, date_interaction)
+           VALUES (?, ?, ?, ?, ?)''',
+        [prospectId, userId, type, note, dateInteraction],
       );
 
       AppLogger.success('Interaction créée pour le prospect #$prospectId');
@@ -421,14 +400,14 @@ class DatabaseService {
     try {
       AppLogger.logRequest(
           'STATS',
-          'SELECT statut, COUNT(*) FROM Prospect WHERE id_utilisateur = ?',
+          'SELECT status, COUNT(*) FROM Prospect WHERE assignation = ?',
           [userId]);
 
       final results = await _mysqlService.query(
-        '''SELECT statut, COUNT(*) as count 
+        '''SELECT status, COUNT(*) as count 
            FROM Prospect 
-           WHERE id_utilisateur = ? 
-           GROUP BY statut''',
+           WHERE assignation = ? 
+           GROUP BY status''',
         [userId],
       );
 
@@ -437,7 +416,7 @@ class DatabaseService {
       return results
           .map(
             (row) => ProspectStats(
-              statut: row['statut'] as String,
+              status: row['status'] as String,
               count: row['count'] as int,
             ),
           )
@@ -461,9 +440,9 @@ class DatabaseService {
       final results = await _mysqlService.query(
         '''SELECT 
              COUNT(*) as total,
-             SUM(CASE WHEN statut = 'Converti' THEN 1 ELSE 0 END) as converted
+             SUM(CASE WHEN status = 'converti' THEN 1 ELSE 0 END) as converted
            FROM Prospect 
-           WHERE id_utilisateur = ?''',
+           WHERE assignation = ?''',
         [userId],
       );
 

@@ -46,11 +46,8 @@ class ProspectProvider extends ChangeNotifier {
     String prenom,
     String email,
     String telephone,
-    String entreprise,
-    String poste,
-    String statut,
-    String source,
-    String notes,
+    String adresse,
+    String type,
   ) async {
     _isLoading = true;
     notifyListeners();
@@ -62,11 +59,8 @@ class ProspectProvider extends ChangeNotifier {
         prenom,
         email,
         telephone,
-        entreprise,
-        poste,
-        statut,
-        source,
-        notes,
+        adresse,
+        type,
       );
 
       await loadProspects(userId);
@@ -161,16 +155,16 @@ class ProspectProvider extends ChangeNotifier {
   Future<bool> createInteraction(
     int prospectId,
     int userId,
-    String typeInteraction,
-    String description,
+    String type,
+    String note,
     DateTime dateInteraction,
   ) async {
     try {
       await _databaseService.createInteraction(
         prospectId,
         userId,
-        typeInteraction,
-        description,
+        type,
+        note,
         dateInteraction,
       );
 
