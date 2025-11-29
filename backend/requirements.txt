@@ -1,0 +1,8 @@
+flask==3.0.0
+flask-cors==4.0.0
+flask-jwt-extended==4.5.3
+python-mysql-connector==0.0.2
+mysql-connector-python==8.2.0
+bcrypt==4.1.1
+aiomysql==0.2.0
+python-dotenv==1.0.0
