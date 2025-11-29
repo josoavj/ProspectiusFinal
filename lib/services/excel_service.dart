@@ -37,7 +37,6 @@ class ExcelService {
           ..value = headers[i]
           ..cellStyle = CellStyle(
             bold: true,
-            backgroundColor: ExcelColor.fromHexString("FFD3D3D3"),
           );
       }
 
@@ -58,17 +57,13 @@ class ExcelService {
         ];
 
         for (int col = 0; col < cells.length; col++) {
-          sheet.cell(CellIndex.indexByColumnRow(
-            columnIndex: col,
-            rowIndex: row + 1,
-          ))
-            .value = cells[col];
+          sheet
+              .cell(CellIndex.indexByColumnRow(
+                columnIndex: col,
+                rowIndex: row + 1,
+              ))
+              .value = cells[col];
         }
-      }
-
-      // Ajuster les largeurs de colonnes
-      for (int i = 0; i < headers.length; i++) {
-        sheet.setColumnWidth(i, 20);
       }
 
       // Obtenir le répertoire de téléchargement
