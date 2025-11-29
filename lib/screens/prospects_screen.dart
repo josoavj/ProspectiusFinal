@@ -72,8 +72,14 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          return GridView.builder(
+            padding: const EdgeInsets.all(12),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.85,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+            ),
             itemCount: prospectProvider.prospects.length,
             itemBuilder: (context, index) {
               final prospect = prospectProvider.prospects[index];
