@@ -3,6 +3,8 @@ import '../models/account.dart';
 import '../services/database_service.dart';
 import '../services/mysql_service.dart';
 import '../services/storage_service.dart';
+import '../utils/exception_handler.dart';
+import '../utils/app_logger.dart';
 
 class AuthProvider extends ChangeNotifier {
   Account? _currentUser;
@@ -24,11 +26,20 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
 
       await _mysqlService.connect(config);
+
       _isLoading = false;
       notifyListeners();
+      AppLogger.success('Base de données configurée');
       return true;
-    } catch (e) {
+    } on ConnectionException catch (e) {
+      _error = e.message;
+      AppLogger.error('Erreur de connexion: ${e.message}');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e, stackTrace) {
       _error = 'Erreur de connexion à la base de données: $e';
+      AppLogger.error('Erreur de connexion à MySQL', e, stackTrace);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -42,28 +53,28 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       if (!_mysqlService.isConnected) {
-        _error = 'Base de données non connectée';
-        _isLoading = false;
-        notifyListeners();
-        return false;
+        throw ConnectionException(
+          message: 'Base de données non connectée',
+          code: 'DB_NOT_CONNECTED',
+        );
       }
 
-      final result = await _databaseService.authenticate(username, password);
+      _currentUser = await _databaseService.authenticate(username, password);
+      await _storageService.saveUserData(_currentUser!.username);
 
-      if (result['success']) {
-        _currentUser = result['user'];
-        await _storageService.saveUserData(_currentUser!.username);
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      } else {
-        _error = result['message'];
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
-    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      AppLogger.success('Connexion réussie pour ${_currentUser!.fullName}');
+      return true;
+    } on AppException catch (e) {
+      _error = e.message;
+      AppLogger.warning('Erreur d\'authentification: ${e.message}');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e, stackTrace) {
       _error = 'Erreur: $e';
+      AppLogger.error('Erreur lors de la connexion', e, stackTrace);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -83,13 +94,13 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       if (!_mysqlService.isConnected) {
-        _error = 'Base de données non connectée';
-        _isLoading = false;
-        notifyListeners();
-        return false;
+        throw ConnectionException(
+          message: 'Base de données non connectée',
+          code: 'DB_NOT_CONNECTED',
+        );
       }
 
-      final result = await _databaseService.createAccount(
+      await _databaseService.createAccount(
         nom,
         prenom,
         email,
@@ -98,16 +109,18 @@ class AuthProvider extends ChangeNotifier {
       );
 
       _isLoading = false;
-      if (result['success']) {
-        notifyListeners();
-        return true;
-      } else {
-        _error = result['message'];
-        notifyListeners();
-        return false;
-      }
-    } catch (e) {
+      notifyListeners();
+      AppLogger.success('Compte créé avec succès');
+      return true;
+    } on AppException catch (e) {
+      _error = e.message;
+      AppLogger.warning('Erreur lors de l\'inscription: ${e.message}');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e, stackTrace) {
       _error = 'Erreur: $e';
+      AppLogger.error('Erreur lors de l\'inscription', e, stackTrace);
       _isLoading = false;
       notifyListeners();
       return false;
