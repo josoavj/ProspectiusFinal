@@ -94,6 +94,12 @@ class SidebarNavigation extends StatelessWidget {
                     label: 'Exporter',
                     index: 2,
                   ),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.info,
+                    label: 'À propos',
+                    index: 3,
+                  ),
                   const Divider(
                     height: 16,
                   ),
@@ -101,7 +107,7 @@ class SidebarNavigation extends StatelessWidget {
                     context,
                     icon: Icons.settings,
                     label: 'Configuration',
-                    index: 3,
+                    index: 4,
                   ),
                 ],
               ),
