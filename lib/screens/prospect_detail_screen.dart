@@ -9,7 +9,7 @@ class ProspectDetailScreen extends StatefulWidget {
   final Prospect prospect;
 
   const ProspectDetailScreen({Key? key, required this.prospect})
-    : super(key: key);
+      : super(key: key);
 
   @override
   State<ProspectDetailScreen> createState() => _ProspectDetailScreenState();
@@ -26,7 +26,6 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
   }
 
   void _loadInteractions() {
-    final authProvider = context.read<AuthProvider>();
     final prospectProvider = context.read<ProspectProvider>();
     prospectProvider.loadInteractions(widget.prospect.id);
   }
@@ -68,7 +67,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed == true && mounted) {
       final authProvider = context.read<AuthProvider>();
       final prospectProvider = context.read<ProspectProvider>();
 
@@ -180,7 +179,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
                 child: Column(
                   children: [
                     DropdownButtonFormField<String>(
-                      value: _selectedType,
+                      initialValue: _selectedType,
                       onChanged: (value) {
                         setState(() {
                           _selectedType = value ?? 'Appel';

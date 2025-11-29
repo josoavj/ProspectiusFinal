@@ -29,13 +29,6 @@ class _StatsScreenState extends State<StatsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Reporting & Statistiques'),
-        elevation: 0,
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadStats),
-        ],
-      ),
       body: Consumer<StatsProvider>(
         builder: (context, statsProvider, _) {
           if (statsProvider.isLoading) {
@@ -142,6 +135,10 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _loadStats,
+        child: const Icon(Icons.refresh),
       ),
     );
   }
