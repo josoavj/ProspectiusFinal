@@ -32,10 +32,6 @@ class _ClientsScreenState extends State<ClientsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Clients'),
-        elevation: 0,
-      ),
       body: Consumer<ProspectProvider>(
         builder: (context, prospectProvider, child) {
           if (prospectProvider.isLoading) {
@@ -75,12 +71,12 @@ class _ClientsScreenState extends State<ClientsScreen> {
           }
 
           return GridView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
+              crossAxisCount: 3,
+              childAspectRatio: 1.0,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
             ),
             itemCount: clients.length,
             itemBuilder: (context, index) => _buildClientCard(
@@ -95,7 +91,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
 
   Widget _buildClientCard(BuildContext context, Prospect client) {
     return Card(
-      elevation: 2,
+      elevation: 1,
       child: InkWell(
         onTap: () {
           Navigator.of(context).push(
@@ -105,90 +101,67 @@ class _ClientsScreenState extends State<ClientsScreen> {
           );
         },
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(8),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
               // Avatar
               CircleAvatar(
-                radius: 24,
-                backgroundColor: Colors.blue[500],
+                radius: 20,
+                backgroundColor: Colors.green[500],
                 child: Text(
                   client.prenom[0].toUpperCase(),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // Name
               Text(
                 client.fullName,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 13,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
 
               // Type
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.blue[100],
+                  borderRadius: BorderRadius.circular(3),
                 ),
                 child: Text(
                   client.type.capitalize(),
                   style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black87,
+                    fontSize: 11,
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
 
               // Status badge
               Chip(
-                label: const Text('Converti'),
-                backgroundColor: Colors.green[200],
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
+                label: const Text(
+                  'Converti',
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
                 ),
+                backgroundColor: Colors.green[100],
+                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.all(2),
               ),
-              const SizedBox(height: 12),
-
-              // Email and phone (truncated)
-              if (client.email.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text(
-                    client.email,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-              if (client.telephone.isNotEmpty)
-                Text(
-                  client.telephone,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey,
-                  ),
-                ),
             ],
           ),
         ),
