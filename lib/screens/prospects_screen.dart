@@ -30,45 +30,6 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Prospects'),
-        elevation: 0,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-              child: Consumer<AuthProvider>(
-                builder: (context, authProvider, _) {
-                  return Text(
-                    authProvider.currentUser?.fullName ?? '',
-                    style: const TextStyle(color: Colors.white),
-                  );
-                },
-              ),
-            ),
-          ),
-          PopupMenuButton(
-            onSelected: (value) {
-              if (value == 'logout') {
-                context.read<AuthProvider>().logout();
-                Navigator.of(context).pushReplacementNamed('/login');
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem(
-                value: 'logout',
-                child: Row(
-                  children: [
-                    Icon(Icons.logout),
-                    SizedBox(width: 8),
-                    Text('Déconnexion'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
       body: Consumer<ProspectProvider>(
         builder: (context, prospectProvider, _) {
           if (prospectProvider.isLoading) {
