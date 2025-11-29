@@ -19,8 +19,10 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   late TextEditingController _emailController;
   late TextEditingController _telephoneController;
   late TextEditingController _adresseController;
+  late TextEditingController _interactionNoteController;
   String _selectedType = 'prospect';
   String _selectedStatus = 'nouveau';
+  String _selectedInteractionType = 'appel';
 
   @override
   void initState() {
@@ -38,6 +40,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _adresseController = TextEditingController(
       text: widget.prospect?.adresse ?? '',
     );
+    _interactionNoteController = TextEditingController();
     _selectedType = widget.prospect?.type ?? 'prospect';
     _selectedStatus = widget.prospect?.status ?? 'nouveau';
   }
@@ -49,6 +52,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _emailController.dispose();
     _telephoneController.dispose();
     _adresseController.dispose();
+    _interactionNoteController.dispose();
     super.dispose();
   }
 
@@ -70,7 +74,8 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
         'status': _selectedStatus,
       });
     } else {
-      await prospectProvider.createProspect(
+      // Créer le prospect et l'interaction en même temps
+      final prospectCreated = await prospectProvider.createProspect(
         authProvider.currentUser!.id,
         _nomController.text,
         _prenomController.text,
@@ -79,6 +84,22 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
         _adresseController.text,
         _selectedType,
       );
+
+      // Si le prospect est créé, créer l'interaction
+      if (prospectCreated && _interactionNoteController.text.isNotEmpty) {
+        // Obtenir le dernier prospect créé
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (prospectProvider.prospects.isNotEmpty) {
+          final lastProspect = prospectProvider.prospects.last;
+          await prospectProvider.createInteraction(
+            lastProspect.id,
+            authProvider.currentUser!.id,
+            _selectedInteractionType,
+            _interactionNoteController.text,
+            DateTime.now(),
+          );
+        }
+      }
     }
 
     if (mounted) {
@@ -198,6 +219,52 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
                   ),
                 ),
               ),
+              // Afficher les champs d'interaction uniquement à la création
+              if (widget.prospect == null) ...[
+                const SizedBox(height: 32),
+                const Divider(),
+                const SizedBox(height: 16),
+                const Text(
+                  'Interaction initiale',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedInteractionType,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedInteractionType = value ?? 'appel';
+                    });
+                  },
+                  items: ['appel', 'email', 'reunion', 'message', 'autre']
+                      .map(
+                        (type) =>
+                            DropdownMenuItem(value: type, child: Text(type)),
+                      )
+                      .toList(),
+                  decoration: InputDecoration(
+                    labelText: 'Type d\'interaction',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _interactionNoteController,
+                  decoration: InputDecoration(
+                    labelText: 'Note d\'interaction',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    hintText: 'Décrivez votre interaction avec le prospect...',
+                  ),
+                  maxLines: 4,
+                ),
+              ],
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
