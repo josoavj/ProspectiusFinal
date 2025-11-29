@@ -83,6 +83,37 @@ class AboutScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 48),
 
+                // Organization Card
+                Card(
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Géré par',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildOrganizationCard(
+                          context,
+                          name: 'ApexNova Labs',
+                          description:
+                              'Organisation de développement logiciel innovante',
+                          avatarUrl:
+                              'https://avatars.githubusercontent.com/u/ApexNova?v=4',
+                          organizationUrl: 'https://github.com/ApexNova',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
                 // Description
                 Card(
                   elevation: 2,
@@ -136,6 +167,8 @@ class AboutScreen extends StatelessWidget {
                           context,
                           name: 'Josoa VONJINIAINA',
                           role: 'Développeur Principal',
+                          avatarUrl:
+                              'https://avatars.githubusercontent.com/u/josoavj?v=4',
                           profileUrl: 'https://github.com/josoavj',
                         ),
                         const SizedBox(height: 12),
@@ -155,7 +188,7 @@ class AboutScreen extends StatelessWidget {
                 Column(
                   children: [
                     Text(
-                      'Tous droits réservés © 2025',
+                      'Tous droits réservés © 2025 - ApexNova Labs',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.grey[600],
                           ),
@@ -180,10 +213,76 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildOrganizationCard(
+    BuildContext context, {
+    required String name,
+    required String description,
+    required String avatarUrl,
+    required String organizationUrl,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue[200]!),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Avatar
+          CircleAvatar(
+            radius: 28,
+            backgroundImage: NetworkImage(avatarUrl),
+            backgroundColor: Colors.blue[100],
+            onBackgroundImageError: (exception, stackTrace) {},
+            child: Icon(Icons.organization, color: Colors.blue[600]),
+          ),
+          const SizedBox(width: 16),
+          // Organization Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Action Button
+          TextButton.icon(
+            onPressed: () => _launchURL(organizationUrl),
+            icon: const Icon(Icons.open_in_new, size: 18),
+            label: const Text('GitHub'),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.blue,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDeveloperCard(
     BuildContext context, {
     required String name,
     required String role,
+    String? avatarUrl,
     String? profileUrl,
   }) {
     return Container(
@@ -194,8 +293,25 @@ class AboutScreen extends StatelessWidget {
         border: Border.all(color: Colors.grey[300]!),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Avatar
+          if (avatarUrl != null)
+            CircleAvatar(
+              radius: 24,
+              backgroundImage: NetworkImage(avatarUrl),
+              backgroundColor: Colors.grey[200],
+              onBackgroundImageError: (exception, stackTrace) {},
+              child: Icon(Icons.person, color: Colors.grey[600]),
+            )
+          else
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: Colors.grey[200],
+              child: Icon(Icons.people, color: Colors.grey[600]),
+            ),
+          const SizedBox(width: 12),
+          // Developer Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,7 +332,8 @@ class AboutScreen extends StatelessWidget {
               ],
             ),
           ),
-          if (profileUrl != null)
+          if (profileUrl != null) ...[
+            const SizedBox(width: 8),
             TextButton.icon(
               onPressed: () => _launchURL(profileUrl),
               icon: const Icon(Icons.open_in_new, size: 18),
@@ -225,6 +342,7 @@ class AboutScreen extends StatelessWidget {
                 foregroundColor: Colors.blue,
               ),
             ),
+          ],
         ],
       ),
     );
