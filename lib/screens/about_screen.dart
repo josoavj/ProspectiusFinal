@@ -101,12 +101,12 @@ class AboutScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         _buildOrganizationCard(
                           context,
-                          name: 'ApexNova Labs',
+                          name: 'APEXNova Labs',
                           description:
-                              'Organisation de développement logiciel innovante',
+                              'Developer team operating on software and mobile application development',
                           avatarUrl:
-                              'https://avatars.githubusercontent.com/u/ApexNova?v=4',
-                          organizationUrl: 'https://github.com/ApexNova',
+                              'https://avatars.githubusercontent.com/u/153268131?v=4',
+                          organizationUrl: 'https://github.com/APEXNovaLabs',
                         ),
                       ],
                     ),
@@ -188,7 +188,7 @@ class AboutScreen extends StatelessWidget {
                 Column(
                   children: [
                     Text(
-                      'Tous droits réservés © 2025 - ApexNova Labs',
+                      'Tous droits réservés © 2025 - APEXNova Labs',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.grey[600],
                           ),
