@@ -7,6 +7,7 @@ import 'screens/database_config_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/prospects_screen.dart';
 import 'screens/stats_screen.dart';
+import 'screens/export_prospects_screen.dart';
 import 'widgets/sidebar_navigation.dart';
 
 void main() async {
@@ -108,6 +109,8 @@ class _MainScreenState extends State<MainScreen> {
       case 1:
         return 'Statistiques';
       case 2:
+        return 'Exporter';
+      case 3:
         return 'Configuration';
       default:
         return 'Prospectius';
@@ -121,6 +124,8 @@ class _MainScreenState extends State<MainScreen> {
       case 1:
         return const StatsScreen();
       case 2:
+        return const ExportProspectsScreen();
+      case 3:
         return const Center(
           child: Text('Bientôt disponible'),
         );
