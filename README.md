@@ -219,7 +219,7 @@ Voir [INSTALLATION.md](INSTALLATION.md) pour des instructions détaillées.
 
 ## 👥 Équipe contributeur
 
-- **Développeur:** [Josoa Vidalima](https://github.com/josoavj)
+- **Développeur:** [josoavj](https://github.com/josoavj)
 
 ## 📝 Notice
 
