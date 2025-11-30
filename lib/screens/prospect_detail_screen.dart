@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
+import '../utils/text_formatter.dart';
 import 'edit_prospect_screen.dart';
 
 class ProspectDetailScreen extends StatefulWidget {
@@ -22,7 +23,10 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
   void initState() {
     super.initState();
     _currentProspect = widget.prospect;
-    _loadData();
+    // Load interactions after the frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
   }
 
   void _loadData() {
@@ -135,7 +139,8 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _currentProspect.fullName,
+                                TextFormatter.capitalize(
+                                    _currentProspect.fullName),
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleLarge
@@ -143,14 +148,15 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                _currentProspect.type,
+                                TextFormatter.formatType(_currentProspect.type),
                                 style: TextStyle(color: Colors.grey[600]),
                               ),
                             ],
                           ),
                         ),
                         Chip(
-                          label: Text(_currentProspect.status),
+                          label: Text(TextFormatter.formatStatus(
+                              _currentProspect.status)),
                           backgroundColor: _getStatusColor(
                             _currentProspect.status,
                           ),
@@ -229,7 +235,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
                         leading: Icon(
                           _getInteractionIcon(interaction.type),
                         ),
-                        title: Text(interaction.type),
+                        title: Text(TextFormatter.capitalize(interaction.type)),
                         subtitle: Text(interaction.note),
                         trailing: Text(
                           '${interaction.dateInteraction.day}/${interaction.dateInteraction.month}/${interaction.dateInteraction.year}',
