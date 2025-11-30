@@ -12,10 +12,11 @@ CREATE DATABASE Prospectius;
 USE Prospectius;
 
 /*
-    Trois tables présentes dans la base de données : Account, Prospect, Interaction
+    Quatre tables présentes dans la base de données : Account, Prospect, Interaction
     Table Account : Pour les comptes utilisateurs
     Table Prospect : Pour les prospects
     Table Interaction : Pour les interactions avec les prospects
+    Table StatusHistory : Pour l'historique des changements de statut des prospects
 */
 
 -- Table Compte
@@ -156,6 +157,24 @@ CREATE TABLE Interaction (
     FOREIGN KEY (id_compte) REFERENCES Account(id_compte)
 );
 
+-- Historique des statuts
+CREATE TABLE StatusHistory (
+    id_status_history INT AUTO_INCREMENT PRIMARY KEY,
+    id_prospect INT NOT NULL,
+    old_status ENUM('nouveau', 'interesse', 'negociation', 'perdu', 'converti'),
+    new_status ENUM('nouveau', 'interesse', 'negociation', 'perdu', 'converti') NOT NULL,
+    changed_by INT NOT NULL,
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect),
+    FOREIGN KEY (changed_by) REFERENCES Account(id_compte)
+);
+
+-- Index pour les recherches rapides
+CREATE INDEX idx_prospect_status ON Prospect(id_prospect, status);
+CREATE INDEX idx_prospect_assignation ON Prospect(assignation);
+CREATE INDEX idx_interaction_prospect ON Interaction(id_prospect);
+CREATE INDEX idx_status_history_prospect ON StatusHistory(id_prospect);
+
 /*
-    Modifié le 18 Octobre 2025
+    Modifié le 30 Novembre 2025
 */
