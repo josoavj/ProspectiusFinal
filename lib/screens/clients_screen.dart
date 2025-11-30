@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
+import '../utils/text_formatter.dart';
 import 'prospect_detail_screen.dart';
 
 class ClientsScreen extends StatefulWidget {
@@ -70,16 +71,10 @@ class _ClientsScreenState extends State<ClientsScreen> {
             );
           }
 
-          return GridView.builder(
+          return ListView.builder(
             padding: const EdgeInsets.all(12),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 1.0,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-            ),
             itemCount: clients.length,
-            itemBuilder: (context, index) => _buildClientCard(
+            itemBuilder: (context, index) => _buildClientListItem(
               context,
               clients[index],
             ),
@@ -89,90 +84,69 @@ class _ClientsScreenState extends State<ClientsScreen> {
     );
   }
 
-  Widget _buildClientCard(BuildContext context, Prospect client) {
-    return Card(
-      elevation: 1,
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => ProspectDetailScreen(prospect: client),
+  Widget _buildClientListItem(BuildContext context, Prospect client) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ProspectDetailScreen(prospect: client),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          leading: CircleAvatar(
+            radius: 22,
+            backgroundColor: Colors.green[500],
+            child: Text(
+              client.prenom.isNotEmpty ? client.prenom[0].toUpperCase() : '?',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Avatar
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.green[500],
-                child: Text(
-                  client.prenom[0].toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
+          ),
+          title: Text(
+            TextFormatter.capitalize(client.fullName),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          subtitle: Text(
+            client.email.isEmpty ? '-' : client.email,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.green[600],
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text(
+              'Converti',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
-              const SizedBox(height: 8),
-
-              // Name
-              Text(
-                client.fullName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-              const SizedBox(height: 4),
-
-              // Type
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.blue[100],
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: Text(
-                  client.type.capitalize(),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Colors.blue,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-
-              // Status badge
-              Chip(
-                label: const Text(
-                  'Converti',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
-                ),
-                backgroundColor: Colors.green[100],
-                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.all(2),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
-  }
-}
-
-extension StringExtension on String {
-  String capitalize() {
-    if (isEmpty) return this;
-    return this[0].toUpperCase() + substring(1).toLowerCase();
   }
 }
