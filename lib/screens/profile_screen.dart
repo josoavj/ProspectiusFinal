@@ -95,223 +95,239 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
 
           return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const SizedBox(height: 24),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 24),
 
-                  // Avatar et informations principales
-                  Center(
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.blue[100],
-                          child: Text(
-                            user.nom.isNotEmpty
-                                ? user.nom[0].toUpperCase()
-                                : '?',
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          user.fullName,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.bold,
+                      // Avatar et informations principales
+                      Center(
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Colors.blue[100],
+                              child: Text(
+                                user.nom.isNotEmpty
+                                    ? user.nom[0].toUpperCase()
+                                    : '?',
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue[700],
+                                ),
                               ),
-                          textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              user.fullName,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[50],
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                user.typeCompte,
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Messages de statut
+                      if (_successMessage != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.blue[50],
-                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.green[50],
+                            border: Border.all(color: Colors.green),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text(
-                            user.typeCompte,
-                            style: TextStyle(
-                              color: Colors.blue[700],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Messages de statut
-                  if (_successMessage != null)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.green[50],
-                        border: Border.all(color: Colors.green),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.green[700]),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              _successMessage!,
-                              style: TextStyle(color: Colors.green[700]),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (_errorMessage != null)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red[50],
-                        border: Border.all(color: Colors.red),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.error, color: Colors.red[700]),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: TextStyle(color: Colors.red[700]),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (_successMessage != null || _errorMessage != null)
-                    const SizedBox(height: 24),
-
-                  // Formulaire d'informations
-                  Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Informations Personnelles',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildFormField(
-                            label: 'Nom',
-                            controller: _nomController,
-                            enabled: _isEditing,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildFormField(
-                            label: 'Prénom',
-                            controller: _prenomController,
-                            enabled: _isEditing,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildFormField(
-                            label: 'Email',
-                            controller: _emailController,
-                            enabled: _isEditing,
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildFormField(
-                            label: 'Nom d\'utilisateur',
-                            controller: _usernameController,
-                            enabled: false,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildInfoField(
-                            label: 'Type de compte',
-                            value: user.typeCompte,
-                          ),
-                          const SizedBox(height: 16),
-                          _buildInfoField(
-                            label: 'Membre depuis',
-                            value:
-                                '${user.dateCreation.day}/${user.dateCreation.month}/${user.dateCreation.year}',
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Boutons d'action
-                  if (_isEditing) ...[
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _isLoading
-                                ? null
-                                : () {
-                                    _initializeControllers();
-                                    setState(() {
-                                      _isEditing = false;
-                                    });
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey,
-                            ),
-                            child: const Text('Annuler'),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle,
+                                  color: Colors.green[700]),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _successMessage!,
+                                  style: TextStyle(color: Colors.green[700]),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
+                      if (_errorMessage != null)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.red[50],
+                            border: Border.all(color: Colors.red),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.error, color: Colors.red[700]),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _errorMessage!,
+                                  style: TextStyle(color: Colors.red[700]),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (_successMessage != null || _errorMessage != null)
+                        const SizedBox(height: 24),
+
+                      // Formulaire d'informations
+                      Card(
+                        elevation: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Informations Personnelles',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 16),
+                              _buildFormField(
+                                label: 'Nom',
+                                controller: _nomController,
+                                enabled: _isEditing,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildFormField(
+                                label: 'Prénom',
+                                controller: _prenomController,
+                                enabled: _isEditing,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildFormField(
+                                label: 'Email',
+                                controller: _emailController,
+                                enabled: _isEditing,
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildFormField(
+                                label: 'Nom d\'utilisateur',
+                                controller: _usernameController,
+                                enabled: false,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildInfoField(
+                                label: 'Type de compte',
+                                value: user.typeCompte,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildInfoField(
+                                label: 'Membre depuis',
+                                value:
+                                    '${user.dateCreation.day}/${user.dateCreation.month}/${user.dateCreation.year}',
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Boutons d'action
+                      if (_isEditing) ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: _isLoading
+                                    ? null
+                                    : () {
+                                        _initializeControllers();
+                                        setState(() {
+                                          _isEditing = false;
+                                        });
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey,
+                                ),
+                                child: const Text('Annuler'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed:
+                                    _isLoading ? null : _handleSaveChanges,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green[400],
+                                ),
+                                icon: _isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.save),
+                                label: Text(
+                                  _isLoading
+                                      ? 'Enregistrement...'
+                                      : 'Enregistrer',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        SizedBox(
+                          width: double.infinity,
+                          height: 44,
                           child: ElevatedButton.icon(
-                            onPressed: _isLoading ? null : _handleSaveChanges,
-                            icon: _isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.save),
-                            label: Text(
-                              _isLoading ? 'Enregistrement...' : 'Enregistrer',
+                            onPressed: () {
+                              setState(() {
+                                _isEditing = true;
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[400],
                             ),
+                            icon: const Icon(Icons.edit),
+                            label: const Text('Modifier le profil'),
                           ),
                         ),
                       ],
-                    ),
-                  ] else ...[
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _isEditing = true;
-                          });
-                        },
-                        icon: const Icon(Icons.edit),
-                        label: const Text('Modifier le profil'),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                ],
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
               ),
             ),
           );
