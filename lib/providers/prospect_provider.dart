@@ -170,6 +170,7 @@ class ProspectProvider extends ChangeNotifier {
 
       await loadInteractions(prospectId);
       AppLogger.success('Interaction créée avec succès');
+      notifyListeners();
       return true;
     } on AppException catch (e) {
       _error = e.message;

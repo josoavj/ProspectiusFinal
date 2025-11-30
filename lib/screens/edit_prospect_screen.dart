@@ -1,0 +1,514 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/prospect.dart';
+import '../providers/auth_provider.dart';
+import '../providers/prospect_provider.dart';
+import '../utils/text_formatter.dart';
+
+class EditProspectScreen extends StatefulWidget {
+  final Prospect prospect;
+
+  const EditProspectScreen({Key? key, required this.prospect})
+      : super(key: key);
+
+  @override
+  State<EditProspectScreen> createState() => _EditProspectScreenState();
+}
+
+class _EditProspectScreenState extends State<EditProspectScreen> {
+  late TextEditingController _nomController;
+  late TextEditingController _prenomController;
+  late TextEditingController _emailController;
+  late TextEditingController _telephoneController;
+  late TextEditingController _adresseController;
+  late String _selectedType;
+  late String _selectedStatus;
+  late TextEditingController _interactionDescriptionController;
+  late String _selectedInteractionType;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nomController = TextEditingController(text: widget.prospect.nom);
+    _prenomController = TextEditingController(text: widget.prospect.prenom);
+    _emailController = TextEditingController(text: widget.prospect.email);
+    _telephoneController =
+        TextEditingController(text: widget.prospect.telephone);
+    _adresseController = TextEditingController(text: widget.prospect.adresse);
+    _selectedType = widget.prospect.type;
+    _selectedStatus = widget.prospect.status;
+    _interactionDescriptionController = TextEditingController();
+    _selectedInteractionType = 'appel';
+    // Load interactions after the frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInteractions();
+    });
+  }
+
+  void _loadInteractions() {
+    final prospectProvider = context.read<ProspectProvider>();
+    prospectProvider.loadInteractions(widget.prospect.id);
+  }
+
+  void _handleSaveProspect() async {
+    final authProvider = context.read<AuthProvider>();
+    final prospectProvider = context.read<ProspectProvider>();
+
+    if (authProvider.currentUser == null) return;
+
+    setState(() => _isLoading = true);
+
+    final success = await prospectProvider.updateProspect(
+      authProvider.currentUser!.id,
+      widget.prospect.id,
+      {
+        'nomp': _nomController.text,
+        'prenomp': _prenomController.text,
+        'email': _emailController.text,
+        'telephone': _telephoneController.text,
+        'adresse': _adresseController.text,
+        'type': _selectedType,
+        'status': _selectedStatus,
+      },
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Prospect mis à jour avec succès'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Créer le prospect mis à jour
+      final updatedProspect = Prospect(
+        id: widget.prospect.id,
+        nom: _nomController.text,
+        prenom: _prenomController.text,
+        email: _emailController.text,
+        telephone: _telephoneController.text,
+        adresse: _adresseController.text,
+        type: _selectedType,
+        status: _selectedStatus,
+        creation: widget.prospect.creation,
+        dateUpdate: DateTime.now(),
+        assignation: widget.prospect.assignation,
+      );
+
+      if (mounted) {
+        Navigator.of(context).pop(updatedProspect);
+      }
+    }
+  }
+
+  void _handleAddInteraction() async {
+    if (_interactionDescriptionController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez entrer une description'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    final authProvider = context.read<AuthProvider>();
+    final prospectProvider = context.read<ProspectProvider>();
+
+    if (authProvider.currentUser == null) return;
+
+    setState(() => _isLoading = true);
+
+    await prospectProvider.createInteraction(
+      widget.prospect.id,
+      authProvider.currentUser!.id,
+      _selectedInteractionType,
+      _interactionDescriptionController.text,
+      DateTime.now().toUtc(),
+    );
+
+    setState(() => _isLoading = false);
+
+    _interactionDescriptionController.clear();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Interaction ajoutée'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _nomController.dispose();
+    _prenomController.dispose();
+    _emailController.dispose();
+    _telephoneController.dispose();
+    _adresseController.dispose();
+    _interactionDescriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Mettre à jour le prospect'),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Section Informations du prospect
+                  Text(
+                    'Informations du prospect',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: _nomController,
+                            decoration: InputDecoration(
+                              labelText: 'Nom',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _prenomController,
+                            decoration: InputDecoration(
+                              labelText: 'Prénom',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _emailController,
+                            decoration: InputDecoration(
+                              labelText: 'Email',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _telephoneController,
+                            decoration: InputDecoration(
+                              labelText: 'Téléphone',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _adresseController,
+                            decoration: InputDecoration(
+                              labelText: 'Adresse',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedType,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedType = value ?? 'particulier';
+                              });
+                            },
+                            items: ['particulier', 'societe', 'organisation']
+                                .map(
+                                  (type) => DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type),
+                                  ),
+                                )
+                                .toList(),
+                            decoration: InputDecoration(
+                              labelText: 'Type',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedStatus,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedStatus = value ?? 'nouveau';
+                              });
+                            },
+                            items: [
+                              'nouveau',
+                              'interesse',
+                              'negociation',
+                              'perdu',
+                              'converti'
+                            ]
+                                .map(
+                                  (status) => DropdownMenuItem(
+                                    value: status,
+                                    child: Text(status),
+                                  ),
+                                )
+                                .toList(),
+                            decoration: InputDecoration(
+                              labelText: 'Statut',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Ancien statut: ${widget.prospect.status}',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 44,
+                            child: ElevatedButton(
+                              onPressed:
+                                  _isLoading ? null : _handleSaveProspect,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue[700],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
+                                        ),
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Enregistrer les informations',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Section Ajouter une interaction
+                  Text(
+                    'Ajouter une interaction',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          DropdownButtonFormField<String>(
+                            initialValue: _selectedInteractionType,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedInteractionType = value ?? 'appel';
+                              });
+                            },
+                            items: ['appel', 'email', 'sms', 'reunion']
+                                .map(
+                                  (type) => DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type),
+                                  ),
+                                )
+                                .toList(),
+                            decoration: InputDecoration(
+                              labelText: 'Type d\'interaction',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _interactionDescriptionController,
+                            decoration: InputDecoration(
+                              labelText: 'Description',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            maxLines: 3,
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 44,
+                            child: ElevatedButton(
+                              onPressed:
+                                  _isLoading ? null : _handleAddInteraction,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green[700],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
+                                        ),
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Ajouter interaction',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Section Historique des interactions
+                  Text(
+                    'Historique des interactions',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  Consumer<ProspectProvider>(
+                    builder: (context, prospectProvider, _) {
+                      if (prospectProvider.interactions.isEmpty) {
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              'Aucune interaction',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: prospectProvider.interactions.length,
+                        itemBuilder: (context, index) {
+                          final interaction =
+                              prospectProvider.interactions[index];
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              leading: Icon(
+                                _getInteractionIcon(interaction.type),
+                              ),
+                              title: Text(
+                                  TextFormatter.capitalize(interaction.type)),
+                              subtitle: Text(interaction.note),
+                              trailing: Text(
+                                '${interaction.dateInteraction.day}/${interaction.dateInteraction.month}/${interaction.dateInteraction.year}',
+                                style: TextStyle(
+                                    color: Colors.grey[600], fontSize: 12),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData _getInteractionIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'appel':
+        return Icons.call;
+      case 'email':
+        return Icons.email;
+      case 'sms':
+        return Icons.sms;
+      case 'reunion':
+        return Icons.people;
+      default:
+        return Icons.message;
+    }
+  }
+}

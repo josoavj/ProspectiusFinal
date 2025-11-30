@@ -22,18 +22,17 @@ class SidebarNavigation extends StatelessWidget {
             // Header
             Container(
               color: Colors.blue,
+              width: double.infinity,
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 8),
                     const Text(
                       'Prospectius',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -99,12 +98,6 @@ class SidebarNavigation extends StatelessWidget {
                     label: 'Exporter',
                     index: 3,
                   ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.info,
-                    label: 'À propos',
-                    index: 4,
-                  ),
                   const Divider(
                     height: 16,
                   ),
@@ -116,8 +109,14 @@ class SidebarNavigation extends StatelessWidget {
                   ),
                   _buildNavItem(
                     context,
+                    icon: Icons.info,
+                    label: 'À propos',
+                    index: 4,
+                  ),
+                  _buildNavItem(
+                    context,
                     icon: Icons.settings,
-                    label: 'Configuration',
+                    label: 'Paramètres',
                     index: 6,
                   ),
                 ],
@@ -211,7 +210,7 @@ class SidebarNavigation extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(context);
                 authProvider.logout();
-                Navigator.of(context).pushReplacementNamed('/config');
+                Navigator.of(context).pushReplacementNamed('/login');
               },
               child: const Text(
                 'Déconnexion',

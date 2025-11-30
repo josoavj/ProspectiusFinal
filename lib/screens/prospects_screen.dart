@@ -3,15 +3,9 @@ import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
+import '../utils/text_formatter.dart';
 import 'add_prospect_screen.dart';
 import 'prospect_detail_screen.dart';
-
-extension StringExtension on String {
-  String capitalize() {
-    if (isEmpty) return this;
-    return this[0].toUpperCase() + substring(1);
-  }
-}
 
 class ProspectsScreen extends StatefulWidget {
   const ProspectsScreen({Key? key}) : super(key: key);
@@ -72,18 +66,13 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
             );
           }
 
-          return GridView.builder(
+          return ListView.builder(
             padding: const EdgeInsets.all(12),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 1.0,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-            ),
             itemCount: prospectProvider.prospects.length,
             itemBuilder: (context, index) {
               final prospect = prospectProvider.prospects[index];
-              return _buildProspectCard(context, prospect, prospectProvider);
+              return _buildProspectListItem(
+                  context, prospect, prospectProvider);
             },
           );
         },
@@ -104,7 +93,7 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
     );
   }
 
-  Widget _buildProspectCard(BuildContext context, Prospect prospect,
+  Widget _buildProspectListItem(BuildContext context, Prospect prospect,
       ProspectProvider prospectProvider) {
     return GestureDetector(
       onTap: () {
@@ -115,74 +104,59 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
           ),
         );
       },
-      child: Card(
-        elevation: 1,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Avatar
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.blue[100],
-                child: Text(
-                  prospect.prenom.isNotEmpty
-                      ? prospect.prenom[0].toUpperCase()
-                      : '?',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          leading: CircleAvatar(
+            radius: 22,
+            backgroundColor: Colors.blue[500],
+            child: Text(
+              prospect.prenom.isNotEmpty
+                  ? prospect.prenom[0].toUpperCase()
+                  : '?',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-              const SizedBox(height: 8),
-
-              // Name
-              Text(
-                prospect.fullName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
+            ),
+          ),
+          title: Text(
+            TextFormatter.capitalize(prospect.fullName),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          subtitle: Text(
+            prospect.email.isEmpty ? '-' : prospect.email,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: _getStatusColor(prospect.status),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              TextFormatter.formatStatus(prospect.status),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
-              const SizedBox(height: 4),
-
-              // Type
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.blue[100],
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: Text(
-                  prospect.type.capitalize(),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Colors.blue,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-
-              // Status
-              Chip(
-                label: Text(
-                  prospect.status.capitalize(),
-                  style: const TextStyle(
-                      fontSize: 10, fontWeight: FontWeight.w500),
-                ),
-                backgroundColor: _getStatusColor(prospect.status),
-                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.all(2),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -192,17 +166,17 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'nouveau':
-        return Colors.blue[100]!;
+        return Colors.blue[600]!;
       case 'interesse':
-        return Colors.amber[100]!;
+        return Colors.amber[600]!;
       case 'negociation':
-        return Colors.orange[100]!;
+        return Colors.orange[600]!;
       case 'converti':
-        return Colors.green[100]!;
+        return Colors.green[600]!;
       case 'perdu':
-        return Colors.red[100]!;
+        return Colors.red[600]!;
       default:
-        return Colors.grey[100]!;
+        return Colors.grey[600]!;
     }
   }
 }

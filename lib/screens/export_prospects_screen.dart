@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../providers/prospect_provider.dart';
 import '../services/excel_service.dart';
+import '../utils/text_formatter.dart';
 
 class ExportProspectsScreen extends StatefulWidget {
   const ExportProspectsScreen({Key? key}) : super(key: key);
@@ -176,7 +177,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: _selectedStatus,
+                      initialValue: _selectedStatus,
                       onChanged: (value) {
                         setState(() {
                           _selectedStatus = value;
@@ -186,7 +187,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
                           .map(
                             (status) => DropdownMenuItem(
                               value: status,
-                              child: Text(status),
+                              child: Text(TextFormatter.formatStatus(status)),
                             ),
                           )
                           .toList(),
@@ -205,7 +206,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: _selectedType,
+                      initialValue: _selectedType,
                       onChanged: (value) {
                         setState(() {
                           _selectedType = value;
@@ -215,7 +216,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
                           .map(
                             (type) => DropdownMenuItem(
                               value: type,
-                              child: Text(type),
+                              child: Text(TextFormatter.formatType(type)),
                             ),
                           )
                           .toList(),

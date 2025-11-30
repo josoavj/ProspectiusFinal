@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:process/process.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({Key? key}) : super(key: key);
@@ -317,11 +316,11 @@ class AboutScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Avatar
-          if (avatarUrl != null && avatarUrl!.isNotEmpty)
+          if (avatarUrl != null && avatarUrl.isNotEmpty)
             CircleAvatar(
               radius: 32,
               backgroundColor: Colors.blue[100],
-              backgroundImage: NetworkImage(avatarUrl!),
+              backgroundImage: NetworkImage(avatarUrl),
               child: Icon(Icons.person, color: Colors.blue[600], size: 32),
             )
           else

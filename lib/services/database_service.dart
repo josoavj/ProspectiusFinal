@@ -285,15 +285,22 @@ class DatabaseService {
   Future<void> deleteProspect(int prospectId) async {
     try {
       AppLogger.logRequest('DELETE_PROSPECT',
+          'DELETE FROM Interaction WHERE id_prospect = ?', [prospectId]);
+
+      // Supprimer d'abord les interactions liées au prospect
+      await _mysqlService.query(
+        'DELETE FROM Interaction WHERE id_prospect = ?',
+        [prospectId],
+      );
+
+      AppLogger.logRequest('DELETE_PROSPECT',
           'DELETE FROM Prospect WHERE id_prospect = ?', [prospectId]);
 
+      // Puis supprimer le prospect
       await _mysqlService.query(
         'DELETE FROM Prospect WHERE id_prospect = ?',
         [prospectId],
       );
-      await _mysqlService.query('DELETE FROM Prospect WHERE id = ?', [
-        prospectId,
-      ]);
 
       AppLogger.success('Prospect #$prospectId supprimé');
     } on AppException {
@@ -332,7 +339,7 @@ class DatabaseService {
               idProspect: (row['id_prospect'] as num).toInt(),
               idCompte: (row['id_compte'] as num).toInt(),
               type: row['type'] as String,
-              note: row['note'] as String,
+              note: row['note'] != null ? row['note'].toString() : '',
               dateInteraction: DateTime.parse(
                 row['date_interaction'].toString(),
               ),
@@ -344,7 +351,7 @@ class DatabaseService {
           'Erreur lors de la récupération des interactions', e, stackTrace);
       throw DatabaseException(
         message: 'Erreur lors de la récupération: $e',
-        originalException: e as Exception,
+        originalException: e is Exception ? e : Exception(e.toString()),
         stackTrace: stackTrace,
       );
     }
@@ -388,7 +395,7 @@ class DatabaseService {
           'Erreur lors de la création de l\'interaction', e, stackTrace);
       throw DatabaseException(
         message: 'Erreur lors de la création: $e',
-        originalException: e as Exception,
+        originalException: e is Exception ? e : Exception(e.toString()),
         stackTrace: stackTrace,
       );
     }

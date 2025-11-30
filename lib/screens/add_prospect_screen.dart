@@ -87,16 +87,39 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
 
       // Si le prospect est créé, créer l'interaction
       if (prospectCreated && _interactionNoteController.text.isNotEmpty) {
-        // Obtenir le dernier prospect créé
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (prospectProvider.prospects.isNotEmpty) {
-          final lastProspect = prospectProvider.prospects.last;
+        // Trouver le prospect créé en le cherchant par nom et prénom
+        // (l'assignation est garantie d'être l'utilisateur actuel)
+        final createdProspect = prospectProvider.prospects.firstWhere(
+          (p) =>
+              p.nom == _nomController.text &&
+              p.prenom == _prenomController.text,
+          orElse: () {
+            // Si pour une raison quelconque on ne trouve pas le prospect,
+            // on retourne null et on n'ajoute pas d'interaction
+            return Prospect(
+              id: -1,
+              assignation: 0,
+              nom: '',
+              prenom: '',
+              email: '',
+              telephone: '',
+              adresse: '',
+              type: '',
+              status: '',
+              creation: DateTime.now(),
+              dateUpdate: DateTime.now(),
+            );
+          },
+        );
+
+        // Vérifier que le prospect a bien été créé
+        if (createdProspect.id != -1) {
           await prospectProvider.createInteraction(
-            lastProspect.id,
+            createdProspect.id,
             authProvider.currentUser!.id,
             _selectedInteractionType,
             _interactionNoteController.text,
-            DateTime.now(),
+            DateTime.now().toUtc(),
           );
         }
       }
@@ -116,172 +139,217 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
         ),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              TextField(
-                controller: _prenomController,
-                decoration: InputDecoration(
-                  labelText: 'Prénom',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _nomController,
-                decoration: InputDecoration(
-                  labelText: 'Nom',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _telephoneController,
-                decoration: InputDecoration(
-                  labelText: 'Téléphone',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _adresseController,
-                decoration: InputDecoration(
-                  labelText: 'Adresse',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedType,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedType = value ?? 'particulier';
-                  });
-                },
-                items: ['particulier', 'societe', 'organisation']
-                    .map(
-                      (type) =>
-                          DropdownMenuItem(value: type, child: Text(type)),
-                    )
-                    .toList(),
-                decoration: InputDecoration(
-                  labelText: 'Type',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedStatus,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedStatus = value ?? 'nouveau';
-                  });
-                },
-                items: [
-                  'nouveau',
-                  'interesse',
-                  'negociation',
-                  'converti',
-                  'perdu'
-                ]
-                    .map(
-                      (status) =>
-                          DropdownMenuItem(value: status, child: Text(status)),
-                    )
-                    .toList(),
-                decoration: InputDecoration(
-                  labelText: 'Statut',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              // Afficher les champs d'interaction uniquement à la création
-              if (widget.prospect == null) ...[
-                const SizedBox(height: 32),
-                const Divider(),
-                const SizedBox(height: 16),
-                const Text(
-                  'Interaction initiale',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedInteractionType,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedInteractionType = value ?? 'appel';
-                    });
-                  },
-                  items: ['appel', 'email', 'reunion', 'message', 'autre']
-                      .map(
-                        (type) =>
-                            DropdownMenuItem(value: type, child: Text(type)),
-                      )
-                      .toList(),
-                  decoration: InputDecoration(
-                    labelText: 'Type d\'interaction',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+      body: Center(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _prenomController,
+                    decoration: InputDecoration(
+                      labelText: 'Prénom',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _interactionNoteController,
-                  decoration: InputDecoration(
-                    labelText: 'Note d\'interaction',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    hintText: 'Décrivez votre interaction avec le prospect...',
-                  ),
-                  maxLines: 4,
-                ),
-              ],
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _handleSave,
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _nomController,
+                    decoration: InputDecoration(
+                      labelText: 'Nom',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    widget.prospect != null ? 'Mettre à jour' : 'Créer',
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _telephoneController,
+                    decoration: InputDecoration(
+                      labelText: 'Téléphone',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _adresseController,
+                    decoration: InputDecoration(
+                      labelText: 'Adresse',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedType,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedType = value ?? 'particulier';
+                      });
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Type',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    items: ['particulier', 'societe', 'organisation']
+                        .map(
+                          (type) =>
+                              DropdownMenuItem(value: type, child: Text(type)),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedStatus,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedStatus = value ?? 'nouveau';
+                      });
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Statut',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    items: [
+                      'nouveau',
+                      'interesse',
+                      'negociation',
+                      'converti',
+                      'perdu'
+                    ]
+                        .map(
+                          (status) => DropdownMenuItem(
+                              value: status, child: Text(status)),
+                        )
+                        .toList(),
+                  ),
+                  // Afficher les champs d'interaction uniquement à la création
+                  if (widget.prospect == null) ...[
+                    const SizedBox(height: 32),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Interaction initiale',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedInteractionType,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedInteractionType = value ?? 'appel';
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Type d\'interaction',
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      items: ['appel', 'email', 'reunion', 'message', 'autre']
+                          .map(
+                            (type) => DropdownMenuItem(
+                                value: type, child: Text(type)),
+                          )
+                          .toList(),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _interactionNoteController,
+                      decoration: InputDecoration(
+                        labelText: 'Note d\'interaction',
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        hintText:
+                            'Décrivez votre interaction avec le prospect...',
+                      ),
+                      maxLines: 4,
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: _handleSave,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[400],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        widget.prospect != null ? 'Mettre à jour' : 'Créer',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

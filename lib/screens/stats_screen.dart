@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/auth_provider.dart';
 import '../providers/stats_provider.dart';
+import '../utils/text_formatter.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({Key? key}) : super(key: key);
@@ -225,7 +226,7 @@ class _StatsScreenState extends State<StatsScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              status.toUpperCase(),
+              TextFormatter.formatStatus(status),
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
