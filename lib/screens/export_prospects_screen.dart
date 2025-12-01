@@ -50,6 +50,17 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
       final prospectProvider = context.read<ProspectProvider>();
       final excelService = ExcelService();
 
+      // Demander à l'utilisateur de choisir le répertoire
+      final selectedDirectory = await excelService.pickExportDirectory();
+
+      if (selectedDirectory == null) {
+        setState(() {
+          _errorMessage = 'Aucun répertoire sélectionné';
+          _isExporting = false;
+        });
+        return;
+      }
+
       List<Prospect> prospectsToExport = [];
 
       // Filtrer les prospects selon les critères sélectionnés
@@ -68,19 +79,21 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
       if (prospectsToExport.isEmpty) {
         setState(() {
           _errorMessage = 'Aucun prospect à exporter avec ces critères';
+          _isExporting = false;
         });
         return;
       }
 
-      // Exporter vers Excel
+      // Exporter vers Excel dans le répertoire sélectionné
       final filePath = await excelService.exportProspectsToExcel(
         prospectsToExport,
         fileName: _fileNameController.text,
+        directoryPath: selectedDirectory,
       );
 
       setState(() {
         _successMessage =
-            'Fichier créé avec succès:\n${_fileNameController.text}.xlsx\n\n$filePath';
+            'Fichier créé avec succès:\n${_fileNameController.text}.xlsx\n\nEmplacement:\n$filePath';
       });
     } catch (e) {
       setState(() {
