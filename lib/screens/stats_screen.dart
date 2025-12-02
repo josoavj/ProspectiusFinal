@@ -13,6 +13,8 @@ class StatsScreen extends StatefulWidget {
 }
 
 class _StatsScreenState extends State<StatsScreen> {
+  String? _selectedStatus;
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +44,26 @@ class _StatsScreenState extends State<StatsScreen> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
+                  // Bouton d'actualisation en haut
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _loadStats,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Actualiser'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
                   // Taux de conversion
                   if (statsProvider.conversionStats != null)
                     Card(
@@ -113,7 +135,7 @@ class _StatsScreenState extends State<StatsScreen> {
                       ),
                     ),
                   const SizedBox(height: 32),
-                  // Distribution par statut - Graphique en camembert
+                  // Distribution par statut - Graphique en barres
                   Text(
                     'Distribution par Statut',
                     style: Theme.of(context).textTheme.titleLarge,
@@ -130,29 +152,82 @@ class _StatsScreenState extends State<StatsScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
-                              height: 300,
-                              child: PieChart(
-                                PieChartData(
-                                  sections: _buildPieSections(statsProvider),
-                                  centerSpaceRadius: 50,
-                                  sectionsSpace: 2,
+                            // Graphique en barres avec layout amélioré
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Axe Y personnalisé à gauche
+                                SizedBox(
+                                  width: 50,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: _buildYAxisLabels(
+                                      statsProvider,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                // Graphique
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 300,
+                                    child: BarChart(
+                                      BarChartData(
+                                        barGroups:
+                                            _buildBarGroups(statsProvider),
+                                        borderData: FlBorderData(show: false),
+                                        gridData: FlGridData(
+                                          show: true,
+                                          drawHorizontalLine: true,
+                                          drawVerticalLine: false,
+                                        ),
+                                        titlesData: FlTitlesData(
+                                          topTitles: const AxisTitles(
+                                            sideTitles: SideTitles(
+                                              showTitles: false,
+                                            ),
+                                          ),
+                                          rightTitles: const AxisTitles(
+                                            sideTitles: SideTitles(
+                                              showTitles: false,
+                                            ),
+                                          ),
+                                          bottomTitles: AxisTitles(
+                                            sideTitles: SideTitles(
+                                              showTitles: true,
+                                              getTitlesWidget:
+                                                  _getTitlesForBarChart,
+                                              reservedSize: 40,
+                                            ),
+                                          ),
+                                          leftTitles: const AxisTitles(
+                                            sideTitles: SideTitles(
+                                              showTitles: false,
+                                            ),
+                                          ),
+                                        ),
+                                        maxY:
+                                            _getMaxYForBarChart(statsProvider),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 24),
-                            // Légende
-                            Column(
-                              children: statsProvider.prospectStats
-                                  .map(
-                                    (stat) => _buildLegendItem(
-                                      context,
-                                      stat.status,
-                                      stat.count,
-                                    ),
-                                  )
-                                  .toList(),
+                            // Détails cliquables
+                            Text(
+                              'Détails par statut',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 12),
+                            _buildSelectableStatusDetails(
+                              statsProvider,
                             ),
                           ],
                         ),
@@ -209,10 +284,6 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _loadStats,
-        child: const Icon(Icons.refresh),
       ),
     );
   }
@@ -324,39 +395,24 @@ class _StatsScreenState extends State<StatsScreen> {
     return total - convertedCount - lostCount;
   }
 
-  List<PieChartSectionData> _buildPieSections(StatsProvider statsProvider) {
-    final colors = {
-      'nouveau': Colors.blue,
-      'interesse': Colors.amber,
-      'negociation': Colors.orange,
-      'converti': Colors.green,
-      'perdu': Colors.red,
-    };
+  List<Widget> _buildYAxisLabels(StatsProvider statsProvider) {
+    final maxY = _getMaxYForBarChart(statsProvider);
+    final step = (maxY / 5).ceil();
 
-    final total = statsProvider.prospectStats.fold<int>(
-      0,
-      (sum, stat) => sum + stat.count,
-    );
-
-    return statsProvider.prospectStats.map((stat) {
-      final percentage = total > 0 ? (stat.count / total) * 100 : 0.0;
-      final color = colors[stat.status] ?? Colors.grey;
-
-      return PieChartSectionData(
-        color: color,
-        value: stat.count.toDouble(),
-        title: '${percentage.toStringAsFixed(0)}%',
-        radius: 100,
-        titleStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+    return List.generate(6, (index) {
+      final value = step * (5 - index);
+      return Text(
+        value.toStringAsFixed(0),
+        style: const TextStyle(
+          fontSize: 12,
+          color: Colors.grey,
+          fontWeight: FontWeight.w500,
         ),
       );
-    }).toList();
+    });
   }
 
-  Widget _buildLegendItem(BuildContext context, String status, int count) {
+  List<BarChartGroupData> _buildBarGroups(StatsProvider statsProvider) {
     final colors = {
       'nouveau': Colors.blue,
       'interesse': Colors.amber,
@@ -365,33 +421,165 @@ class _StatsScreenState extends State<StatsScreen> {
       'perdu': Colors.red,
     };
 
-    final color = colors[status] ?? Colors.grey;
+    return List.generate(
+      statsProvider.prospectStats.length,
+      (index) {
+        final stat = statsProvider.prospectStats[index];
+        final color = colors[stat.status] ?? Colors.grey;
+        final isSelected = _selectedStatus == stat.status;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Container(
-            width: 14,
-            height: 14,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        return BarChartGroupData(
+          x: index,
+          barRods: [
+            BarChartRodData(
+              toY: stat.count.toDouble(),
+              color: isSelected ? color.withOpacity(1.0) : color,
+              width: 30,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(8),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _getTitlesForBarChart(double value, TitleMeta meta) {
+    const style = TextStyle(
+      color: Colors.black54,
+      fontWeight: FontWeight.bold,
+      fontSize: 12,
+    );
+
+    final provider = Provider.of<StatsProvider>(context, listen: false);
+    final index = value.toInt();
+
+    if (index >= 0 && index < provider.prospectStats.length) {
+      final stat = provider.prospectStats[index];
+      return SideTitleWidget(
+        axisSide: meta.axisSide,
+        child: Text(
+          TextFormatter.formatStatus(stat.status),
+          style: style,
+        ),
+      );
+    }
+
+    return const Text('');
+  }
+
+  double _getMaxYForBarChart(StatsProvider statsProvider) {
+    if (statsProvider.prospectStats.isEmpty) return 10;
+    final max = statsProvider.prospectStats
+        .map((stat) => stat.count)
+        .reduce((a, b) => a > b ? a : b);
+    return (max * 1.2).toDouble();
+  }
+
+  Widget _buildSelectableStatusDetails(StatsProvider statsProvider) {
+    final colors = {
+      'nouveau': Colors.blue,
+      'interesse': Colors.amber,
+      'negociation': Colors.orange,
+      'converti': Colors.green,
+      'perdu': Colors.red,
+    };
+
+    final total = statsProvider.prospectStats
+        .fold<int>(0, (sum, stat) => sum + stat.count);
+
+    return Column(
+      children: statsProvider.prospectStats.map((stat) {
+        final color = colors[stat.status] ?? Colors.grey;
+        final percentage =
+            total > 0 ? ((stat.count / total) * 100).toStringAsFixed(1) : '0.0';
+        final isSelected = _selectedStatus == stat.status;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isSelected ? color : Colors.grey[300]!,
+              width: isSelected ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(8),
+            color: isSelected ? color.withOpacity(0.05) : Colors.transparent,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              TextFormatter.formatStatus(status),
-              style: const TextStyle(fontWeight: FontWeight.w500),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedStatus =
+                      _selectedStatus == stat.status ? null : stat.status;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            TextFormatter.formatStatus(stat.status),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: color,
+                                ),
+                          ),
+                          if (isSelected)
+                            Text(
+                              'Pourcentage : $percentage%',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: color),
+                      ),
+                      child: Text(
+                        stat.count.toString(),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-          Text(
-            count.toString(),
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 }
