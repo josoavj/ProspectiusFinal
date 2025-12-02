@@ -21,7 +21,6 @@ class ExcelService {
 
       // En-têtes
       final headers = [
-        'ID',
         'Nom',
         'Prénom',
         'Email',
@@ -39,6 +38,8 @@ class ExcelService {
           ..value = headers[i]
           ..cellStyle = CellStyle(
             bold: true,
+            backgroundColorHex: '4472C4',
+            fontColorHex: 'FFFFFF',
           );
       }
 
@@ -46,7 +47,6 @@ class ExcelService {
       for (int row = 0; row < prospects.length; row++) {
         final prospect = prospects[row];
         final cells = [
-          prospect.id.toString(),
           prospect.nom,
           prospect.prenom,
           prospect.email,
@@ -64,10 +64,17 @@ class ExcelService {
             rowIndex: row + 1,
           ));
           cell.value = cells[col];
-        }
-      }
 
-      // Créer l'onglet de statistiques
+          // Ajouter la couleur de background selon le statut (colonne 6 = statut)
+          if (col == 6) {
+            cell.cellStyle = CellStyle(
+              backgroundColorHex: _getStatusColor(prospect.status),
+              fontColorHex: 'FFFFFF',
+              bold: true,
+            );
+          }
+        }
+      } // Créer l'onglet de statistiques
       final statsSheet = excel['Statistiques'];
 
       // Ajouter les statistiques
@@ -316,6 +323,24 @@ class ExcelService {
       'Décembre'
     ];
     return '${months[date.month - 1]} ${date.year}';
+  }
+
+  /// Retourne la couleur hexadécimale selon le statut
+  String _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'nouveau':
+        return '4472C4'; // Bleu
+      case 'interesse':
+        return 'FFC000'; // Orange
+      case 'negociation':
+        return 'FF8C00'; // Orange foncé
+      case 'converti':
+        return '70AD47'; // Vert
+      case 'perdu':
+        return 'C5504B'; // Rouge
+      default:
+        return '808080'; // Gris
+    }
   }
 
   /// Ouvre un dialogue pour choisir le répertoire de sauvegarde
