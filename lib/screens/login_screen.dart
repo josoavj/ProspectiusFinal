@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'register_screen.dart';
+import 'splash_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -30,7 +31,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (success && mounted) {
-      Navigator.of(context).pushReplacementNamed('/prospects');
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const SplashScreen(),
+        ),
+      );
     }
   }
 
