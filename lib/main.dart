@@ -13,6 +13,7 @@ import 'screens/about_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/clients_screen.dart';
 import 'screens/configuration_screen.dart';
+import 'screens/exploration_screen.dart';
 import 'widgets/sidebar_navigation.dart';
 import 'services/mysql_service.dart';
 
@@ -151,16 +152,18 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return 'Prospects';
       case 1:
-        return 'Statistiques';
+        return 'Exploration';
       case 2:
-        return 'Clients';
+        return 'Statistiques';
       case 3:
-        return 'Exporter';
+        return 'Clients';
       case 4:
-        return 'À propos';
+        return 'Exporter';
       case 5:
-        return 'Profil';
+        return 'À propos';
       case 6:
+        return 'Profil';
+      case 7:
         return 'Paramètres';
       default:
         return 'Prospectius';
@@ -172,16 +175,18 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return const ProspectsScreen();
       case 1:
-        return const StatsScreen();
+        return const ExplorationScreen();
       case 2:
-        return const ClientsScreen();
+        return const StatsScreen();
       case 3:
-        return const ExportProspectsScreen();
+        return const ClientsScreen();
       case 4:
-        return const AboutScreen();
+        return const ExportProspectsScreen();
       case 5:
-        return const ProfileScreen();
+        return const AboutScreen();
       case 6:
+        return const ProfileScreen();
+      case 7:
         return const ConfigurationScreen();
       default:
         return const ProspectsScreen();
