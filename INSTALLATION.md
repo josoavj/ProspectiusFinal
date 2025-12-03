@@ -2,39 +2,127 @@
 
 Ce guide vous aidera à configurer et lancer Prospectius sur votre système.
 
-## Installation Rapide
+---
 
-### Linux
+## 🎯 Choisissez votre installation:
+
+### 👤 Utilisateurs Finaux
+Vous voulez simplement utiliser l'application sans modifications.
+
+### 👨‍💻 Développeurs
+Vous voulez modifier le code et compiler votre propre version.
+
+---
+
+## Installation Rapide (Utilisateurs Finaux)
+
+### Option 1: Exécutables Préconfigurés (Recommandé)
+
+**1. Téléchargez les fichiers:**
+- Rendez-vous sur la [page des releases](https://github.com/josoavj/ProspectiusFinal/releases/latest)
+- Téléchargez:
+  - `prospectius.exe` (Windows) ou `prospectius` (Linux)
+  - `Prospectius.sql`
+
+**2. Installez MariaDB:**
+
+**Linux (Debian/Ubuntu):**
 ```bash
+sudo apt update
+sudo apt install mariadb-server
+sudo systemctl start mariadb
+```
+
+**Linux (Fedora/RHEL):**
+```bash
+sudo dnf install mariadb-server
+sudo systemctl start mariadb
+```
+
+**Windows:**
+- Téléchargez depuis https://mariadb.org/download/
+- Installez avec les paramètres par défaut
+
+**3. Importez la base de données:**
+```bash
+mysql -u root -proot < Prospectius.sql
+```
+
+**4. Lancez l'application:**
+- **Windows:** Double-cliquez sur `prospectius.exe`
+- **Linux:** `./prospectius`
+
+### Option 2: Scripts d'Installation Automatiques
+
+Les scripts téléchargeront automatiquement l'exécutable et configureront la base de données.
+
+**Linux:**
+```bash
+git clone https://github.com/josoavj/ProspectiusFinal.git
+cd ProspectiusFinal
 bash scripts/install-linux.sh
 ```
 
-### macOS
-```bash
-bash scripts/install-macos.sh
-```
-
-### Windows
-Via PowerShell:
+**Windows (PowerShell):**
 ```powershell
+git clone https://github.com/josoavj/ProspectiusFinal.git
+cd ProspectiusFinal
 powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
 ```
 
-Via CMD:
+**Windows (CMD):**
 ```cmd
+git clone https://github.com/josoavj/ProspectiusFinal.git
+cd ProspectiusFinal
 scripts\install-windows.bat
-```
-
-### Installation Automatique (Toutes Plateformes)
-```bash
-bash scripts/setup.sh
 ```
 
 ---
 
-## Configuration Initiale
+## Installation pour Développeurs
 
-### 1. Démarrer MariaDB
+### Installation Complète (Toutes Plateformes)
+```bash
+bash scripts/setup.sh
+```
+
+Ce script détecte votre OS et lance l'installation appropriée.
+
+### Ou Manuellement
+
+**Linux:**
+```bash
+bash scripts/install-linux.sh
+```
+
+**macOS:**
+```bash
+bash scripts/install-macos.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
+```
+
+**Windows (CMD):**
+```cmd
+scripts\install-windows.bat
+```
+
+---
+
+## Configuration Initiale (Pour Développeurs)
+
+### 1. Cloner le projet
+
+```bash
+git clone https://github.com/josoavj/ProspectiusFinal.git
+cd ProspectiusFinal
+flutter pub get
+```
+
+### 2. Démarrer MariaDB
 
 **Linux (Debian/Ubuntu):**
 ```bash
@@ -56,19 +144,19 @@ brew services start mariadb
 - Via PowerShell (admin): `Start-Service MariaDB`
 - Via Homebrew: `brew services start mariadb`
 
-### 2. Importer la Base de Données
+### 3. Importer la Base de Données
 
-Téléchargez d'abord le script SQL:
+Téléchargez le script SQL:
 ```bash
-curl -o scripts/prospectius.sql https://raw.githubusercontent.com/josoavj/dbProspectius/master/scriptSQL/Prospectius.sql
+bash scripts/download-sql.sh
 ```
 
 Puis importez-le:
 ```bash
-mysql -u root -proot < scripts/prospectius.sql
+mysql -u root -proot < scripts/Prospectius.sql
 ```
 
-### 3. Lancer l'Application
+### 4. Lancer l'Application en Développement
 
 ```bash
 flutter run -d windows     # Windows
@@ -76,7 +164,7 @@ flutter run -d linux       # Linux
 flutter run                # macOS
 ```
 
-### 4. Première Connexion
+### 5. Première Connexion
 
 À la première exécution, configurez la connexion:
 
@@ -87,9 +175,10 @@ flutter run                # macOS
 - **Password:** root
 - **Database:** Prospectius
 
-**Connexion par défaut:**
-- **Utilisateur:** admin
-- **Mot de passe:** admin
+**Créer un compte:**
+- Cliquez sur "S'inscrire"
+- Remplissez le formulaire
+- Vous pourrez alors vous connecter
 
 ---
 
@@ -110,7 +199,7 @@ mysql -u root -proot -e "SELECT 1"
 mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('root');"
 ```
 
-### Flutter non trouvé
+### Flutter non trouvé (Développeurs uniquement)
 Assurez-vous que Flutter est installé et dans le PATH:
 ```bash
 flutter --version
@@ -118,8 +207,12 @@ which flutter  # Linux/macOS
 ```
 
 ### Script SQL non trouvé
-Téléchargez le script depuis le dépôt dbProspectius:
-https://github.com/josoavj/dbProspectius/tree/master/scriptSQL
+Téléchargez le script depuis la release ou le dépôt:
+```bash
+bash scripts/download-sql.sh
+```
+
+Ou directement depuis la [page des releases](https://github.com/josoavj/ProspectiusFinal/releases/latest)
 
 ---
 
@@ -135,7 +228,7 @@ https://github.com/josoavj/dbProspectius/tree/master/scriptSQL
 
 ---
 
-## Configuration Avancée
+## Configuration Avancée (Développeurs)
 
 ### Changer les Paramètres MySQL
 
@@ -147,35 +240,27 @@ Les paramètres par défaut sont:
 
 Pour changer, lancez l'application et modifiez dans la première page de configuration.
 
-### Désactiver MariaDB
-Les paramètres MySQL sont stockés localement (SharedPreferences) et ne peuvent pas être modifiés une fois la première connexion établie.
+### Les paramètres sont locaux
+Les paramètres MySQL sont stockés localement (SharedPreferences) et peuvent être modifiés une seule fois à la première connexion.
 
-Pour réinitialiser:
+Pour réinitialiser les paramètres:
 ```bash
-# Linux/macOS - supprimer la config (dans l'appli: supprimer le dossier config)
-# Windows - supprimer le dossier %APPDATA%\Prospectius (si existant)
+# Linux/macOS
+rm -rf ~/.local/share/prospectius  # ou le dossier de config approprié
+
+# Windows
+# Supprimez le dossier %APPDATA%\prospectius (si existant)
 ```
-
----
-
-## Prochaines Étapes
-
-Après l'installation réussie:
-
-1. **Lancer l'app:** `flutter run`
-2. **Se connecter:** admin/admin
-3. **Explorer:** Accédez à l'interface Prospects
-4. **Importer des données:** Via le formulaire d'ajout de prospect
-5. **Consulter les stats:** Allez à l'onglet Statistiques
 
 ---
 
 ## Support
 
 Pour plus d'informations:
-- **Flutter:** https://flutter.dev
-- **MariaDB:** https://mariadb.org
-- **Repository:** https://github.com/josoavj/dbProspectius
+- **Documentation Flutter:** https://flutter.dev
+- **Documentation MariaDB:** https://mariadb.org
+- **Repository GitHub:** https://github.com/josoavj/ProspectiusFinal
+- **Releases:** https://github.com/josoavj/ProspectiusFinal/releases
 
 ---
 
