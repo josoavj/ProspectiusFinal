@@ -16,9 +16,14 @@ import 'screens/configuration_screen.dart';
 import 'screens/exploration_screen.dart';
 import 'widgets/sidebar_navigation.dart';
 import 'services/mysql_service.dart';
+import 'services/logging_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialiser le service de logging
+  await LoggingService().initialize();
+
   runApp(const MyApp());
 }
 
