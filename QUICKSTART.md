@@ -2,9 +2,21 @@
 
 Bienvenue dans **Prospectius**, une application CRM moderne pour Windows et Linux.
 
-## ⚡ Installation Rapide
+## 🎯 Choisissez votre approche:
+
+### 👤 Pour les Utilisateurs Finaux (Installation Rapide)
+Vous voulez simplement utiliser l'application sans modifications.
+
+### 👨‍💻 Pour les Développeurs (Développement & Modifications)
+Vous voulez modifier le code et compiler votre propre version.
+
+---
+
+## ⚡ Installation Rapide (Utilisateurs Finaux)
 
 ### Option 1: Depuis les Exécutables Compilés (Recommandé) ⭐
+
+**La façon la plus simple et la plus rapide!**
 
 **1. Téléchargez les fichiers:**
 - Rendez-vous sur la [page des releases](https://github.com/josoavj/ProspectiusFinal/releases/latest)
@@ -31,7 +43,9 @@ mysql -u root -proot < Prospectius.sql
 - **Windows:** Double-cliquez sur `prospectius.exe`
 - **Linux:** `./prospectius`
 
-### Option 2: Depuis les Scripts d'Installation
+### Option 2: Depuis les Scripts d'Installation Automatiques
+
+Les scripts téléchargeront automatiquement les fichiers nécessaires.
 
 **Sur Linux:**
 ```bash
@@ -47,7 +61,66 @@ cd ProspectiusFinal
 powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
 ```
 
-Les scripts téléchargeront automatiquement les fichiers et configureront la base de données.
+---
+
+## 🛠️ Installation pour Développeurs (Compilation depuis les sources)
+
+Pour modifier le code et compiler votre propre version.
+
+### Prérequis
+- **Flutter 3.16.0+**
+- **Dart 3.0.0+**
+- **MariaDB 10.3+** ou **MySQL 5.7+**
+- **Git**
+
+### Étapes d'Installation
+
+**1. Cloner le projet:**
+```bash
+git clone https://github.com/josoavj/ProspectiusFinal.git
+cd ProspectiusFinal
+```
+
+**2. Installer les dépendances Flutter:**
+```bash
+flutter pub get
+```
+
+**3. Installer MariaDB et importer la base de données:**
+```bash
+# Télécharger le script SQL
+bash scripts/download-sql.sh
+
+# Importer la base de données
+mysql -u root -proot < scripts/Prospectius.sql
+```
+
+**4. Lancer l'application en développement:**
+```bash
+# Linux
+flutter run -d linux
+
+# Windows
+flutter run -d windows
+
+# macOS
+flutter run -d macos
+```
+
+**5. Compiler pour la production:**
+```bash
+# Windows (exécutable standalone)
+flutter build windows --release
+# Le résultat se trouve dans: build/windows/x64/runner/Release/prospectius.exe
+
+# Linux (exécutable standalone)
+flutter build linux --release
+# Le résultat se trouve dans: build/linux/x64/release/bundle/prospectius
+
+# macOS (application bundle)
+flutter build macos --release
+# Le résultat se trouve dans: build/macos/Build/Products/Release/Prospectius.app
+```
 
 ---
 
@@ -76,37 +149,28 @@ Database: Prospectius
 
 ## ❓ Besoin d'Aide?
 
-### Pour les Développeurs (Construction depuis les sources)
+### Pour les Utilisateurs
+- Consultez la [documentation](./docs)
+- Exécutez `bash scripts/validate.sh` pour un diagnostic (si vous avez cloné le repo)
+- Vérifiez que MariaDB est bien installé et en cours d'exécution
+- Assurez-vous que le port 3306 est disponible
 
-Si vous voulez compiler depuis le code source:
+### Pour les Développeurs
+Vous avez modifié le code et voulez tester vos changements?
 
-```bash
-# Cloner le projet
-git clone https://github.com/josoavj/ProspectiusFinal.git
-cd ProspectiusFinal
-
-# Installer les dépendances
-flutter pub get
-
-# Compiler pour votre plateforme
-flutter build windows   # Windows
-flutter build linux     # Linux
-flutter build macos     # macOS
-```
-
-### Validation de l'Installation
+**Validation de l'Installation:**
 ```bash
 bash scripts/validate.sh
 ```
 
 Cela affiche un diagnostic complet du système.
 
-### Nettoyage et Réinitialisation
+**Nettoyage et Réinitialisation:**
 ```bash
 bash scripts/clean.sh
 ```
 
-Nettoie les caches et réinstalle les dépendances (pour développeurs).
+Nettoie les caches et réinstalle les dépendances.
 
 ### Documentation Complète
 
