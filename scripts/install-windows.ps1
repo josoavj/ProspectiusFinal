@@ -153,9 +153,9 @@ Write-Host "   Utilisateur: root" -ForegroundColor Cyan
 Write-Host "   Mot de passe: root" -ForegroundColor Cyan
 Write-Host "   Base de données: Prospectius" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "3. Connectez-vous avec les identifiants par défaut:" -ForegroundColor Yellow
-Write-Host "   Utilisateur: admin" -ForegroundColor Cyan
-Write-Host "   Mot de passe: admin" -ForegroundColor Cyan
+Write-Host "3. Créez votre compte:" -ForegroundColor Yellow
+Write-Host "   Cliquez sur 'S'inscrire' pour créer un nouveau compte" -ForegroundColor Cyan
+Write-Host "   Remplissez le formulaire avec vos informations" -ForegroundColor Cyan
 Write-Host ""
 
 Read-Host "Appuyez sur Entrée pour quitter"
