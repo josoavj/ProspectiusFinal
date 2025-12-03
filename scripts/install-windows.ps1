@@ -4,9 +4,9 @@
     Script d'installation de Prospectius pour Windows (PowerShell)
 .DESCRIPTION
     Configure l'environnement complet pour Prospectius:
+    - Télécharge prospectius.exe et Prospectius.sql depuis la latest release GitHub
     - Vérifie MariaDB/MySQL
     - Importe la schéma de base de données
-    - Installe les dépendances Flutter
 .AUTHOR
     Prospectius Team
 #>
@@ -16,6 +16,52 @@ $ErrorActionPreference = "Stop"
 Write-Host "================================" -ForegroundColor Cyan
 Write-Host "Installation de Prospectius" -ForegroundColor Cyan
 Write-Host "================================" -ForegroundColor Cyan
+Write-Host ""
+
+# Télécharger les fichiers depuis la latest release GitHub
+Write-Host "Téléchargement des fichiers depuis GitHub..." -ForegroundColor Yellow
+
+try {
+    # Récupérer les informations de la latest release
+    $releaseUrl = "https://api.github.com/repos/josoavj/ProspectiusFinal/releases/latest"
+    $release = Invoke-WebRequest -Uri $releaseUrl -UseBasicParsing | ConvertFrom-Json
+    
+    # Créer le dossier de destination si nécessaire
+    $downloadDir = Join-Path $PSScriptRoot "temp_download"
+    if (-not (Test-Path $downloadDir)) {
+        New-Item -ItemType Directory -Path $downloadDir -Force | Out-Null
+    }
+    
+    # Télécharger prospectius.exe
+    $exeAsset = $release.assets | Where-Object { $_.name -eq "prospectius.exe" }
+    if ($exeAsset) {
+        $exePath = Join-Path $downloadDir "prospectius.exe"
+        Write-Host "  Téléchargement de prospectius.exe..." -ForegroundColor Cyan
+        Invoke-WebRequest -Uri $exeAsset.browser_download_url -OutFile $exePath -UseBasicParsing
+        Write-Host "  ✓ prospectius.exe téléchargé" -ForegroundColor Green
+    } else {
+        Write-Host "  ⚠ prospectius.exe non trouvé dans la release" -ForegroundColor Yellow
+    }
+    
+    # Télécharger Prospectius.sql
+    $sqlAsset = $release.assets | Where-Object { $_.name -eq "Prospectius.sql" }
+    if ($sqlAsset) {
+        $sqlPath = Join-Path $downloadDir "Prospectius.sql"
+        Write-Host "  Téléchargement de Prospectius.sql..." -ForegroundColor Cyan
+        Invoke-WebRequest -Uri $sqlAsset.browser_download_url -OutFile $sqlPath -UseBasicParsing
+        Write-Host "  ✓ Prospectius.sql téléchargé" -ForegroundColor Green
+    } else {
+        Write-Host "  ⚠ Prospectius.sql non trouvé dans la release" -ForegroundColor Yellow
+    }
+    
+    Write-Host "✓ Fichiers téléchargés avec succès" -ForegroundColor Green
+}
+catch {
+    Write-Host "✗ Erreur lors du téléchargement: $_" -ForegroundColor Red
+    Read-Host "Appuyez sur Entrée pour quitter"
+    exit 1
+}
+
 Write-Host ""
 
 # Vérifier MariaDB/MySQL
@@ -41,38 +87,15 @@ if (-not $mysqlProcess) {
 Write-Host "✓ MariaDB détecté" -ForegroundColor Green
 Write-Host ""
 
-# Vérifier Flutter
-Write-Host "Vérification de Flutter..." -ForegroundColor Yellow
-
-$flutter = Get-Command flutter -ErrorAction SilentlyContinue
-if (-not $flutter) {
-    Write-Host ""
-    Write-Host "⚠ Attention: Flutter n'est pas installé" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Téléchargez et installez Flutter:" -ForegroundColor Yellow
-    Write-Host "  https://flutter.dev/docs/get-started/install/windows" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Assurez-vous d'ajouter Flutter au PATH" -ForegroundColor Yellow
-    Write-Host ""
-    Read-Host "Appuyez sur Entrée pour quitter"
-    exit 1
-}
-
-Write-Host "✓ Flutter détecté ($(flutter --version))" -ForegroundColor Green
-Write-Host ""
-
-# Vérifier le script SQL
+# Vérifier le script SQL téléchargé
 Write-Host "Configuration de la base de données..." -ForegroundColor Yellow
 
-$sqlScript = "scripts\prospectius.sql"
+$sqlScript = Join-Path $downloadDir "Prospectius.sql"
 if (-not (Test-Path $sqlScript)) {
     Write-Host ""
-    Write-Host "⚠ Attention: Script SQL non trouvé: $sqlScript" -ForegroundColor Red
+    Write-Host "⚠ Attention: Script SQL n'a pas pu être téléchargé: $sqlScript" -ForegroundColor Red
     Write-Host ""
-    Write-Host "Téléchargez le script depuis:" -ForegroundColor Yellow
-    Write-Host "  https://raw.githubusercontent.com/josoavj/dbProspectius/master/scriptSQL/Prospectius.sql" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Et placez-le dans: $sqlScript" -ForegroundColor Yellow
+    Write-Host "Vérifiez votre connexion Internet et réessayez" -ForegroundColor Yellow
     Write-Host ""
     Read-Host "Appuyez sur Entrée pour quitter"
     exit 1
@@ -109,26 +132,19 @@ catch {
 
 Write-Host ""
 
-# Récupérer les dépendances Flutter
-Write-Host "Récupération des dépendances Flutter..." -ForegroundColor Yellow
-
-try {
-    flutter pub get
-    Write-Host "✓ Dépendances installées" -ForegroundColor Green
-}
-catch {
-    Write-Host "⚠ Attention lors de la récupération des dépendances: $_" -ForegroundColor Yellow
-}
-
-Write-Host ""
+# Fichiers téléchargés
 Write-Host "================================" -ForegroundColor Green
 Write-Host "✓ Installation terminée!" -ForegroundColor Green
 Write-Host "================================" -ForegroundColor Green
 Write-Host ""
+Write-Host "Fichiers téléchargés:" -ForegroundColor Cyan
+Write-Host "  Exécutable: $exePath" -ForegroundColor Yellow
+Write-Host "  Dossier de téléchargement: $downloadDir" -ForegroundColor Yellow
+Write-Host ""
 Write-Host "Prochaines étapes:" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "1. Lancer l'application:" -ForegroundColor Yellow
-Write-Host "   flutter run -d windows" -ForegroundColor Cyan
+Write-Host "1. Lancer l'application en double-cliquant sur:" -ForegroundColor Yellow
+Write-Host "   $exePath" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "2. À la première exécution, configurez la base de données:" -ForegroundColor Yellow
 Write-Host "   Host: localhost" -ForegroundColor Cyan
@@ -137,9 +153,9 @@ Write-Host "   Utilisateur: root" -ForegroundColor Cyan
 Write-Host "   Mot de passe: root" -ForegroundColor Cyan
 Write-Host "   Base de données: Prospectius" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "3. Connectez-vous avec les identifiants par défaut:" -ForegroundColor Yellow
-Write-Host "   Utilisateur: admin" -ForegroundColor Cyan
-Write-Host "   Mot de passe: admin" -ForegroundColor Cyan
+Write-Host "3. Créez votre compte:" -ForegroundColor Yellow
+Write-Host "   Cliquez sur 'S'inscrire' pour créer un nouveau compte" -ForegroundColor Cyan
+Write-Host "   Remplissez le formulaire avec vos informations" -ForegroundColor Cyan
 Write-Host ""
 
 Read-Host "Appuyez sur Entrée pour quitter"

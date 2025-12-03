@@ -34,7 +34,38 @@
 
 ## ⚡ Installation Rapide
 
-### Toutes les Plateformes
+### 👤 Pour les Utilisateurs Finaux
+
+**Option 1: Exécutables Préconfigurés (Recommandé)**
+
+1. Téléchargez les fichiers depuis la [page des releases](https://github.com/josoavj/ProspectiusFinal/releases/latest)
+   - `prospectius.exe` (Windows) ou `prospectius` (Linux)
+   - `Prospectius.sql`
+
+2. Installez MariaDB:
+   - Windows: https://mariadb.org/download/
+   - Linux: `sudo apt install mariadb-server`
+
+3. Importez la base de données:
+   ```bash
+   mysql -u root -proot < Prospectius.sql
+   ```
+
+4. Lancez l'application:
+   - Windows: Double-cliquez sur `prospectius.exe`
+   - Linux: `./prospectius`
+
+**Option 2: Scripts d'Installation Automatiques**
+
+```bash
+# Linux
+bash scripts/install-linux.sh
+
+# Windows (PowerShell)
+powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
+```
+
+### 👨‍💻 Pour les Développeurs (Développement & Modifications)
 
 ```bash
 bash scripts/setup.sh
@@ -42,7 +73,7 @@ bash scripts/setup.sh
 
 Ce script détecte votre OS et lance l'installation appropriée.
 
-### Ou Manuellement
+**Ou manuellement:**
 
 **Linux:**
 ```bash
@@ -61,21 +92,48 @@ powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
 
 ## 📋 Prérequis
 
-### Windows
+### Pour les Utilisateurs Finaux
+
+- **MariaDB 10.3+** ou **MySQL 5.7+**
+- **Windows 8.1+** (64-bit) OU **Linux Ubuntu 18.04+** (64-bit)
+
+### Pour les Développeurs
+
+**Windows**
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) (version 3.16.0 ou supérieure)
+- [Dart 3.0.0+](https://dart.dev/get-dart) (inclus dans Flutter)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) avec les outils de développement C++
 - [MariaDB](https://mariadb.org/download/) ou [MySQL](https://dev.mysql.com/downloads/mysql/)
 - Git
 
-### Linux (Ubuntu/Debian)
+**Linux (Ubuntu/Debian)**
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) (version 3.16.0 ou supérieure)
+- [Dart 3.0.0+](https://dart.dev/get-dart) (inclus dans Flutter)
 - Build essentials: `sudo apt install build-essential cmake git libgtk-3-dev pkg-config libssl-dev`
 - [MariaDB Server](https://mariadb.org/download/#mariadb_repositories): `sudo apt install mariadb-server`
 - Git
 
-## 🔧 Installation et Configuration
+**macOS**
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (version 3.16.0 ou supérieure)
+- [Dart 3.0.0+](https://dart.dev/get-dart) (inclus dans Flutter)
+- [Xcode](https://apps.apple.com/us/app/xcode/id497799835)
+- [MariaDB](https://mariadb.org/download/) ou MySQL
+- Git
 
-### 1. Installation de MariaDB
+## 🔧 Installation et Configuration (Pour Développeurs)
+
+### 1. Cloner et configurer le projet
+
+```bash
+git clone https://github.com/josoavj/ProspectiusFinal.git
+cd ProspectiusFinal
+
+flutter pub get
+flutter config --enable-windows-desktop  # Pour Windows
+flutter config --enable-linux-desktop    # Pour Linux
+```
+
+### 2. Installation de MariaDB
 
 #### Ubuntu/Debian
 ```bash
@@ -93,14 +151,14 @@ sudo systemctl enable mariadb
 2. Installer avec les paramètres par défaut
 3. MariaDB sera accessible sur `localhost:3306`
 
-### 2. Créer la base de données
+### 3. Créer la base de données
 
 ```bash
-# Cloner le repo du backend
-git clone https://github.com/josoavj/dbProspectius.git
+# Télécharger le schéma
+bash scripts/download-sql.sh
 
-# Importer le schéma
-mysql -u root -p < dbProspectius/scriptSQL/Prospectius.sql
+# Importer la base
+mysql -u root -proot < scripts/Prospectius.sql
 ```
 
 Ou manuellement:
@@ -109,17 +167,6 @@ mysql -u root -p
 # Dans le client MySQL:
 SOURCE /chemin/vers/Prospectius.sql;
 EXIT;
-```
-
-### 3. Cloner et configurer Prospectius
-
-```bash
-git clone <repository-url>
-cd prospectius
-
-flutter pub get
-flutter config --enable-windows-desktop  # Pour Windows
-flutter config --enable-linux-desktop    # Pour Linux
 ```
 
 ## 🚀 Lancement de l'application
