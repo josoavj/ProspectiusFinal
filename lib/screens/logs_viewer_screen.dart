@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../services/export_logging_service.dart';
 import '../services/logging_service.dart';
 import '../utils/app_logger.dart';
 
@@ -13,7 +12,6 @@ class LogsViewerScreen extends StatefulWidget {
 
 class _LogsViewerScreenState extends State<LogsViewerScreen> {
   late final LoggingService _loggingService;
-  late final ExportLoggingService _exportLoggingService;
   String _selectedTab = 'all'; // 'all', 'exports', 'errors'
   String _logs = '';
   bool _isLoading = false;
@@ -22,7 +20,6 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
   void initState() {
     super.initState();
     _loggingService = LoggingService();
-    _exportLoggingService = ExportLoggingService();
     _loadLogs();
   }
 
@@ -37,9 +34,9 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
       if (_selectedTab == 'all') {
         logs = await _loadAllLogs();
       } else if (_selectedTab == 'exports') {
-        logs = await _exportLoggingService.getExportLogsSummary();
+        logs = await _loggingService.getExportLogsSummary();
       } else if (_selectedTab == 'errors') {
-        final errors = await _exportLoggingService.findExportErrors();
+        final errors = await _loggingService.findExportErrors();
         logs = errors.isEmpty
             ? 'Aucune erreur d\'export trouvée'
             : errors.join('\n\n');

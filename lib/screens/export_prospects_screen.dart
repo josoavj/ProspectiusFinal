@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../providers/prospect_provider.dart';
 import '../services/excel_service.dart';
-import '../services/export_logging_service.dart';
+import '../services/logging_service.dart';
 import '../utils/text_formatter.dart';
 
 class ExportProspectsScreen extends StatefulWidget {
@@ -47,7 +47,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
       _errorMessage = null;
     });
 
-    final exportLogging = ExportLoggingService();
+    final loggingService = LoggingService();
     final startTime = DateTime.now();
 
     try {
@@ -57,7 +57,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
       // Demander à l'utilisateur de choisir le répertoire
       final selectedDirectory = await excelService.pickExportDirectory();
 
-      exportLogging.logDirectorySelection(
+      await loggingService.logDirectorySelection(
         selectedDirectory,
         selectedDirectory != null,
         selectedDirectory == null ? 'Utilisateur a annulé la sélection' : null,
@@ -94,7 +94,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
         return;
       }
 
-      exportLogging.logExportStart(
+      await loggingService.logExportStart(
         _fileNameController.text,
         selectedDirectory,
         prospectsToExport.length,
@@ -108,7 +108,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
       );
 
       final duration = DateTime.now().difference(startTime);
-      exportLogging.logExportSuccess(
+      await loggingService.logExportSuccess(
         filePath,
         prospectsToExport.length,
         duration,
@@ -120,7 +120,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
       });
     } catch (e) {
       final stage = 'export_prospects';
-      exportLogging.logExportError(stage, e.toString(), null);
+      await loggingService.logExportError(stage, e.toString(), null);
       setState(() {
         _errorMessage = 'Erreur lors de l\'export: $e';
       });
