@@ -75,6 +75,17 @@ class MySQLService {
   bool get isConnected => _isConnected;
   MySQLConfig get config => _config;
 
+  /// Obtient la connexion MySQL (usage interne pour transactions)
+  dynamic getConnection() {
+    if (_connection == null || !_isConnected) {
+      throw ConnectionException(
+        message: 'MySQL non connecté',
+        code: 'NOT_CONNECTED',
+      );
+    }
+    return _connection;
+  }
+
   Future<void> loadConfig() async {
     try {
       final prefs = await SharedPreferences.getInstance();
