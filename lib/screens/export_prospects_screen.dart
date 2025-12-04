@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../providers/prospect_provider.dart';
 import '../services/excel_service.dart';
+import '../services/export_logging_service.dart';
 import '../utils/text_formatter.dart';
 
 class ExportProspectsScreen extends StatefulWidget {
@@ -46,12 +47,21 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
       _errorMessage = null;
     });
 
+    final exportLogging = ExportLoggingService();
+    final startTime = DateTime.now();
+
     try {
       final prospectProvider = context.read<ProspectProvider>();
       final excelService = ExcelService();
 
       // Demander à l'utilisateur de choisir le répertoire
       final selectedDirectory = await excelService.pickExportDirectory();
+
+      exportLogging.logDirectorySelection(
+        selectedDirectory,
+        selectedDirectory != null,
+        selectedDirectory == null ? 'Utilisateur a annulé la sélection' : null,
+      );
 
       if (selectedDirectory == null) {
         setState(() {
@@ -84,6 +94,12 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
         return;
       }
 
+      exportLogging.logExportStart(
+        _fileNameController.text,
+        selectedDirectory,
+        prospectsToExport.length,
+      );
+
       // Exporter vers Excel dans le répertoire sélectionné
       final filePath = await excelService.exportProspectsToExcel(
         prospectsToExport,
@@ -91,11 +107,20 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
         directoryPath: selectedDirectory,
       );
 
+      final duration = DateTime.now().difference(startTime);
+      exportLogging.logExportSuccess(
+        filePath,
+        prospectsToExport.length,
+        duration,
+      );
+
       setState(() {
         _successMessage =
             'Fichier créé avec succès:\n${_fileNameController.text}.xlsx\n\nEmplacement:\n$filePath';
       });
     } catch (e) {
+      final stage = 'export_prospects';
+      exportLogging.logExportError(stage, e.toString(), null);
       setState(() {
         _errorMessage = 'Erreur lors de l\'export: $e';
       });
