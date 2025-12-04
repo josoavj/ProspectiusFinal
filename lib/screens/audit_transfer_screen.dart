@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/audit_provider.dart';
-import '../utils/app_logger.dart';
 
 class AuditTransferScreen extends StatefulWidget {
   final int prospectId;
