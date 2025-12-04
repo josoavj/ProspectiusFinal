@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/stats.dart';
 import '../services/database_service.dart';
+import '../services/error_handling_service.dart';
+import '../utils/app_logger.dart';
 
 class StatsProvider extends ChangeNotifier {
   List<ProspectStats> _prospectStats = [];
@@ -21,9 +23,17 @@ class StatsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _prospectStats = await _databaseService.getProspectStats(userId);
-    } catch (e) {
+      _prospectStats = await ErrorHandlingService.executeWithTimeout(
+        () => _databaseService.getProspectStats(userId),
+        operationName: 'Chargement des statistiques',
+        timeout: ErrorHandlingService.defaultTimeout,
+      );
+    } on TimeoutException catch (e) {
+      _error = 'Timeout: ${e.message}';
+      AppLogger.error('Timeout lors du chargement des stats', null);
+    } catch (e, stackTrace) {
       _error = 'Erreur: $e';
+      AppLogger.error('Erreur lors du chargement des stats', e, stackTrace);
     }
     _isLoading = false;
     notifyListeners();
@@ -35,9 +45,19 @@ class StatsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _conversionStats = await _databaseService.getConversionStats(userId);
-    } catch (e) {
+      _conversionStats = await ErrorHandlingService.executeWithTimeout(
+        () => _databaseService.getConversionStats(userId),
+        operationName: 'Chargement des statistiques de conversion',
+        timeout: ErrorHandlingService.defaultTimeout,
+      );
+    } on TimeoutException catch (e) {
+      _error = 'Timeout: ${e.message}';
+      AppLogger.error(
+          'Timeout lors du chargement des stats de conversion', null);
+    } catch (e, stackTrace) {
       _error = 'Erreur: $e';
+      AppLogger.error(
+          'Erreur lors du chargement des stats de conversion', e, stackTrace);
     }
     _isLoading = false;
     notifyListeners();

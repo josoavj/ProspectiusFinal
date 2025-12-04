@@ -3,6 +3,7 @@ import '../models/account.dart';
 import '../services/database_service.dart';
 import '../services/mysql_service.dart';
 import '../services/storage_service.dart';
+import '../services/error_handling_service.dart';
 import '../utils/exception_handler.dart';
 import '../utils/app_logger.dart';
 
@@ -21,16 +22,26 @@ class AuthProvider extends ChangeNotifier {
   final MySQLService _mysqlService = MySQLService();
 
   Future<bool> configureDatabase(MySQLConfig config) async {
-    try {
-      _isLoading = true;
-      notifyListeners();
+    _isLoading = true;
+    notifyListeners();
 
-      await _mysqlService.connect(config);
+    try {
+      await ErrorHandlingService.executeWithTimeout(
+        () => _mysqlService.connect(config),
+        operationName: 'Configuration de la base de données',
+        timeout: ErrorHandlingService.defaultTimeout,
+      );
 
       _isLoading = false;
       notifyListeners();
       AppLogger.success('Base de données configurée');
       return true;
+    } on TimeoutException catch (e) {
+      _error = 'Timeout: ${e.message}';
+      AppLogger.error('Timeout lors de la connexion', null);
+      _isLoading = false;
+      notifyListeners();
+      return false;
     } on ConnectionException catch (e) {
       _error = e.message;
       AppLogger.error('Erreur de connexion: ${e.message}');
@@ -59,13 +70,23 @@ class AuthProvider extends ChangeNotifier {
         );
       }
 
-      _currentUser = await _databaseService.authenticate(username, password);
+      _currentUser = await ErrorHandlingService.executeWithTimeout(
+        () => _databaseService.authenticate(username, password),
+        operationName: 'Authentification',
+        timeout: ErrorHandlingService.shortTimeout,
+      );
       await _storageService.saveUserData(_currentUser!.username);
 
       _isLoading = false;
       notifyListeners();
       AppLogger.success('Connexion réussie pour ${_currentUser!.fullName}');
       return true;
+    } on TimeoutException catch (e) {
+      _error = 'Timeout: ${e.message}';
+      AppLogger.error('Timeout lors de l\'authentification', null);
+      _isLoading = false;
+      notifyListeners();
+      return false;
     } on AppException catch (e) {
       _error = e.message;
       AppLogger.warning('Erreur d\'authentification: ${e.message}');
