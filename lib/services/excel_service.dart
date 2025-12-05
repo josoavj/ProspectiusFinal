@@ -152,7 +152,7 @@ class ExcelService {
       ..value = 'Total prospects'
       ..cellStyle = CellStyle(bold: true);
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      ..value = prospects.length;
+      .value = prospects.length;
     row += 2;
 
     // Statistiques par statut
@@ -175,9 +175,9 @@ class ExcelService {
     ]) {
       if (statusMap.containsKey(status)) {
         sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
-          ..value = _formatStatus(status);
+          .value = _formatStatus(status);
         sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-          ..value = statusMap[status];
+          .value = statusMap[status];
         row += 1;
       }
     }
@@ -200,9 +200,9 @@ class ExcelService {
     final sortedMonths = monthMap.keys.toList()..sort();
     for (final month in sortedMonths) {
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
-        ..value = month;
+        .value = month;
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-        ..value = monthMap[month];
+        .value = monthMap[month];
       row += 1;
     }
 
@@ -221,9 +221,9 @@ class ExcelService {
 
     for (final entry in typeMap.entries) {
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
-        ..value = _formatType(entry.key);
+        .value = _formatType(entry.key);
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-        ..value = entry.value;
+        .value = entry.value;
       row += 1;
     }
 
@@ -244,7 +244,7 @@ class ExcelService {
       ..value = 'Taux de conversion'
       ..cellStyle = CellStyle(bold: true);
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      ..value = '${tauxConversion.toStringAsFixed(2)}%';
+      .value = '${tauxConversion.toStringAsFixed(2)}%';
     row += 1;
 
     // Taux de perte
@@ -256,7 +256,7 @@ class ExcelService {
       ..value = 'Taux de perte'
       ..cellStyle = CellStyle(bold: true);
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      ..value = '${tauxPerte.toStringAsFixed(2)}%';
+      .value = '${tauxPerte.toStringAsFixed(2)}%';
     row += 1;
 
     // Taux d'engagement (interessé + en négociation)
@@ -269,7 +269,7 @@ class ExcelService {
       ..value = 'Taux d\'engagement'
       ..cellStyle = CellStyle(bold: true);
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      ..value = '${tauxEngagement.toStringAsFixed(2)}%';
+      .value = '${tauxEngagement.toStringAsFixed(2)}%';
     row += 1;
 
     // Prospects en attente (non convertis et non perdus)
@@ -279,7 +279,7 @@ class ExcelService {
       ..value = 'Prospects en attente'
       ..cellStyle = CellStyle(bold: true);
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      ..value = enAttente;
+      .value = enAttente;
     row += 2;
 
     // Moyenne de prospects par mois
@@ -290,7 +290,7 @@ class ExcelService {
       ..value = 'Moyenne de prospects/mois'
       ..cellStyle = CellStyle(bold: true);
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      ..value = moyenneParMois.toStringAsFixed(2);
+      .value = moyenneParMois.toStringAsFixed(2);
     row += 1;
 
     // Prospect le plus récent
@@ -301,7 +301,7 @@ class ExcelService {
         ..value = 'Prospect le plus récent'
         ..cellStyle = CellStyle(bold: true);
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-        ..value = _formatMonth(plusRecent.creation);
+        .value = _formatMonth(plusRecent.creation);
       row += 1;
     }
 
@@ -313,7 +313,7 @@ class ExcelService {
         ..value = 'Prospect le plus ancien'
         ..cellStyle = CellStyle(bold: true);
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-        ..value = _formatMonth(plusAncien.creation);
+        .value = _formatMonth(plusAncien.creation);
       row += 1;
     }
   }
@@ -453,7 +453,7 @@ class ExcelService {
 
         // Fallback: essayer avec cmd.exe et vbscript
         try {
-          final vbScript = '''
+          const vbScript = '''
 Set shell = CreateObject("Shell.Application")
 Set folder = shell.BrowseForFolder(0, "Sélectionner le dossier de destination:", 0, 0)
 If Not folder Is Nothing Then
