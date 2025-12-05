@@ -66,7 +66,8 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
               prospect.creation
                   .isAfter(_startDate!.subtract(const Duration(days: 1)))) &&
           (_endDate == null ||
-              prospect.creation.isBefore(_endDate!.add(const Duration(days: 1))));
+              prospect.creation
+                  .isBefore(_endDate!.add(const Duration(days: 1))));
 
       return matchesSearch && matchesCategory && matchesDate;
     }).toList();
@@ -605,7 +606,7 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         border: Border.all(color: color),
         borderRadius: BorderRadius.circular(20),
       ),

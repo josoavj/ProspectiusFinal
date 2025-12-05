@@ -151,8 +151,9 @@ class ExcelService {
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
       ..value = 'Total prospects'
       ..cellStyle = CellStyle(bold: true);
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      .value = prospects.length;
+    sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+        .value = prospects.length;
     row += 2;
 
     // Statistiques par statut
@@ -174,10 +175,12 @@ class ExcelService {
       'perdu'
     ]) {
       if (statusMap.containsKey(status)) {
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
-          .value = _formatStatus(status);
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-          .value = statusMap[status];
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+            .value = _formatStatus(status);
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+            .value = statusMap[status];
         row += 1;
       }
     }
@@ -199,10 +202,12 @@ class ExcelService {
     // Trier par mois
     final sortedMonths = monthMap.keys.toList()..sort();
     for (final month in sortedMonths) {
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
-        .value = month;
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-        .value = monthMap[month];
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .value = month;
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+          .value = monthMap[month];
       row += 1;
     }
 
@@ -220,10 +225,12 @@ class ExcelService {
     }
 
     for (final entry in typeMap.entries) {
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
-        .value = _formatType(entry.key);
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-        .value = entry.value;
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
+          .value = _formatType(entry.key);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+          .value = entry.value;
       row += 1;
     }
 
@@ -243,8 +250,9 @@ class ExcelService {
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
       ..value = 'Taux de conversion'
       ..cellStyle = CellStyle(bold: true);
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      .value = '${tauxConversion.toStringAsFixed(2)}%';
+    sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+        .value = '${tauxConversion.toStringAsFixed(2)}%';
     row += 1;
 
     // Taux de perte
@@ -255,8 +263,9 @@ class ExcelService {
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
       ..value = 'Taux de perte'
       ..cellStyle = CellStyle(bold: true);
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      .value = '${tauxPerte.toStringAsFixed(2)}%';
+    sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+        .value = '${tauxPerte.toStringAsFixed(2)}%';
     row += 1;
 
     // Taux d'engagement (interessé + en négociation)
@@ -268,8 +277,9 @@ class ExcelService {
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
       ..value = 'Taux d\'engagement'
       ..cellStyle = CellStyle(bold: true);
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      .value = '${tauxEngagement.toStringAsFixed(2)}%';
+    sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+        .value = '${tauxEngagement.toStringAsFixed(2)}%';
     row += 1;
 
     // Prospects en attente (non convertis et non perdus)
@@ -278,8 +288,9 @@ class ExcelService {
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
       ..value = 'Prospects en attente'
       ..cellStyle = CellStyle(bold: true);
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      .value = enAttente;
+    sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+        .value = enAttente;
     row += 2;
 
     // Moyenne de prospects par mois
@@ -289,8 +300,9 @@ class ExcelService {
     sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
       ..value = 'Moyenne de prospects/mois'
       ..cellStyle = CellStyle(bold: true);
-    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-      .value = moyenneParMois.toStringAsFixed(2);
+    sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+        .value = moyenneParMois.toStringAsFixed(2);
     row += 1;
 
     // Prospect le plus récent
@@ -300,8 +312,9 @@ class ExcelService {
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
         ..value = 'Prospect le plus récent'
         ..cellStyle = CellStyle(bold: true);
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-        .value = _formatMonth(plusRecent.creation);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+          .value = _formatMonth(plusRecent.creation);
       row += 1;
     }
 
@@ -312,8 +325,9 @@ class ExcelService {
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
         ..value = 'Prospect le plus ancien'
         ..cellStyle = CellStyle(bold: true);
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
-        .value = _formatMonth(plusAncien.creation);
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row))
+          .value = _formatMonth(plusAncien.creation);
       row += 1;
     }
   }
@@ -431,12 +445,7 @@ class ExcelService {
             'powershell',
             [
               '-Command',
-              r'[System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null; '
-                  r'$folderDialog = New-Object System.Windows.Forms.FolderBrowserDialog; '
-                  r'$folderDialog.Description = "Sélectionner le dossier de destination"; '
-                  r'if ($folderDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { '
-                  r'$folderDialog.SelectedPath '
-                  r'}',
+              r'[System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null; $folderDialog = New-Object System.Windows.Forms.FolderBrowserDialog; $folderDialog.Description = "Sélectionner le dossier de destination"; if ($folderDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { $folderDialog.SelectedPath }',
             ],
           );
 
