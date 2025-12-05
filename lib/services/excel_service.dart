@@ -86,24 +86,22 @@ class ExcelService {
         // Utiliser le répertoire fourni par l'utilisateur
         var dir = Directory(directoryPath);
 
-        // Normaliser le chemin sur Windows (remplacer les / par \)
-        final normalizedPath = directoryPath.replaceAll('/', '\\');
-        dir = Directory(normalizedPath);
-
         // Créer le répertoire s'il n'existe pas
         // ignore: avoid_slow_async_io
         if (!await dir.exists()) {
-          AppLogger.info('Création du répertoire: $normalizedPath');
+          AppLogger.info('Création du répertoire: $directoryPath');
           try {
             await dir.create(recursive: true);
           } on FileSystemException catch (e) {
             AppLogger.error('Erreur lors de la création du répertoire', e);
             throw Exception(
-              'Impossible de créer le répertoire: $normalizedPath\nErreur: $e',
+              'Impossible de créer le répertoire: $directoryPath\nErreur: $e',
             );
           }
         }
-        savePath = '$normalizedPath\\$fileName.xlsx';
+        // Utiliser le séparateur de chemin approprié au système d'exploitation
+        final separator = Platform.isWindows ? '\\' : '/';
+        savePath = '$directoryPath$separator$fileName.xlsx';
       } else {
         // Utiliser le répertoire de documents par défaut
         final directory = await getApplicationDocumentsDirectory();
@@ -473,7 +471,8 @@ End If
 
           // Créer un fichier temporaire VB
           final tempDir = Directory.systemTemp;
-          final vbFile = File('${tempDir.path}\\select_folder.vbs');
+          final separator = Platform.isWindows ? '\\' : '/';
+          final vbFile = File('${tempDir.path}${separator}select_folder.vbs');
           await vbFile.writeAsString(vbScript);
 
           final result = await Process.run('cscript', [vbFile.path]);
