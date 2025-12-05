@@ -70,13 +70,13 @@ class MigrationService {
       }
 
       await _connection.query('''
-        ALTER TABLE prospects
+        ALTER TABLE Prospect
         ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL,
         ADD INDEX idx_deleted_at (deleted_at);
       ''');
 
       await recordMigration(migrationName);
-      AppLogger.success('Soft delete ajouté à la table prospects');
+      AppLogger.success('Soft delete ajouté à la table Prospect');
     } catch (e, stackTrace) {
       AppLogger.error('Erreur lors de l\'ajout du soft delete', e, stackTrace);
       rethrow;
@@ -95,7 +95,7 @@ class MigrationService {
       }
 
       await _connection.query('''
-        ALTER TABLE interactions
+        ALTER TABLE interaction
         ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL,
         ADD INDEX idx_deleted_at (deleted_at);
       ''');
@@ -202,7 +202,7 @@ class MigrationService {
       }
 
       await _connection.query('''
-        ALTER TABLE prospects
+        ALTER TABLE prospect
         ADD COLUMN created_by INT,
         ADD COLUMN updated_by INT,
         ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
