@@ -95,13 +95,13 @@ class MigrationService {
       }
 
       await _connection.query('''
-        ALTER TABLE interaction
+        ALTER TABLE Interaction
         ADD COLUMN deleted_at TIMESTAMP NULL DEFAULT NULL,
         ADD INDEX idx_deleted_at (deleted_at);
       ''');
 
       await recordMigration(migrationName);
-      AppLogger.success('Soft delete ajouté à la table interactions');
+      AppLogger.success('Soft delete ajouté à la table Interaction');
     } catch (e, stackTrace) {
       AppLogger.error('Erreur lors de l\'ajout du soft delete aux interactions',
           e, stackTrace);
@@ -172,7 +172,7 @@ class MigrationService {
           status VARCHAR(50) DEFAULT 'completed',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          FOREIGN KEY (prospect_id) REFERENCES prospects(id) ON DELETE CASCADE,
+          FOREIGN KEY (prospect_id) REFERENCES Prospect(id) ON DELETE CASCADE,
           FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE RESTRICT,
           FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE RESTRICT,
           INDEX idx_prospect_id (prospect_id),
@@ -202,7 +202,7 @@ class MigrationService {
       }
 
       await _connection.query('''
-        ALTER TABLE prospect
+        ALTER TABLE Prospect
         ADD COLUMN created_by INT,
         ADD COLUMN updated_by INT,
         ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -214,7 +214,7 @@ class MigrationService {
       ''');
 
       await recordMigration(migrationName);
-      AppLogger.success('Tracking columns ajoutées à la table prospects');
+      AppLogger.success('Tracking columns ajoutées à la table Prospect');
     } catch (e, stackTrace) {
       if (e.toString().contains('Duplicate column') ||
           e.toString().contains('already exists')) {

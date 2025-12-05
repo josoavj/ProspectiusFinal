@@ -215,7 +215,7 @@ class TransferService {
 
       // Si pas de transfert, récupérer le user_id du prospect
       final prospectResult = await _connection.query(
-        'SELECT user_id FROM prospects WHERE id = ?',
+        'SELECT user_id FROM Prospect WHERE id = ?',
         [prospectId],
       );
 
@@ -253,7 +253,7 @@ class TransferService {
       // Prospects actuellement possédés
       final ownedResult = await _connection.query(
         '''
-        SELECT COUNT(DISTINCT p.id) FROM prospects p
+        SELECT COUNT(DISTINCT p.id) FROM Prospect p
         LEFT JOIN transfer_history t ON p.id = t.prospect_id
         WHERE p.user_id = ? OR (
           SELECT MAX(transfer_date) FROM transfer_history
@@ -294,7 +294,7 @@ class TransferService {
           t.id, p.name as prospect_name, u1.name as from_user,
           u2.name as to_user, t.transfer_reason, t.transfer_date
         FROM transfer_history t
-        JOIN prospects p ON t.prospect_id = p.id
+        JOIN Prospect p ON t.prospect_id = p.id
         JOIN users u1 ON t.from_user_id = u1.id
         JOIN users u2 ON t.to_user_id = u2.id
         WHERE 1=1
