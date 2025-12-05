@@ -45,7 +45,7 @@ class LoggingService {
       log('Répertoire logs: ${_logsDirectory.path}');
       log('Plateforme: ${Platform.operatingSystem}');
     } catch (e) {
-      print('Erreur lors de l\'initialisation du logging: $e');
+      // Erreur lors de l'initialisation du logging, continuer sans logging
     }
   }
 
@@ -80,7 +80,7 @@ class LoggingService {
       // Écrire dans le fichier
       await _currentLogFile.writeAsString(logEntry, mode: FileMode.append);
     } catch (e) {
-      print('Erreur lors de l\'écriture du log: $e');
+      // Erreur lors de l'écriture du log, continuer sans interruption
     }
   }
 

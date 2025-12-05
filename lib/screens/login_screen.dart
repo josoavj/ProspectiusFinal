@@ -56,13 +56,17 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       AppLogger.error('Erreur vérification rate limit', e);
+      if (!mounted) return;
     }
 
+    // ignore: use_build_context_synchronously
     final authProvider = context.read<AuthProvider>();
 
     try {
       final success =
           await authProvider.login(username, _passwordController.text);
+
+      if (!mounted) return;
 
       if (success) {
         // Réinitialiser les compteurs après connexion réussie

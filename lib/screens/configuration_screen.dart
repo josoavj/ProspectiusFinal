@@ -68,16 +68,18 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
 
       if (success && mounted) {
         await _saveConfig();
-        setState(() {
-          _isConnecting = false;
-          _showEditMode = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Configuration mise à jour avec succès'),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        if (mounted) {
+          setState(() {
+            _isConnecting = false;
+            _showEditMode = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Configuration mise à jour avec succès'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       } else if (mounted) {
         setState(() {
           _error = authProvider.error ?? 'Erreur de connexion';

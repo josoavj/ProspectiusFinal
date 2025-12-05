@@ -109,12 +109,12 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
               onPressed: () async {
                 try {
                   await _loggingService.cleanOldLogs(daysToKeep: 0);
-                  if (mounted) {
-                    Navigator.pop(context);
-                    setState(() {
-                      _logs = 'Tous les logs ont été supprimés';
-                    });
-                  }
+                  if (!mounted) return;
+                  // ignore: use_build_context_synchronously
+                  Navigator.pop(context);
+                  setState(() {
+                    _logs = 'Tous les logs ont été supprimés';
+                  });
                 } catch (e) {
                   AppLogger.error('Erreur suppression logs', e);
                 }
@@ -131,6 +131,9 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
   void _exportLogsToFile() async {
     try {
       final logFiles = await _loggingService.getLogFiles();
+
+      if (!mounted) return;
+
       if (logFiles.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Aucun log à exporter')),

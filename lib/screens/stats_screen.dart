@@ -178,7 +178,7 @@ class _StatsScreenState extends State<StatsScreen> {
                                           barGroups:
                                               _buildBarGroups(statsProvider),
                                           borderData: FlBorderData(show: false),
-                                          gridData: FlGridData(
+                                          gridData: const FlGridData(
                                             show: true,
                                             drawHorizontalLine: true,
                                             drawVerticalLine: false,
@@ -307,7 +307,7 @@ class _StatsScreenState extends State<StatsScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: color, width: 1.5),
           ),
@@ -425,14 +425,13 @@ class _StatsScreenState extends State<StatsScreen> {
       (index) {
         final stat = statsProvider.prospectStats[index];
         final color = colors[stat.status] ?? Colors.grey;
-        final isSelected = _selectedStatus == stat.status;
 
         return BarChartGroupData(
           x: index,
           barRods: [
             BarChartRodData(
               toY: stat.count.toDouble(),
-              color: isSelected ? color.withOpacity(1.0) : color,
+              color: color,
               width: 30,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(8),
@@ -503,7 +502,8 @@ class _StatsScreenState extends State<StatsScreen> {
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(8),
-            color: isSelected ? color.withOpacity(0.05) : Colors.transparent,
+            color:
+                isSelected ? color.withValues(alpha: 0.05) : Colors.transparent,
           ),
           child: Material(
             color: Colors.transparent,
@@ -560,7 +560,7 @@ class _StatsScreenState extends State<StatsScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
+                        color: color.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: color),
                       ),

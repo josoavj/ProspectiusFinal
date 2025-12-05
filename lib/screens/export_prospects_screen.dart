@@ -119,7 +119,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
             'Fichier créé avec succès:\n${_fileNameController.text}.xlsx\n\nEmplacement:\n$filePath';
       });
     } catch (e) {
-      final stage = 'export_prospects';
+      const stage = 'export_prospects';
       await loggingService.logExportError(stage, e.toString(), null);
       setState(() {
         _errorMessage = 'Erreur lors de l\'export: $e';

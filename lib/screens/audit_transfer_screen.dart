@@ -174,7 +174,7 @@ class _AuditTransferScreenState extends State<AuditTransferScreen> {
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  '${transfer.transferDate?.toString() ?? 'N/A'}',
+                  transfer.transferDate?.toString() ?? 'N/A',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 children: [

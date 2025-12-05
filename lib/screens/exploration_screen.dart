@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/prospect.dart';
 import '../providers/prospect_provider.dart';
 import '../providers/auth_provider.dart';
+import 'prospect_detail_screen.dart';
 
 class ExplorationScreen extends StatefulWidget {
   const ExplorationScreen({Key? key}) : super(key: key);
@@ -58,15 +59,16 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
           prospect.adresse.toLowerCase().contains(searchQuery);
 
       // Filtre par catégorie
-      final matchesCategory =
-          _selectedCategory == 'Tous' || prospect.type == _selectedCategory;
+      final matchesCategory = _selectedCategory == 'Tous' ||
+          prospect.type.toLowerCase() == _selectedCategory.toLowerCase();
 
       // Filtre par dates
       final matchesDate = (_startDate == null ||
               prospect.creation
-                  .isAfter(_startDate!.subtract(Duration(days: 1)))) &&
+                  .isAfter(_startDate!.subtract(const Duration(days: 1)))) &&
           (_endDate == null ||
-              prospect.creation.isBefore(_endDate!.add(Duration(days: 1))));
+              prospect.creation
+                  .isBefore(_endDate!.add(const Duration(days: 1))));
 
       return matchesSearch && matchesCategory && matchesDate;
     }).toList();
@@ -84,6 +86,9 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
         break;
       case 'status':
         _filteredProspects.sort((a, b) => a.status.compareTo(b.status));
+        break;
+      case 'type':
+        _filteredProspects.sort((a, b) => a.type.compareTo(b.type));
         break;
     }
 
@@ -390,6 +395,10 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
           value: 'status',
           child: Text('Par statut'),
         ),
+        DropdownMenuItem(
+          value: 'type',
+          child: Text('Par type'),
+        ),
       ],
     );
   }
@@ -460,85 +469,89 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
   }
 
   Widget _buildProspectCard(Prospect prospect) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // En-tête avec nom et statut
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        prospect.fullName,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        prospect.type,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
+    return GestureDetector(
+      onTap: () => _showProspectDetailsDialog(prospect),
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        elevation: 1,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // En-tête avec nom et statut
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          prospect.fullName,
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          prospect.type,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _buildStatusBadge(prospect.status),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Informations de contact
+              _buildContactInfo(prospect),
+              const SizedBox(height: 12),
+
+              // Adresse et date
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on,
+                                size: 16, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                prospect.adresse,
+                                style: Theme.of(context).textTheme.bodySmall,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                _buildStatusBadge(prospect.status),
-              ],
-            ),
-            const SizedBox(height: 12),
+                ],
+              ),
+              const SizedBox(height: 8),
 
-            // Informations de contact
-            _buildContactInfo(prospect),
-            const SizedBox(height: 12),
-
-            // Adresse et date
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on,
-                              size: 16, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              prospect.adresse,
-                              style: Theme.of(context).textTheme.bodySmall,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Date de création
-            Text(
-              'Créé le ${DateFormat('dd/MM/yyyy').format(prospect.creation)}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[500],
-                  ),
-            ),
-          ],
+              // Date de création
+              Text(
+                'Créé le ${DateFormat('dd/MM/yyyy').format(prospect.creation)}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[500],
+                    ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -605,7 +618,7 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         border: Border.all(color: color),
         borderRadius: BorderRadius.circular(20),
       ),
@@ -617,6 +630,182 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
           fontSize: 12,
         ),
       ),
+    );
+  }
+
+  void _showProspectDetailsDialog(Prospect prospect) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // En-tête avec nom et bouton fermer
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              prospect.fullName,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              prospect.type,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Statut
+                  _buildDetailRow(
+                    icon: Icons.flag,
+                    label: 'Statut',
+                    value: prospect.status,
+                    badge: _buildStatusBadge(prospect.status),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Email
+                  _buildDetailRow(
+                    icon: Icons.email,
+                    label: 'Email',
+                    value: prospect.email,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Téléphone
+                  _buildDetailRow(
+                    icon: Icons.phone,
+                    label: 'Téléphone',
+                    value: prospect.telephone,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Adresse
+                  _buildDetailRow(
+                    icon: Icons.location_on,
+                    label: 'Adresse',
+                    value: prospect.adresse,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Date de création
+                  _buildDetailRow(
+                    icon: Icons.calendar_today,
+                    label: 'Créé le',
+                    value: DateFormat('dd/MM/yyyy - HH:mm')
+                        .format(prospect.creation),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Dernière modification
+                  _buildDetailRow(
+                    icon: Icons.update,
+                    label: 'Dernière mise à jour',
+                    value: DateFormat('dd/MM/yyyy - HH:mm')
+                        .format(prospect.dateUpdate),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Boutons d'action
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ProspectDetailScreen(
+                                  prospect: prospect,
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.visibility),
+                          label: const Text('Voir détails'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close),
+                          label: const Text('Fermer'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    Widget? badge,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: Colors.blue),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+              ),
+              const SizedBox(height: 4),
+              if (badge != null)
+                badge
+              else
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

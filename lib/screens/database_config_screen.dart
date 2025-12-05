@@ -74,13 +74,17 @@ class _DatabaseConfigScreenState extends State<DatabaseConfigScreen> {
         database: _databaseController.text,
       );
 
+      // ignore: use_build_context_synchronously
       final authProvider = context.read<AuthProvider>();
       final success = await authProvider.configureDatabase(config);
 
-      if (success && mounted) {
+      if (!mounted) return;
+
+      if (success) {
         await _saveConfig();
+        // ignore: use_build_context_synchronously
         Navigator.of(context).pushReplacementNamed('/login');
-      } else if (mounted) {
+      } else {
         setState(() {
           _error = authProvider.error ?? 'Erreur de connexion';
           _isConnecting = false;
