@@ -20,7 +20,7 @@ dependencies:
 
   # Storage & Utilities
   shared_preferences: ^2.2.0
-  intl: ^0.19.0
+  intl: ^0.20.2
   crypto: ^3.0.0
 
   # Security
@@ -30,7 +30,7 @@ dependencies:
   logger: ^2.0.0
 
   # Export
-  excel: ^2.1.0
+  excel: ^4.0.6
   path_provider: ^2.1.0
 
   # URL Launcher
@@ -40,12 +40,12 @@ dependencies:
   process: ^5.0.0
 
   # Charts
-  fl_chart: ^0.65.0
+  fl_chart: ^1.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
