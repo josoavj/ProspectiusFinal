@@ -178,7 +178,7 @@ class _StatsScreenState extends State<StatsScreen> {
                                           barGroups:
                                               _buildBarGroups(statsProvider),
                                           borderData: FlBorderData(show: false),
-                                          gridData: FlGridData(
+                                          gridData: const FlGridData(
                                             show: true,
                                             drawHorizontalLine: true,
                                             drawVerticalLine: false,
