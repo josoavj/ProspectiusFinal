@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/prospect.dart';
 import '../providers/prospect_provider.dart';
 import '../providers/auth_provider.dart';
+import 'prospect_detail_screen.dart';
 
 class ExplorationScreen extends StatefulWidget {
   const ExplorationScreen({Key? key}) : super(key: key);
@@ -741,9 +742,12 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
                         child: ElevatedButton.icon(
                           onPressed: () {
                             Navigator.of(context).pop();
-                            Navigator.of(context).pushNamed(
-                              '/prospect_detail',
-                              arguments: prospect.id,
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ProspectDetailScreen(
+                                  prospect: prospect,
+                                ),
+                              ),
                             );
                           },
                           icon: const Icon(Icons.visibility),
