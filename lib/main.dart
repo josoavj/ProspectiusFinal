@@ -190,25 +190,25 @@ class _MainScreenState extends State<MainScreen> {
   Widget _getScreen(int index) {
     switch (index) {
       case 0:
-        return const ProspectsScreen();
+        return ProspectsScreen();
       case 1:
-        return const ExplorationScreen();
+        return ExplorationScreen();
       case 2:
-        return const StatsScreen();
+        return StatsScreen();
       case 3:
-        return const ClientsScreen();
+        return ClientsScreen();
       case 4:
-        return const ExportProspectsScreen();
+        return ExportProspectsScreen();
       case 5:
-        return const AboutScreen();
+        return AboutScreen();
       case 6:
-        return const ProfileScreen();
+        return ProfileScreen();
       case 7:
-        return const ConfigurationScreen();
+        return ConfigurationScreen();
       case 8:
-        return const LogsViewerScreen();
+        return LogsViewerScreen();
       default:
-        return const ProspectsScreen();
+        return ProspectsScreen();
     }
   }
 }

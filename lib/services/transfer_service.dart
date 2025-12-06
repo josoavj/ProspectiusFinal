@@ -59,7 +59,7 @@ class TransferService {
       final result = await _connection.query(
         '''
         INSERT INTO transfer_history 
-        (prospect_id, from_user_id, to_user_id, transfer_reason, transfer_notes)
+        (id_prospect, from_user_id, to_user_id, transfer_reason, transfer_notes)
         VALUES (?, ?, ?, ?, ?)
         ''',
         [prospectId, fromUserId, toUserId, reason, notes],
@@ -92,10 +92,10 @@ class TransferService {
     try {
       final results = await _connection.query(
         '''
-        SELECT id, prospect_id, from_user_id, to_user_id, transfer_reason, 
+        SELECT id, id_prospect, from_user_id, to_user_id, transfer_reason, 
                transfer_date, transfer_notes, status
         FROM transfer_history
-        WHERE prospect_id = ?
+        WHERE id_prospect = ?
         ORDER BY transfer_date DESC
         ''',
         [prospectId],
@@ -130,7 +130,7 @@ class TransferService {
     try {
       final results = await _connection.query(
         '''
-        SELECT id, prospect_id, from_user_id, to_user_id, transfer_reason, 
+        SELECT id, id_prospect, from_user_id, to_user_id, transfer_reason, 
                transfer_date, transfer_notes, status
         FROM transfer_history
         WHERE to_user_id = ?
@@ -167,7 +167,7 @@ class TransferService {
     try {
       final results = await _connection.query(
         '''
-        SELECT id, prospect_id, from_user_id, to_user_id, transfer_reason, 
+        SELECT id, id_prospect, from_user_id, to_user_id, transfer_reason, 
                transfer_date, transfer_notes, status
         FROM transfer_history
         WHERE from_user_id = ?
@@ -202,7 +202,7 @@ class TransferService {
       final result = await _connection.query(
         '''
         SELECT to_user_id FROM transfer_history
-        WHERE prospect_id = ?
+        WHERE id_prospect = ?
         ORDER BY transfer_date DESC
         LIMIT 1
         ''',

@@ -4,7 +4,7 @@ import '../utils/app_logger.dart';
 /// Service pour gérer les erreurs et timeouts de manière robuste
 /// Prévient les écrans bloqués sur le loading
 class ErrorHandlingService {
-  static const Duration defaultTimeout = Duration(seconds: 15);
+  static const Duration defaultTimeout = Duration(seconds: 30);
   static const Duration shortTimeout = Duration(seconds: 5);
 
   /// Exécute une fonction asynchrone avec timeout et gestion d'erreur
@@ -115,11 +115,11 @@ class ErrorWidget extends StatelessWidget {
   final String title;
 
   const ErrorWidget({
-    Key? key,
+    super.key,
     required this.error,
     this.onRetry,
     this.title = 'Une erreur s\'est produite',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -179,10 +179,10 @@ class SafeLoadingWidget extends StatefulWidget {
   final String message;
 
   const SafeLoadingWidget({
-    Key? key,
+    super.key,
     this.timeout = const Duration(seconds: 30),
     this.message = 'Chargement en cours...',
-  }) : super(key: key);
+  });
 
   @override
   State<SafeLoadingWidget> createState() => _SafeLoadingWidgetState();

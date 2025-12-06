@@ -7,7 +7,7 @@ import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
 
 class StatsScreen extends StatefulWidget {
-  const StatsScreen({Key? key}) : super(key: key);
+  const StatsScreen({super.key});
 
   @override
   State<StatsScreen> createState() => _StatsScreenState();
