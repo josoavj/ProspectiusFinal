@@ -187,17 +187,26 @@ class MySQLService {
   Future<mysql.Results> query(String sql,
       [List<dynamic> values = const []]) async {
     if (_connection == null || !_isConnected) {
-      AppLogger.error('Tentative de requête sans connexion active');
-      throw ConnectionException(
-        message: 'MySQL non connecté',
-        code: 'NOT_CONNECTED',
-      );
+      AppLogger.warning(
+          'Tentative de requête sans connexion active, tentative de reconnexion...');
+      // Essayer de reconnecter automatiquement
+      try {
+        await connect(_config);
+      } catch (e) {
+        AppLogger.error('Impossible de reconnecter à MySQL', e);
+        throw ConnectionException(
+          message: 'MySQL non connecté',
+          code: 'NOT_CONNECTED',
+        );
+      }
     }
     try {
       return await _connection!.query(sql, values);
     } catch (e, stackTrace) {
       AppLogger.error(
           'Erreur lors de l\'exécution de la requête', e, stackTrace);
+      // Marquer comme déconnecté et rethrow
+      _isConnected = false;
       throw DatabaseException(
         message: 'Erreur lors de l\'exécution de la requête: $e',
         originalException: e as Exception,
