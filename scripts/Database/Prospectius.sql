@@ -169,12 +169,32 @@ CREATE TABLE StatusHistory (
     FOREIGN KEY (changed_by) REFERENCES Account(id_compte)
 );
 
+-- Historique des transferts de prospects
+CREATE TABLE TransferHistory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_prospect INT NOT NULL,
+    from_user_id INT NOT NULL,
+    to_user_id INT NOT NULL,
+    transfer_reason VARCHAR(255),
+    transfer_notes TEXT,
+    transfer_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('completed', 'pending', 'cancelled') DEFAULT 'completed',
+    FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect),
+    FOREIGN KEY (from_user_id) REFERENCES Account(id_compte),
+    FOREIGN KEY (to_user_id) REFERENCES Account(id_compte)
+);
+
 -- Index pour les recherches rapides
 CREATE INDEX idx_prospect_status ON Prospect(id_prospect, status);
 CREATE INDEX idx_prospect_assignation ON Prospect(assignation);
 CREATE INDEX idx_interaction_prospect ON Interaction(id_prospect);
 CREATE INDEX idx_status_history_prospect ON StatusHistory(id_prospect);
+CREATE INDEX idx_transfer_prospect ON TransferHistory(id_prospect);
+CREATE INDEX idx_transfer_from_user ON TransferHistory(from_user_id);
+CREATE INDEX idx_transfer_to_user ON TransferHistory(to_user_id);
+CREATE INDEX idx_transfer_date ON TransferHistory(transfer_date);
 
 /*
-    Modifié le 30 Novembre 2025
+    Modifié le 7 Décembre 2025
+    - Ajout de la table TransferHistory pour l'historique des transferts de prospects
 */

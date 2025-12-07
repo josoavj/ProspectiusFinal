@@ -58,7 +58,7 @@ class TransferService {
 
       final result = await _connection.query(
         '''
-        INSERT INTO transfer_history 
+        INSERT INTO TransferHistory 
         (id_prospect, from_user_id, to_user_id, transfer_reason, transfer_notes)
         VALUES (?, ?, ?, ?, ?)
         ''',
@@ -94,7 +94,7 @@ class TransferService {
         '''
         SELECT id, id_prospect, from_user_id, to_user_id, transfer_reason, 
                transfer_date, transfer_notes, status
-        FROM transfer_history
+        FROM TransferHistory
         WHERE id_prospect = ?
         ORDER BY transfer_date DESC
         ''',
@@ -132,7 +132,7 @@ class TransferService {
         '''
         SELECT id, id_prospect, from_user_id, to_user_id, transfer_reason, 
                transfer_date, transfer_notes, status
-        FROM transfer_history
+        FROM TransferHistory
         WHERE to_user_id = ?
         ORDER BY transfer_date DESC
         LIMIT ?
@@ -169,7 +169,7 @@ class TransferService {
         '''
         SELECT id, id_prospect, from_user_id, to_user_id, transfer_reason, 
                transfer_date, transfer_notes, status
-        FROM transfer_history
+        FROM TransferHistory
         WHERE from_user_id = ?
         ORDER BY transfer_date DESC
         LIMIT ?
@@ -199,9 +199,10 @@ class TransferService {
   /// Récupère le propriétaire actuel d'un prospect
   Future<int?> getCurrentProspectOwner(int prospectId) async {
     try {
-      final result = await _connection.query(
+      // Chercher le dernier transfert
+      final transferResult = await _connection.query(
         '''
-        SELECT to_user_id FROM transfer_history
+        SELECT to_user_id FROM TransferHistory
         WHERE id_prospect = ?
         ORDER BY transfer_date DESC
         LIMIT 1
@@ -209,13 +210,13 @@ class TransferService {
         [prospectId],
       );
 
-      if (result.isNotEmpty) {
-        return result.first[0];
+      if (transferResult.isNotEmpty) {
+        return transferResult.first[0];
       }
 
-      // Si pas de transfert, récupérer le user_id du prospect
+      // Si pas de transfert, récupérer l'assignation actuelle du prospect
       final prospectResult = await _connection.query(
-        'SELECT user_id FROM Prospect WHERE id = ?',
+        'SELECT assignation FROM Prospect WHERE id_prospect = ?',
         [prospectId],
       );
 
@@ -238,14 +239,14 @@ class TransferService {
     try {
       // Transferts reçus
       final receivedResult = await _connection.query(
-        'SELECT COUNT(*) FROM transfer_history WHERE to_user_id = ?',
+        'SELECT COUNT(*) FROM TransferHistory WHERE to_user_id = ?',
         [userId],
       );
       final received = receivedResult.first[0] ?? 0;
 
       // Transferts envoyés
       final sentResult = await _connection.query(
-        'SELECT COUNT(*) FROM transfer_history WHERE from_user_id = ?',
+        'SELECT COUNT(*) FROM TransferHistory WHERE from_user_id = ?',
         [userId],
       );
       final sent = sentResult.first[0] ?? 0;
@@ -253,11 +254,11 @@ class TransferService {
       // Prospects actuellement possédés
       final ownedResult = await _connection.query(
         '''
-        SELECT COUNT(DISTINCT p.id) FROM Prospect p
-        LEFT JOIN transfer_history t ON p.id = t.prospect_id
-        WHERE p.user_id = ? OR (
-          SELECT MAX(transfer_date) FROM transfer_history
-          WHERE prospect_id = p.id AND to_user_id = ?
+        SELECT COUNT(DISTINCT p.id_prospect) FROM Prospect p
+        LEFT JOIN TransferHistory t ON p.id_prospect = t.id_prospect
+        WHERE p.assignation = ? OR (
+          SELECT MAX(transfer_date) FROM TransferHistory
+          WHERE id_prospect = p.id_prospect AND to_user_id = ?
         ) IS NOT NULL
         ''',
         [userId, userId],
@@ -291,12 +292,14 @@ class TransferService {
     try {
       String query = '''
         SELECT 
-          t.id, p.name as prospect_name, u1.name as from_user,
-          u2.name as to_user, t.transfer_reason, t.transfer_date
-        FROM transfer_history t
-        JOIN Prospect p ON t.prospect_id = p.id
-        JOIN users u1 ON t.from_user_id = u1.id
-        JOIN users u2 ON t.to_user_id = u2.id
+          t.id, p.nomp as prospect_lastname, p.prenomp as prospect_firstname,
+          u1.nom as from_lastname, u1.prenom as from_firstname,
+          u2.nom as to_lastname, u2.prenom as to_firstname,
+          t.transfer_reason, t.transfer_date
+        FROM TransferHistory t
+        JOIN Prospect p ON t.id_prospect = p.id_prospect
+        JOIN Account u1 ON t.from_user_id = u1.id_compte
+        JOIN Account u2 ON t.to_user_id = u2.id_compte
         WHERE 1=1
       ''';
 
@@ -324,11 +327,11 @@ class TransferService {
       return results
           .map((row) => {
                 'id': row[0],
-                'prospect_name': row[1],
-                'from_user': row[2],
-                'to_user': row[3],
-                'reason': row[4],
-                'date': row[5].toString(),
+                'prospect_name': '${row[2]} ${row[1]}',
+                'from_user': '${row[4]} ${row[3]}',
+                'to_user': '${row[6]} ${row[5]}',
+                'reason': row[7],
+                'date': row[8].toString(),
               })
           .toList();
     } catch (e, stackTrace) {
