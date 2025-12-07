@@ -154,7 +154,8 @@ class MigrationService {
   @Deprecated('TransferHistory est créée dans le script SQL initial')
   Future<void> createTransferHistoryTable() async {
     const migrationName = 'create_transfer_history_table';
-    AppLogger.info('Migration $migrationName déjà appliquée (créée dans script SQL)');
+    AppLogger.info(
+        'Migration $migrationName déjà appliquée (créée dans script SQL)');
     // Enregistrer la migration pour éviter les tentatives futures
     try {
       final applied = await getAppliedMigrations();
