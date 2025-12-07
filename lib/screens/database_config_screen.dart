@@ -24,18 +24,23 @@ class _DatabaseConfigScreenState extends State<DatabaseConfigScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSavedConfig();
+    // Utiliser addPostFrameCallback pour éviter setState() pendant le build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadSavedConfig();
+    });
   }
 
   Future<void> _loadSavedConfig() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _hostController.text = prefs.getString('db_host') ?? 'localhost';
-      _portController.text = prefs.getString('db_port') ?? '3306';
-      _userController.text = prefs.getString('db_user') ?? 'root';
-      _passwordController.text = prefs.getString('db_password') ?? 'root';
-      _databaseController.text = prefs.getString('db_name') ?? 'Prospectius';
-    });
+    if (mounted) {
+      setState(() {
+        _hostController.text = prefs.getString('db_host') ?? 'localhost';
+        _portController.text = prefs.getString('db_port') ?? '3306';
+        _userController.text = prefs.getString('db_user') ?? 'root';
+        _passwordController.text = prefs.getString('db_password') ?? 'root';
+        _databaseController.text = prefs.getString('db_name') ?? 'Prospectius';
+      });
+    }
   }
 
   Future<void> _saveConfig() async {

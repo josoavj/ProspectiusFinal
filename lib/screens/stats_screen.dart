@@ -19,7 +19,10 @@ class _StatsScreenState extends State<StatsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadStats();
+    // Utiliser addPostFrameCallback pour éviter setState() pendant le build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadStats();
+    });
   }
 
   void _loadStats() {
