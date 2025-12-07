@@ -18,31 +18,51 @@ class AppLogger {
 
   /// Log d'information
   static void info(String message, [dynamic error, StackTrace? stackTrace]) {
-    _logger.i(message, error: error, stackTrace: stackTrace);
+    if (error != null || stackTrace != null) {
+      _logger.i(message, error: error, stackTrace: stackTrace);
+    } else {
+      _logger.i(message);
+    }
     _fileLogger.logInfo(message);
   }
 
   /// Log de debug
   static void debug(String message, [dynamic error, StackTrace? stackTrace]) {
-    _logger.d(message, error: error, stackTrace: stackTrace);
+    if (error != null || stackTrace != null) {
+      _logger.d(message, error: error, stackTrace: stackTrace);
+    } else {
+      _logger.d(message);
+    }
     _fileLogger.logDebug(message);
   }
 
   /// Log d'erreur
   static void error(String message, [dynamic error, StackTrace? stackTrace]) {
-    _logger.e(message, error: error, stackTrace: stackTrace);
+    if (error != null || stackTrace != null) {
+      _logger.e(message, error: error, stackTrace: stackTrace);
+    } else {
+      _logger.e(message);
+    }
     _fileLogger.logError(message, stackTrace);
   }
 
   /// Log d'avertissement
   static void warning(String message, [dynamic error, StackTrace? stackTrace]) {
-    _logger.w(message, error: error, stackTrace: stackTrace);
+    if (error != null || stackTrace != null) {
+      _logger.w(message, error: error, stackTrace: stackTrace);
+    } else {
+      _logger.w(message);
+    }
     _fileLogger.logWarning(message);
   }
 
   /// Log de succès
   static void success(String message, [dynamic error, StackTrace? stackTrace]) {
-    _logger.t(message, error: error, stackTrace: stackTrace);
+    if (error != null || stackTrace != null) {
+      _logger.t(message, error: error, stackTrace: stackTrace);
+    } else {
+      _logger.t(message);
+    }
     _fileLogger.logInfo('✓ $message');
   }
 
