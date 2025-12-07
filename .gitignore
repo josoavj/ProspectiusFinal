@@ -85,3 +85,5 @@ coverage/
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+.vscode/extensions.json
+.vscode/settings.json
