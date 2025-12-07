@@ -108,9 +108,16 @@ if [ ! -f "temp_download/Prospectius.sql" ]; then
 fi
 
 # Importer le script SQL
-mariadb -u root -p < temp_download/Prospectius.sql 2>/dev/null || {
-    echo "Importation avec mot de passe par défaut..."
-    mariadb -u root -proot < temp_download/Prospectius.sql
+mysql -u root -proot < temp_download/Prospectius.sql 2>/dev/null || {
+    echo "⚠️  Importation échouée avec l'utilisateur root:root"
+    echo ""
+    echo "Vérifiez que MariaDB est bien en cours d'exécution et que:"
+    echo "  - L'utilisateur root existe"
+    echo "  - Le mot de passe est 'root'"
+    echo ""
+    echo "Vous pouvez réessayer manuellement avec:"
+    echo "  mysql -u root -proot < temp_download/Prospectius.sql"
+    exit 1
 }
 
 echo "✓ Base de données configurée"
@@ -140,4 +147,3 @@ echo "3. Créez votre compte:"
 echo "   Cliquez sur 'S'inscrire' pour créer un nouveau compte"
 echo "   Remplissez le formulaire avec vos informations"
 echo ""
-echo "  Database: Prospectius"

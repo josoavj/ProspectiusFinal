@@ -74,7 +74,12 @@ REM Executer le script SQL
 echo Importation du script SQL...
 mysql -u root -proot < temp_download\Prospectius.sql
 if errorlevel 1 (
-    echo Erreur lors de l'importation
+    echo ^!Erreur lors de l'importation
+    echo.
+    echo Verifiez que:
+    echo   - MariaDB est bien en cours d'execution
+    echo   - L'utilisateur root existe avec le mot de passe 'root'
+    echo.
     pause
     exit /b 1
 )

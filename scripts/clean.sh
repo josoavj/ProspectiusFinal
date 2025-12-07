@@ -9,7 +9,8 @@ echo "================================"
 echo ""
 
 # Détecter le répertoire du projet
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_DIR"
 
 # Demander confirmation
@@ -86,8 +87,8 @@ if command -v mysql &> /dev/null; then
     if mysql -u root -proot -e "SELECT 1" &> /dev/null; then
         echo "  ✓ MySQL connecté"
         
-        if mysql -u root -proot -e "USE Prospectius; SELECT COUNT(*) as tables FROM information_schema.tables WHERE table_schema='Prospectius';" 2>/dev/null | tail -n 1; then
-            TABLES=$(mysql -u root -proot -e "USE Prospectius; SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='Prospectius';" 2>/dev/null | tail -n 1)
+        TABLES=$(mysql -u root -proot -e "USE Prospectius; SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='Prospectius';" 2>/dev/null | tail -n 1)
+        if [ ! -z "$TABLES" ]; then
             echo "  ✓ Base Prospectius trouvée ($TABLES tables)"
         else
             echo "  ⚠ Base Prospectius non trouvée"

@@ -66,26 +66,39 @@ echo ""
 echo "Configuration de la base de données Prospectius..."
 echo ""
 
-if [ ! -f "scripts/prospectius.sql" ]; then
-    echo "⚠ Script SQL non trouvé: scripts/prospectius.sql"
+# Télécharger le script SQL depuis GitHub
+echo "Téléchargement du script SQL depuis GitHub..."
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+GITHUB_URL="https://raw.githubusercontent.com/josoavj/dbProspectius/master/scriptSQL/Prospectius.sql"
+
+if command -v curl &> /dev/null; then
+    curl -f -o "/tmp/Prospectius.sql" "$GITHUB_URL"
+elif command -v wget &> /dev/null; then
+    wget -O "/tmp/Prospectius.sql" "$GITHUB_URL"
+else
+    echo "⚠ Erreur: curl ou wget est requis"
+    exit 1
+fi
+
+if [ ! -f "/tmp/Prospectius.sql" ]; then
+    echo "⚠ Erreur lors du téléchargement du script SQL"
     echo ""
-    echo "Téléchargez le script depuis:"
-    echo "  https://raw.githubusercontent.com/josoavj/dbProspectius/master/scriptSQL/Prospectius.sql"
-    echo ""
-    echo "Et placez-le dans: scripts/prospectius.sql"
+    echo "Vous pouvez le télécharger manuellement depuis:"
+    echo "  $GITHUB_URL"
     exit 1
 fi
 
 # Importer le script SQL
 echo "Importation du schéma de base de données..."
 
-if mysql -u root < scripts/prospectius.sql; then
+if mysql -u root < /tmp/Prospectius.sql; then
     echo "✓ Base de données configurée"
 else
     echo "⚠ Impossible d'importer la base de données"
     echo ""
     echo "Vous pouvez essayer manuellement:"
-    echo "  mysql -u root < scripts/prospectius.sql"
+    echo "  mysql -u root < /tmp/Prospectius.sql"
     exit 1
 fi
 
