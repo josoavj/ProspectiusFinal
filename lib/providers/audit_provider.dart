@@ -38,7 +38,7 @@ class AuditNotifier extends ChangeNotifier {
     try {
       if (_auditService != null) {
         _auditHistory = await _auditService!.getAuditHistory(
-          tableName: 'prospects',
+          tableName: 'Prospect',
           recordId: prospectId,
         );
       }

@@ -261,7 +261,7 @@ class ProspectProvider extends ChangeNotifier {
       // Enregistrer l'audit
       if (_auditService != null) {
         await _auditService!.logAudit(
-          tableName: 'prospects',
+          tableName: 'Prospect',
           recordId: prospectId,
           action: 'UPDATE',
           userId: fromUserId,
