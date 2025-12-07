@@ -33,69 +33,94 @@ class _ClientsScreenState extends State<ClientsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Consumer<ProspectProvider>(
-              builder: (context, prospectProvider, _) {
-                return IconButton(
-                  onPressed: prospectProvider.isLoading ? null : _loadClients,
-                  icon: const Icon(Icons.refresh),
-                  tooltip: 'Actualiser',
-                );
-              },
-            ),
-          ),
-        ],
-      ),
       body: Consumer<ProspectProvider>(
         builder: (context, prospectProvider, child) {
-          if (prospectProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final clients = prospectProvider.prospects
-              .where((prospect) => prospect.status == 'converti')
-              .toList();
-
-          if (clients.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.people_outline,
-                    size: 64,
-                    color: Colors.grey[400],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Aucun client converti',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Les prospects convertis en clients apparaîtront ici',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // Bouton d'actualisation en haut
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed:
+                            prospectProvider.isLoading ? null : _loadClients,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Actualiser'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: clients.length,
-            itemBuilder: (context, index) => _buildClientListItem(
-              context,
-              clients[index],
+                ),
+                // Contenu principal
+                if (prospectProvider.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else
+                  _buildClientsList(prospectProvider),
+              ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildClientsList(ProspectProvider prospectProvider) {
+    final clients = prospectProvider.prospects
+        .where((prospect) => prospect.status == 'converti')
+        .toList();
+
+    if (clients.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.people_outline,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Aucun client converti',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Les prospects convertis en clients apparaîtront ici',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: clients.length,
+      itemBuilder: (context, index) => _buildClientListItem(
+        context,
+        clients[index],
       ),
     );
   }
