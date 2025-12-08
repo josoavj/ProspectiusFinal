@@ -416,46 +416,6 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     );
   }
 
-  void _handleAddInteraction() async {
-    if (_interactionDescriptionController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez entrer une description'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-
-    final authProvider = context.read<AuthProvider>();
-    final prospectProvider = context.read<ProspectProvider>();
-
-    if (authProvider.currentUser == null) return;
-
-    setState(() => _isLoading = true);
-
-    await prospectProvider.createInteraction(
-      widget.prospect.id,
-      authProvider.currentUser!.id,
-      _selectedInteractionType,
-      _interactionDescriptionController.text,
-      DateTime.now().toUtc(),
-    );
-
-    setState(() => _isLoading = false);
-
-    _interactionDescriptionController.clear();
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Interaction ajoutée'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
   @override
   void dispose() {
     _nomController.dispose();
