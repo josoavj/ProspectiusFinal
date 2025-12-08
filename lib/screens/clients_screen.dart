@@ -144,7 +144,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
               const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           leading: CircleAvatar(
             radius: 22,
-            backgroundColor: Colors.green[500],
+            backgroundColor: const Color.fromARGB(255, 6, 206, 112),
             child: Text(
               client.prenom.isNotEmpty ? client.prenom[0].toUpperCase() : '?',
               style: const TextStyle(
@@ -173,7 +173,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.green[600],
+              color: const Color.fromARGB(255, 6, 206, 112),
               borderRadius: BorderRadius.circular(4),
             ),
             child: const Text(

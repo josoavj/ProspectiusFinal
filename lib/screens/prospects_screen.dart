@@ -206,7 +206,7 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
       case 'negociation':
         return Colors.orange[600]!;
       case 'converti':
-        return Colors.green[600]!;
+        return const Color.fromARGB(255, 6, 206, 112);
       case 'perdu':
         return Colors.red[600]!;
       default:
