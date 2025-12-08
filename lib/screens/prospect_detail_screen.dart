@@ -197,8 +197,12 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
                       height: 44,
                       child: ElevatedButton.icon(
                         onPressed: _handleUpdate,
-                        icon: const Icon(Icons.edit),
-                        label: const Text('Mettre à jour'),
+                        icon: const Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                        ),
+                        label: const Text('Mettre à jour',
+                            style: TextStyle(color: Colors.white)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[700],
                           shape: RoundedRectangleBorder(
@@ -308,7 +312,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
       case 'negociation':
         return Colors.orange[100]!;
       case 'converti':
-        return Colors.green[100]!;
+        return const Color.fromARGB(255, 6, 206, 112).withOpacity(0.1);
       case 'perdu':
         return Colors.red[100]!;
       default:
