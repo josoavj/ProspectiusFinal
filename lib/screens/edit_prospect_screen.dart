@@ -207,39 +207,139 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     setState(() => _isLoading = false);
 
     if (success && mounted) {
-      // Afficher un message avant de passer à l'interaction
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Succès'),
-            content: const Text(
-                'Prospect modifié avec succès\n\nVous pouvez maintenant ajouter une interaction.'),
-            actions: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 6, 206, 112),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Fermer la boîte de dialogue
-                  // Scroll vers la section interaction
-                  _scrollToInteractionSection();
-                },
-                child: const Text(
-                  'OK',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          );
-        },
-      );
+      // Afficher le formulaire d'interaction dans la dialogue
+      _showAddInteractionDialog();
     }
   }
 
-  void _scrollToInteractionSection() {
-    // Scroll vers le bas pour afficher la section d'interaction
-    // (À implémenter si vous avez un ScrollController)
+  void _showAddInteractionDialog() {
+    final authProvider = context.read<AuthProvider>();
+    final prospectProvider = context.read<ProspectProvider>();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Ajouter une interaction'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Prospect: ${_nomController.text} ${_prenomController.text}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedInteractionType,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedInteractionType = value ?? 'appel';
+                        });
+                      },
+                      items: [
+                        'appel',
+                        'email',
+                        'sms',
+                        'reunion',
+                        'message',
+                        'autre'
+                      ]
+                          .map(
+                            (type) => DropdownMenuItem(
+                              value: type,
+                              child: Text(type),
+                            ),
+                          )
+                          .toList(),
+                      decoration: InputDecoration(
+                        labelText: 'Type d\'interaction',
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _interactionDescriptionController,
+                      decoration: InputDecoration(
+                        labelText: 'Description',
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        hintText: 'Décrivez votre interaction...',
+                      ),
+                      maxLines: 3,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _interactionDescriptionController.clear();
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Ignorer'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 6, 206, 112),
+                  ),
+                  onPressed: _interactionDescriptionController.text.isEmpty
+                      ? null
+                      : () async {
+                          if (authProvider.currentUser == null) return;
+
+                          setState(() => _isLoading = true);
+
+                          await prospectProvider.createInteraction(
+                            widget.prospect.id,
+                            authProvider.currentUser!.id,
+                            _selectedInteractionType,
+                            _interactionDescriptionController.text,
+                            DateTime.now().toUtc(),
+                          );
+
+                          setState(() => _isLoading = false);
+
+                          _interactionDescriptionController.clear();
+
+                          if (mounted) {
+                            Navigator.of(context).pop();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Interaction ajoutée avec succès'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                  child: Text(
+                    _isLoading ? 'Ajout...' : 'Ajouter',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   void _handleAddInteraction() async {
