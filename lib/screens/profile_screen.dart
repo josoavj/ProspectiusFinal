@@ -81,6 +81,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _showConfirmSaveDialog() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmer les modifications'),
+          content: const Text(
+            'Êtes-vous sûr de vouloir enregistrer les modifications de votre profil?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 6, 206, 112),
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                'Enregistrer',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      _handleSaveChanges();
+    }
+  }
+
+  Future<void> _showConfirmCancelDialog() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Annuler les modifications'),
+          content: const Text(
+            'Les modifications non enregistrées seront perdues. Êtes-vous sûr?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Continuer la modification'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey,
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                'Annuler',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      _initializeControllers();
+      setState(() {
+        _isEditing = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -161,19 +232,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.green[50],
-                            border: Border.all(color: Colors.green),
+                            color: const Color.fromARGB(255, 6, 206, 112)
+                                .withOpacity(0.1),
+                            border: Border.all(
+                                color: const Color.fromARGB(255, 6, 206, 112)),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
                               Icon(Icons.check_circle,
-                                  color: Colors.green[700]),
+                                  color:
+                                      const Color.fromARGB(255, 6, 206, 112)),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   _successMessage!,
-                                  style: TextStyle(color: Colors.green[700]),
+                                  style: const TextStyle(
+                                      color: Color.fromARGB(255, 6, 206, 112)),
                                 ),
                               ),
                             ],
@@ -268,25 +343,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               child: ElevatedButton(
                                 onPressed: _isLoading
                                     ? null
-                                    : () {
-                                        _initializeControllers();
-                                        setState(() {
-                                          _isEditing = false;
-                                        });
-                                      },
+                                    : _showConfirmCancelDialog,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.grey,
                                 ),
-                                child: const Text('Annuler'),
+                                child: const Text(
+                                  'Annuler',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed:
-                                    _isLoading ? null : _handleSaveChanges,
+                                    _isLoading ? null : _showConfirmSaveDialog,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green[400],
+                                  backgroundColor:
+                                      const Color.fromARGB(255, 6, 206, 112),
                                 ),
                                 icon: _isLoading
                                     ? const SizedBox(
@@ -294,13 +371,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         height: 20,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Colors.white),
                                         ),
                                       )
-                                    : const Icon(Icons.save),
+                                    : const Icon(Icons.save,
+                                        color: Colors.white),
                                 label: Text(
                                   _isLoading
                                       ? 'Enregistrement...'
                                       : 'Enregistrer',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
@@ -317,10 +402,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               });
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[400],
+                              backgroundColor:
+                                  const Color.fromARGB(255, 6, 206, 112),
                             ),
-                            icon: const Icon(Icons.edit),
-                            label: const Text('Modifier le profil'),
+                            icon: const Icon(Icons.edit, color: Colors.white),
+                            label: const Text(
+                              'Modifier le profil',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ],
