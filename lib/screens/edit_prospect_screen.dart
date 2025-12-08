@@ -60,26 +60,31 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Confirmer la modification'),
-              content:
-                  const Text('Êtes-vous sûr de vouloir modifier ce prospect?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Annuler'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 6, 206, 112),
+            return ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 420,
+              ),
+              child: AlertDialog(
+                title: const Text('Confirmer la modification'),
+                content: const Text(
+                    'Êtes-vous sûr de vouloir modifier ce prospect?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Annuler'),
                   ),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text(
-                    'Confirmer',
-                    style: TextStyle(color: Colors.white),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 6, 206, 112),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text(
+                      'Confirmer',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         ) ??
@@ -110,39 +115,44 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Succès'),
-            content: const Text('Prospect modifié avec succès'),
-            actions: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 6, 206, 112),
+          return ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 420,
+            ),
+            child: AlertDialog(
+              title: const Text('Succès'),
+              content: const Text('Prospect modifié avec succès'),
+              actions: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 6, 206, 112),
+                  ),
+                  onPressed: () {
+                    // Créer le prospect mis à jour
+                    final updatedProspect = Prospect(
+                      id: widget.prospect.id,
+                      nom: _nomController.text,
+                      prenom: _prenomController.text,
+                      email: _emailController.text,
+                      telephone: _telephoneController.text,
+                      adresse: _adresseController.text,
+                      type: _selectedType,
+                      status: _selectedStatus,
+                      creation: widget.prospect.creation,
+                      dateUpdate: DateTime.now(),
+                      assignation: widget.prospect.assignation,
+                    );
+                    Navigator.of(context).pop(); // Fermer la boîte de dialogue
+                    Navigator.of(context)
+                        .pop(updatedProspect); // Retourner l'objet
+                  },
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-                onPressed: () {
-                  // Créer le prospect mis à jour
-                  final updatedProspect = Prospect(
-                    id: widget.prospect.id,
-                    nom: _nomController.text,
-                    prenom: _prenomController.text,
-                    email: _emailController.text,
-                    telephone: _telephoneController.text,
-                    adresse: _adresseController.text,
-                    type: _selectedType,
-                    status: _selectedStatus,
-                    creation: widget.prospect.creation,
-                    dateUpdate: DateTime.now(),
-                    assignation: widget.prospect.assignation,
-                  );
-                  Navigator.of(context).pop(); // Fermer la boîte de dialogue
-                  Navigator.of(context)
-                      .pop(updatedProspect); // Retourner l'objet
-                },
-                child: const Text(
-                  'OK',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       );
@@ -159,27 +169,32 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Mettre à jour et ajouter une interaction'),
-              content: const Text(
-                'Les informations du prospect seront mises à jour, puis vous pourrez ajouter une interaction.',
+            return ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 420,
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Annuler'),
+              child: AlertDialog(
+                title: const Text('Mettre à jour et ajouter une interaction'),
+                content: const Text(
+                  'Les informations du prospect seront mises à jour, puis vous pourrez ajouter une interaction.',
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 6, 206, 112),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Annuler'),
                   ),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text(
-                    'Continuer',
-                    style: TextStyle(color: Colors.white),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 6, 206, 112),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text(
+                      'Continuer',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         ) ??
@@ -227,8 +242,8 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
               ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
-                  maxWidth: 500,
-                  maxHeight: 600,
+                  maxWidth: 550,
+                  maxHeight: 650,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
