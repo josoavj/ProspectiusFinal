@@ -153,7 +153,9 @@ class DatabaseService {
           'SELECT * FROM Prospect WHERE assignation = ?', [userId]);
 
       final results = await _mysqlService.query(
-        'SELECT * FROM Prospect WHERE assignation = ? ORDER BY creation DESC',
+        '''SELECT * FROM Prospect
+           WHERE assignation = ? AND deleted_at IS NULL
+           ORDER BY creation DESC''',
         [userId],
       );
 
@@ -246,15 +248,32 @@ class DatabaseService {
 
   Future<void> updateProspect(int prospectId, Map<String, dynamic> data) async {
     try {
+      const allowedFields = <String>{
+        'nomp',
+        'prenomp',
+        'email',
+        'telephone',
+        'adresse',
+        'type',
+        'status',
+        'assignation',
+      };
       final updates = <String>[];
       final values = <dynamic>[];
 
       data.forEach((key, value) {
-        if (key != 'id') {
+        if (key != 'id' && allowedFields.contains(key)) {
           updates.add('$key = ?');
           values.add(value);
         }
       });
+
+      if (data.keys.any((key) => key != 'id' && !allowedFields.contains(key))) {
+        throw ValidationException(
+          message: 'Champ de mise à jour non autorisé',
+          code: 'INVALID_FIELD',
+        );
+      }
 
       values.add(prospectId);
 
@@ -264,7 +283,7 @@ class DatabaseService {
           'UPDATE Prospect SET ${updates.join(", ")}', values);
 
       await _mysqlService.query(
-        'UPDATE Prospect SET ${updates.join(", ")}, date_update = NOW() WHERE id_prospect = ?',
+        'UPDATE Prospect SET ${updates.join(", ")}, date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
         values,
       );
 
@@ -287,18 +306,18 @@ class DatabaseService {
       AppLogger.logRequest('DELETE_PROSPECT',
           'DELETE FROM Interaction WHERE id_prospect = ?', [prospectId]);
 
-      // Supprimer d'abord les interactions liées au prospect
+      // Soft delete d'abord les interactions liées au prospect
       await _mysqlService.query(
-        'DELETE FROM Interaction WHERE id_prospect = ?',
+        'UPDATE Interaction SET deleted_at = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
         [prospectId],
       );
 
       AppLogger.logRequest('DELETE_PROSPECT',
           'DELETE FROM Prospect WHERE id_prospect = ?', [prospectId]);
 
-      // Puis supprimer le prospect
+      // Puis soft delete le prospect
       await _mysqlService.query(
-        'DELETE FROM Prospect WHERE id_prospect = ?',
+        'UPDATE Prospect SET deleted_at = NOW(), date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
         [prospectId],
       );
 
@@ -325,7 +344,7 @@ class DatabaseService {
 
       final results = await _mysqlService.query(
         '''SELECT * FROM Interaction 
-           WHERE id_prospect = ? 
+           WHERE id_prospect = ? AND deleted_at IS NULL
            ORDER BY date_interaction DESC''',
         [prospectId],
       );
@@ -413,7 +432,7 @@ class DatabaseService {
       final results = await _mysqlService.query(
         '''SELECT status, COUNT(*) as count 
            FROM Prospect 
-           WHERE assignation = ? 
+           WHERE assignation = ? AND deleted_at IS NULL
            GROUP BY status''',
         [userId],
       );
@@ -449,7 +468,7 @@ class DatabaseService {
              COUNT(*) as total,
              SUM(CASE WHEN status = 'converti' THEN 1 ELSE 0 END) as converted
            FROM Prospect 
-           WHERE assignation = ?''',
+           WHERE assignation = ? AND deleted_at IS NULL''',
         [userId],
       );
 
