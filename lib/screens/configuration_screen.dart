@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/mysql_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../services/secure_storage_service.dart';
 
 class ConfigurationScreen extends StatefulWidget {
   const ConfigurationScreen({super.key});
@@ -20,6 +21,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   bool _isConnecting = false;
   bool _showEditMode = false;
   String? _error;
+  final SecureStorageService _secureStorage = SecureStorageService();
 
   @override
   void initState() {
@@ -32,12 +34,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
 
   Future<void> _loadSavedConfig() async {
     final prefs = await SharedPreferences.getInstance();
+    final savedPassword = await _secureStorage.getDbPassword();
     if (mounted) {
       setState(() {
         _hostController.text = prefs.getString('db_host') ?? 'localhost';
         _portController.text = prefs.getString('db_port') ?? '3306';
-        _userController.text = prefs.getString('db_user') ?? 'root';
-        _passwordController.text = prefs.getString('db_password') ?? 'root';
+        _userController.text = prefs.getString('db_user') ?? '';
+        _passwordController.text = savedPassword ?? '';
         _databaseController.text = prefs.getString('db_name') ?? 'Prospectius';
       });
     }
@@ -48,8 +51,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     await prefs.setString('db_host', _hostController.text);
     await prefs.setString('db_port', _portController.text);
     await prefs.setString('db_user', _userController.text);
-    await prefs.setString('db_password', _passwordController.text);
     await prefs.setString('db_name', _databaseController.text);
+    await _secureStorage.saveDbPassword(_passwordController.text);
   }
 
   void _handleChangeConfig() async {
