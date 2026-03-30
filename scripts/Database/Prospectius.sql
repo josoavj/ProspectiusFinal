@@ -142,8 +142,15 @@ CREATE TABLE Prospect
     status      ENUM ('nouveau', 'interesse', 'negociation', 'perdu', 'converti') DEFAULT 'nouveau',
     creation    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     date_update    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at  TIMESTAMP NULL DEFAULT NULL,
+    created_by INT,
+    updated_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     assignation INT,
-    FOREIGN KEY (assignation) REFERENCES Account(id_compte)
+    FOREIGN KEY (assignation) REFERENCES Account(id_compte) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES Account(id_compte) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES Account(id_compte) ON DELETE SET NULL
 );
 
 CREATE TABLE Interaction (
@@ -153,8 +160,9 @@ CREATE TABLE Interaction (
     type ENUM('email', 'appel', 'sms', 'reunion'),
     note TEXT,
     date_interaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect),
-    FOREIGN KEY (id_compte) REFERENCES Account(id_compte)
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect) ON DELETE CASCADE,
+    FOREIGN KEY (id_compte) REFERENCES Account(id_compte) ON DELETE CASCADE
 );
 
 -- Historique des statuts
@@ -165,8 +173,8 @@ CREATE TABLE StatusHistory (
     new_status ENUM('nouveau', 'interesse', 'negociation', 'perdu', 'converti') NOT NULL,
     changed_by INT NOT NULL,
     changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect),
-    FOREIGN KEY (changed_by) REFERENCES Account(id_compte)
+    FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect) ON DELETE CASCADE,
+    FOREIGN KEY (changed_by) REFERENCES Account(id_compte) ON DELETE RESTRICT
 );
 
 -- Historique des transferts de prospects
@@ -179,20 +187,47 @@ CREATE TABLE TransferHistory (
     transfer_notes TEXT,
     transfer_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('completed', 'pending', 'cancelled') DEFAULT 'completed',
-    FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect),
-    FOREIGN KEY (from_user_id) REFERENCES Account(id_compte),
-    FOREIGN KEY (to_user_id) REFERENCES Account(id_compte)
+    FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect) ON DELETE CASCADE,
+    FOREIGN KEY (from_user_id) REFERENCES Account(id_compte) ON DELETE RESTRICT,
+    FOREIGN KEY (to_user_id) REFERENCES Account(id_compte) ON DELETE RESTRICT
+);
+
+-- Table audit logs
+CREATE TABLE audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    table_name VARCHAR(100) NOT NULL,
+    record_id INT NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    user_id INT,
+    old_values JSON,
+    new_values JSON,
+    change_description TEXT,
+    ip_address VARCHAR(45),
+    user_agent VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Account(id_compte) ON DELETE SET NULL,
+    INDEX idx_table_record (table_name, record_id),
+    INDEX idx_user (user_id),
+    INDEX idx_timestamp (created_at)
 );
 
 -- Index pour les recherches rapides
 CREATE INDEX idx_prospect_status ON Prospect(id_prospect, status);
 CREATE INDEX idx_prospect_assignation ON Prospect(assignation);
+CREATE INDEX idx_prospect_assignation_creation ON Prospect(assignation, creation);
+CREATE INDEX idx_prospect_assignation_status ON Prospect(assignation, status);
 CREATE INDEX idx_interaction_prospect ON Interaction(id_prospect);
+CREATE INDEX idx_interaction_prospect_date ON Interaction(id_prospect, date_interaction);
 CREATE INDEX idx_status_history_prospect ON StatusHistory(id_prospect);
 CREATE INDEX idx_transfer_prospect ON TransferHistory(id_prospect);
 CREATE INDEX idx_transfer_from_user ON TransferHistory(from_user_id);
 CREATE INDEX idx_transfer_to_user ON TransferHistory(to_user_id);
 CREATE INDEX idx_transfer_date ON TransferHistory(transfer_date);
+CREATE INDEX idx_transfer_prospect_date_user ON TransferHistory(id_prospect, transfer_date, to_user_id);
+CREATE INDEX idx_deleted_at_prospect ON Prospect(deleted_at);
+CREATE INDEX idx_deleted_at_interaction ON Interaction(deleted_at);
+CREATE INDEX idx_created_by_prospect ON Prospect(created_by);
+CREATE INDEX idx_updated_by_prospect ON Prospect(updated_by);
 
 /*
     Modifié le 7 Décembre 2025
