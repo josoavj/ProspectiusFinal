@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../services/rate_limit_service.dart';
 import '../utils/app_logger.dart';
 import 'register_screen.dart';
 import 'splash_screen.dart';
@@ -17,12 +16,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  late final RateLimitService _rateLimitService;
 
   @override
   void initState() {
     super.initState();
-    _rateLimitService = RateLimitService();
   }
 
   @override
@@ -35,30 +32,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleLogin() async {
     final username = _usernameController.text.trim();
 
-    // Vérifier le rate limit avant la tentative
-    try {
-      final locked = await _rateLimitService.isAccountLocked(username);
-      if (locked) {
-        final remaining =
-            await _rateLimitService.getLockoutTimeRemaining(username);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Compte verrouillé. Réessayez dans ${remaining ?? 0} secondes',
-              ),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-            ),
-          );
-        }
-        return;
-      }
-    } catch (e) {
-      AppLogger.error('Erreur vérification rate limit', e);
-      if (!mounted) return;
-    }
-
     // ignore: use_build_context_synchronously
     final authProvider = context.read<AuthProvider>();
 
@@ -69,9 +42,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (success) {
-        // Réinitialiser les compteurs après connexion réussie
-        await _rateLimitService.recordSuccessfulLogin(username);
-
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -80,29 +50,18 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
-        // Enregistrer la tentative échouée
-        try {
-          await _rateLimitService.recordFailedAttempt(username);
-        } on RateLimitException catch (e) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(e.message),
-                backgroundColor: Colors.red,
-                duration: Duration(seconds: e.retryAfterSeconds),
-              ),
-            );
-          }
-          AppLogger.warning('Rate limit atteint: ${e.code}');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authProvider.error ?? 'Erreur de connexion'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
         }
       }
     } catch (e) {
       AppLogger.error('Erreur lors de la connexion', e);
-      try {
-        await _rateLimitService.recordFailedAttempt(username);
-      } catch (e) {
-        // Déjà géré via RateLimitException
-      }
     }
   }
 
