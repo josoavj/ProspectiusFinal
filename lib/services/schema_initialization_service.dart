@@ -70,7 +70,9 @@ class SchemaInitializationService {
           assignation INT,
           FOREIGN KEY (assignation) REFERENCES Account(id_compte) ON DELETE SET NULL,
           INDEX idx_assignation (assignation),
-          INDEX idx_status (status)
+          INDEX idx_status (status),
+          INDEX idx_assignation_creation (assignation, creation),
+          INDEX idx_assignation_status (assignation, status)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       ''');
       AppLogger.success('Table Prospect créée/vérifiée');
@@ -95,7 +97,8 @@ class SchemaInitializationService {
           FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect) ON DELETE CASCADE,
           FOREIGN KEY (id_compte) REFERENCES Account(id_compte) ON DELETE CASCADE,
           INDEX idx_prospect (id_prospect),
-          INDEX idx_compte (id_compte)
+          INDEX idx_compte (id_compte),
+          INDEX idx_prospect_date (id_prospect, date_interaction)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       ''');
       AppLogger.success('Table Interaction créée/vérifiée');
@@ -180,7 +183,8 @@ class SchemaInitializationService {
           INDEX idx_prospect (id_prospect),
           INDEX idx_from_user (from_user_id),
           INDEX idx_to_user (to_user_id),
-          INDEX idx_transfer_date (transfer_date)
+          INDEX idx_transfer_date (transfer_date),
+          INDEX idx_transfer_prospect_date_user (id_prospect, transfer_date, to_user_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       ''');
       AppLogger.success('Table TransferHistory créée/vérifiée');
