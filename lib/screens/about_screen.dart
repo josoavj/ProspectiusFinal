@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import '../utils/app_logger.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -17,7 +18,7 @@ class AboutScreen extends StatelessWidget {
         await Process.run('start', [url], runInShell: true);
       }
     } catch (e) {
-      debugPrint('Error launching URL: $e');
+      AppLogger.error('Erreur ouverture URL: $e');
     }
   }
 
