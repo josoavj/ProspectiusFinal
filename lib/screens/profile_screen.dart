@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/app_logger.dart';
+import '../utils/exception_handler.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -57,7 +58,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (_nomController.text.isEmpty ||
           _prenomController.text.isEmpty ||
           _emailController.text.isEmpty) {
-        throw Exception('Veuillez remplir tous les champs');
+        throw ValidationException(
+          message: 'Veuillez remplir tous les champs',
+          code: 'INVALID_INPUT',
+        );
       }
 
       // Ici vous pouvez ajouter la logique pour mettre à jour le profil
@@ -233,7 +237,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: const Color.fromARGB(255, 6, 206, 112)
-                                .withOpacity(0.1),
+                                .withValues(alpha: 0.1),
                             border: Border.all(
                                 color: const Color.fromARGB(255, 6, 206, 112)),
                             borderRadius: BorderRadius.circular(8),
