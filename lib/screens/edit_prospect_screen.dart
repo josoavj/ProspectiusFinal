@@ -253,7 +253,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: const Color.fromARGB(255, 6, 206, 112)
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(12),
                           topRight: Radius.circular(12),
@@ -290,7 +290,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: const Color.fromARGB(255, 6, 206, 112)
-                                    .withOpacity(0.05),
+                                    .withValues(alpha: 0.05),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: const Color.fromARGB(255, 6, 206, 112),
@@ -382,8 +382,9 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                                     .text.isEmpty
                                 ? null
                                 : () async {
-                                    if (authProvider.currentUser == null)
+                                    if (authProvider.currentUser == null) {
                                       return;
+                                    }
 
                                     setState(() => _isLoading = true);
 
@@ -399,17 +400,18 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
 
                                     _interactionDescriptionController.clear();
 
-                                    if (mounted) {
-                                      Navigator.of(context).pop();
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                              'Interaction ajoutée avec succès'),
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
+                                    if (!context.mounted) {
+                                      return;
                                     }
+
+                                    Navigator.of(context).pop();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Interaction ajoutée avec succès'),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
                                   },
                             child: Text(
                               _isLoading ? 'Ajout...' : 'Ajouter',
