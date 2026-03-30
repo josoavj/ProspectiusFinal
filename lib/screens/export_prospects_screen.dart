@@ -292,7 +292,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: const Color.fromARGB(255, 6, 206, 112)
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                         border: Border.all(
                             color: const Color.fromARGB(255, 6, 206, 112)),
                         borderRadius: BorderRadius.circular(8),
