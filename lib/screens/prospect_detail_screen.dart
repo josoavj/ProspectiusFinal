@@ -312,7 +312,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
       case 'negociation':
         return Colors.orange[100]!;
       case 'converti':
-        return const Color.fromARGB(255, 6, 206, 112).withOpacity(0.1);
+        return const Color.fromARGB(255, 6, 206, 112).withValues(alpha: 0.1);
       case 'perdu':
         return Colors.red[100]!;
       default:

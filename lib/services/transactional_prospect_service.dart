@@ -30,7 +30,7 @@ class TransactionalProspectService {
         (connection) async {
           // Étape 1: Récupérer et verrouiller le prospect
           final prospectResult = await connection.query(
-            'SELECT id_prospect, status FROM Prospect WHERE id_prospect = ? FOR UPDATE',
+            'SELECT id_prospect, status FROM Prospect WHERE id_prospect = ? AND deleted_at IS NULL FOR UPDATE',
             [prospectId],
           );
 
@@ -45,7 +45,7 @@ class TransactionalProspectService {
 
           // Étape 2: Mettre à jour le statut
           final updateResult = await connection.query(
-            'UPDATE Prospect SET status = ?, date_update = NOW() WHERE id_prospect = ?',
+            'UPDATE Prospect SET status = ?, date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
             [newStatus, prospectId],
           );
 
@@ -109,7 +109,7 @@ class TransactionalProspectService {
 
           // Étape 2: Mettre à jour la date de modification (atomique avec la transaction)
           final updateResult = await connection.query(
-            'UPDATE Prospect SET date_update = NOW() WHERE id_prospect = ?',
+            'UPDATE Prospect SET date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
             [prospectId],
           );
 
@@ -154,7 +154,7 @@ class TransactionalProspectService {
         (connection) async {
           // Étape 1: Vérifier que le prospect existe et que fromUserId est le propriétaire
           final prospectResult = await connection.query(
-            'SELECT id_prospect, assignation FROM Prospect WHERE id_prospect = ? FOR UPDATE',
+            'SELECT id_prospect, assignation FROM Prospect WHERE id_prospect = ? AND deleted_at IS NULL FOR UPDATE',
             [prospectId],
           );
 
@@ -176,7 +176,7 @@ class TransactionalProspectService {
 
           // Étape 2: Transférer le prospect
           await connection.query(
-            'UPDATE Prospect SET assignation = ?, date_update = NOW() WHERE id_prospect = ?',
+            'UPDATE Prospect SET assignation = ?, date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
             [toUserId, prospectId],
           );
 
@@ -227,7 +227,7 @@ class TransactionalProspectService {
         (connection) async {
           // Étape 1: Vérifier qu'aucun prospect avec cet email n'existe
           final existingResult = await connection.query(
-            'SELECT COUNT(*) as count FROM Prospect WHERE email = ?',
+            'SELECT COUNT(*) as count FROM Prospect WHERE email = ? AND deleted_at IS NULL',
             [email],
           );
 

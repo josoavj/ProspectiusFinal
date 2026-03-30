@@ -109,12 +109,12 @@ class TimeoutException implements Exception {
 }
 
 /// Widget pour afficher les erreurs de manière gracieuse
-class ErrorWidget extends StatelessWidget {
+class AppErrorWidget extends StatelessWidget {
   final String error;
   final VoidCallback? onRetry;
   final String title;
 
-  const ErrorWidget({
+  const AppErrorWidget({
     super.key,
     required this.error,
     this.onRetry,
@@ -210,7 +210,7 @@ class _SafeLoadingWidgetState extends State<SafeLoadingWidget> {
   @override
   Widget build(BuildContext context) {
     if (_isTimeoutExceeded) {
-      return ErrorWidget(
+      return AppErrorWidget(
         error:
             'Le chargement a pris trop de temps (${widget.timeout.inSeconds}s).\nVérifiez votre connexion à la base de données.',
         title: 'Timeout du chargement',

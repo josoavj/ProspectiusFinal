@@ -1,4 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart' as crypto;
+import 'dart:convert';
 import '../utils/app_logger.dart';
 
 class RateLimitService {
@@ -12,12 +14,22 @@ class RateLimitService {
 
   RateLimitService._internal();
 
+  String _normalizeUsername(String username) {
+    return username.trim().toLowerCase();
+  }
+
+  String _keySuffix(String username) {
+    final normalized = _normalizeUsername(username);
+    return crypto.sha256.convert(utf8.encode(normalized)).toString();
+  }
+
   /// Enregistre une tentative de connexion échouée
   Future<void> recordFailedAttempt(String username) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final key = 'login_attempts_$username';
-      final lockoutKey = 'login_lockout_$username';
+      final suffix = _keySuffix(username);
+      final key = 'login_attempts_$suffix';
+      final lockoutKey = 'login_lockout_$suffix';
 
       // Vérifier si le compte est verrouillé
       final lockoutTime = prefs.getInt(lockoutKey);
@@ -94,8 +106,9 @@ class RateLimitService {
   Future<void> recordSuccessfulLogin(String username) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final key = 'login_attempts_$username';
-      final lockoutKey = 'login_lockout_$username';
+      final suffix = _keySuffix(username);
+      final key = 'login_attempts_$suffix';
+      final lockoutKey = 'login_lockout_$suffix';
 
       await prefs.remove(key);
       await prefs.remove(lockoutKey);
@@ -110,7 +123,8 @@ class RateLimitService {
   Future<bool> isAccountLocked(String username) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final lockoutKey = 'login_lockout_$username';
+      final suffix = _keySuffix(username);
+      final lockoutKey = 'login_lockout_$suffix';
       final lockoutTime = prefs.getInt(lockoutKey);
 
       if (lockoutTime != null) {
@@ -133,7 +147,8 @@ class RateLimitService {
   Future<int> getRemainingAttempts(String username) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final key = 'login_attempts_$username';
+      final suffix = _keySuffix(username);
+      final key = 'login_attempts_$suffix';
       final attemptData = prefs.getString(key);
 
       if (attemptData == null) {
@@ -161,7 +176,8 @@ class RateLimitService {
   Future<int?> getLockoutTimeRemaining(String username) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final lockoutKey = 'login_lockout_$username';
+      final suffix = _keySuffix(username);
+      final lockoutKey = 'login_lockout_$suffix';
       final lockoutTime = prefs.getInt(lockoutKey);
 
       if (lockoutTime != null) {
@@ -181,8 +197,9 @@ class RateLimitService {
   Future<void> unlockAccount(String username) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final lockoutKey = 'login_lockout_$username';
-      final key = 'login_attempts_$username';
+      final suffix = _keySuffix(username);
+      final lockoutKey = 'login_lockout_$suffix';
+      final key = 'login_attempts_$suffix';
 
       await prefs.remove(lockoutKey);
       await prefs.remove(key);

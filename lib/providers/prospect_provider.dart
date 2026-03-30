@@ -43,6 +43,21 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
+  void _ensureServices() {
+    if (_auditService != null && _transferService != null) return;
+
+    try {
+      final mysql = MySQLService();
+      if (mysql.isConnected) {
+        final connection = mysql.getConnection();
+        _auditService ??= AuditService(connection);
+        _transferService ??= TransferService(connection);
+      }
+    } catch (e) {
+      AppLogger.warning('Services d\'audit/transfert non disponibles: $e');
+    }
+  }
+
   Future<void> loadProspects(int userId) async {
     _isLoading = true;
     _error = null;
@@ -146,12 +161,11 @@ class ProspectProvider extends ChangeNotifier {
       await _databaseService.deleteProspect(prospectId);
 
       // Enregistrer l'audit
-      if (_auditService != null) {
-        await _auditService!.logProspectDeletion(
-          prospectId: prospectId,
-          userId: userId,
-        );
-      }
+      _ensureServices();
+      await _auditService?.logProspectDeletion(
+        prospectId: prospectId,
+        userId: userId,
+      );
 
       await loadProspects(userId);
       return true;
@@ -244,6 +258,7 @@ class ProspectProvider extends ChangeNotifier {
     String? notes,
   }) async {
     try {
+      _ensureServices();
       if (_transferService == null) {
         _error = 'Service de transfert non disponible';
         notifyListeners();

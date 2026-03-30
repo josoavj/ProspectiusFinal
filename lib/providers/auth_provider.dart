@@ -4,6 +4,7 @@ import '../services/database_service.dart';
 import '../services/mysql_service.dart';
 import '../services/storage_service.dart';
 import '../services/error_handling_service.dart';
+import '../services/rate_limit_service.dart';
 import '../utils/exception_handler.dart';
 import '../utils/app_logger.dart';
 
@@ -20,6 +21,7 @@ class AuthProvider extends ChangeNotifier {
   final DatabaseService _databaseService = DatabaseService();
   final StorageService _storageService = StorageService();
   final MySQLService _mysqlService = MySQLService();
+  final RateLimitService _rateLimitService = RateLimitService();
 
   Future<bool> configureDatabase(MySQLConfig config) async {
     _isLoading = true;
@@ -63,6 +65,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final locked = await _rateLimitService.isAccountLocked(username);
+      if (locked) {
+        final remaining =
+            await _rateLimitService.getLockoutTimeRemaining(username);
+        throw ValidationException(
+          message:
+              'Compte verrouillé. Réessayez dans ${remaining ?? 0} secondes',
+          code: 'ACCOUNT_LOCKED',
+        );
+      }
+
       if (!_mysqlService.isConnected) {
         throw ConnectionException(
           message: 'Base de données non connectée',
@@ -76,6 +89,7 @@ class AuthProvider extends ChangeNotifier {
         timeout: ErrorHandlingService.shortTimeout,
       );
       await _storageService.saveUserData(_currentUser!.username);
+      await _rateLimitService.recordSuccessfulLogin(username);
 
       _isLoading = false;
       notifyListeners();
@@ -89,12 +103,22 @@ class AuthProvider extends ChangeNotifier {
       return false;
     } on AppException catch (e) {
       _error = e.message;
+      try {
+        await _rateLimitService.recordFailedAttempt(username);
+      } on RateLimitException catch (rateLimitError) {
+        _error = rateLimitError.message;
+      }
       AppLogger.warning('Erreur d\'authentification: ${e.message}');
       _isLoading = false;
       notifyListeners();
       return false;
     } catch (e, stackTrace) {
       _error = 'Erreur: $e';
+      try {
+        await _rateLimitService.recordFailedAttempt(username);
+      } on RateLimitException catch (rateLimitError) {
+        _error = rateLimitError.message;
+      }
       AppLogger.error('Erreur lors de la connexion', e, stackTrace);
       _isLoading = false;
       notifyListeners();

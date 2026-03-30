@@ -122,21 +122,21 @@ class MigrationService {
 
       await _connection.query('''
         CREATE TABLE IF NOT EXISTS audit_logs (
-          id BIGINT AUTO_INCREMENT PRIMARY KEY,
+          id INT AUTO_INCREMENT PRIMARY KEY,
           table_name VARCHAR(100) NOT NULL,
           record_id INT NOT NULL,
-          action VARCHAR(20) NOT NULL,
-          user_id INT NOT NULL,
+          action VARCHAR(50) NOT NULL,
+          user_id INT,
           old_values JSON,
           new_values JSON,
-          change_description VARCHAR(500),
+          change_description TEXT,
           ip_address VARCHAR(45),
           user_agent VARCHAR(255),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES Account(id_compte) ON DELETE SET NULL,
           INDEX idx_table_record (table_name, record_id),
-          INDEX idx_user_id (user_id),
-          INDEX idx_created_at (created_at),
-          INDEX idx_action (action)
+          INDEX idx_user (user_id),
+          INDEX idx_timestamp (created_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       ''');
 
@@ -146,24 +146,6 @@ class MigrationService {
       AppLogger.error(
           'Erreur lors de la création de la table audit_logs', e, stackTrace);
       rethrow;
-    }
-  }
-
-  /// Table TransferHistory est créée dans le script SQL initial, pas de migration nécessaire
-  /// Cette méthode est dépréciée et ne fait rien
-  @Deprecated('TransferHistory est créée dans le script SQL initial')
-  Future<void> createTransferHistoryTable() async {
-    const migrationName = 'create_transfer_history_table';
-    AppLogger.info(
-        'Migration $migrationName déjà appliquée (créée dans script SQL)');
-    // Enregistrer la migration pour éviter les tentatives futures
-    try {
-      final applied = await getAppliedMigrations();
-      if (!applied.contains(migrationName)) {
-        await recordMigration(migrationName);
-      }
-    } catch (e) {
-      AppLogger.warning('Impossible d\'enregistrer la migration: $e');
     }
   }
 
@@ -207,6 +189,42 @@ class MigrationService {
     }
   }
 
+  /// Ajoute des index de performance alignes sur les requetes frequentes
+  Future<void> addPerformanceIndexes() async {
+    const migrationName = 'add_performance_indexes';
+
+    try {
+      final applied = await getAppliedMigrations();
+      if (applied.contains(migrationName)) {
+        AppLogger.info('Migration $migrationName deja appliquee');
+        return;
+      }
+
+      await _connection.query(
+          'CREATE INDEX idx_prospect_assignation_creation ON Prospect(assignation, creation)');
+      await _connection.query(
+          'CREATE INDEX idx_prospect_assignation_status ON Prospect(assignation, status)');
+      await _connection.query(
+          'CREATE INDEX idx_interaction_prospect_date ON Interaction(id_prospect, date_interaction)');
+      await _connection.query(
+          'CREATE INDEX idx_transfer_prospect_date_user ON TransferHistory(id_prospect, transfer_date, to_user_id)');
+
+      await recordMigration(migrationName);
+      AppLogger.success('Index de performance ajoutes');
+    } catch (e, stackTrace) {
+      if (e.toString().contains('Duplicate key name') ||
+          e.toString().contains('already exists') ||
+          e.toString().contains('1061')) {
+        AppLogger.warning('Index deja presents, migration marquee appliquee');
+        await recordMigration(migrationName);
+      } else {
+        AppLogger.error(
+            'Erreur lors de l\'ajout des index de performance', e, stackTrace);
+        rethrow;
+      }
+    }
+  }
+
   /// Exécute toutes les migrations en attente
   Future<void> runPendingMigrations() async {
     try {
@@ -216,11 +234,11 @@ class MigrationService {
       await addSoftDeleteToProspects();
       await addSoftDeleteToInteractions();
       await createAuditLogsTable();
-      // createTransferHistoryTable() est dépréciée - créée dans le script SQL
       await addTrackingColumnsToProspects();
+      await addPerformanceIndexes();
 
       AppLogger.success('Toutes les migrations ont été exécutées');
-    } catch (e, stackTrace) {
+    } catch (e) {
       AppLogger.warning(
           'Certaines migrations ont échoué (peut être normal si déjà appliquées): $e');
       // Ne pas rethrow - certaines migrations peuvent avoir déjà été appliquées

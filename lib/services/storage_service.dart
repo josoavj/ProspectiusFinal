@@ -30,6 +30,20 @@ class StorageService {
   // Clear all
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    const preserveKeys = <String>{
+      'db_host',
+      'db_port',
+      'db_user',
+      'db_name',
+      'db_configured',
+      'mysql_config',
+    };
+
+    final keys = prefs.getKeys();
+    for (final key in keys) {
+      if (!preserveKeys.contains(key)) {
+        await prefs.remove(key);
+      }
+    }
   }
 }

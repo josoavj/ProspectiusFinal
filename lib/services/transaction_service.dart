@@ -1,5 +1,6 @@
 import 'package:mysql1/mysql1.dart' as mysql;
 import 'mysql_service.dart';
+import 'connection_pool_service.dart';
 import '../utils/exception_handler.dart';
 import '../utils/app_logger.dart';
 
@@ -9,6 +10,7 @@ class TransactionService {
   static final TransactionService _instance = TransactionService._internal();
 
   final MySQLService _mysqlService = MySQLService();
+  final ConnectionPoolService _pool = ConnectionPoolService();
 
   factory TransactionService() {
     return _instance;
@@ -126,6 +128,7 @@ class TransactionService {
   Future<T> executeWithLock<T>({
     required int recordId,
     required String tableName,
+    String idColumn = 'id',
     required Future<T> Function(mysql.MySqlConnection, Map<String, dynamic>)
         callback,
     Duration timeout = const Duration(seconds: 30),
@@ -137,7 +140,7 @@ class TransactionService {
 
       // Verrouiller le record avec SELECT FOR UPDATE
       final results = await connection.query(
-        'SELECT * FROM $tableName WHERE id = ? FOR UPDATE',
+        'SELECT * FROM $tableName WHERE $idColumn = ? FOR UPDATE',
         [recordId],
       );
 
@@ -166,15 +169,17 @@ class TransactionService {
 
   /// Obtient une connexion (du pool à l'avenir, actuellement singleton)
   Future<mysql.MySqlConnection> _getConnection() async {
-    // TODO: Implémenter un vrai pool de connexions
-    // Pour maintenant, utiliser la connexion singleton du MySQLService
-    return _mysqlService.getConnection() as mysql.MySqlConnection;
+    if (_pool.isInitialized) {
+      return _pool.getConnection();
+    }
+    return _mysqlService.getConnection();
   }
 
   /// Retourne la connexion au pool
   Future<void> _releaseConnection(mysql.MySqlConnection connection) async {
-    // TODO: Implémenter un vrai pool
-    // Pour maintenant, ne rien faire (singleton)
+    if (_pool.isInitialized) {
+      _pool.releaseConnection(connection);
+    }
   }
 }
 

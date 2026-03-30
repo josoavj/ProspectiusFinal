@@ -20,6 +20,7 @@ import 'screens/logs_viewer_screen.dart';
 import 'widgets/sidebar_navigation.dart';
 import 'services/mysql_service.dart';
 import 'services/logging_service.dart';
+import 'services/secure_storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -92,9 +93,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
       try {
         final host = prefs.getString('db_host') ?? 'localhost';
         final port = int.parse(prefs.getString('db_port') ?? '3306');
-        final user = prefs.getString('db_user') ?? 'root';
-        final password = prefs.getString('db_password') ?? 'root';
+        final user = prefs.getString('db_user') ?? '';
+        final password = await SecureStorageService().getDbPassword() ?? '';
         final database = prefs.getString('db_name') ?? 'Prospectius';
+
+        if (!mounted) return;
 
         final config = MySQLConfig(
           host: host,

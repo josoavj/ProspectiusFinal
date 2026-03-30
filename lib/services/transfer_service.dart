@@ -216,7 +216,7 @@ class TransferService {
 
       // Si pas de transfert, récupérer l'assignation actuelle du prospect
       final prospectResult = await _connection.query(
-        'SELECT assignation FROM Prospect WHERE id_prospect = ?',
+        'SELECT assignation FROM Prospect WHERE id_prospect = ? AND deleted_at IS NULL',
         [prospectId],
       );
 
@@ -255,11 +255,19 @@ class TransferService {
       final ownedResult = await _connection.query(
         '''
         SELECT COUNT(DISTINCT p.id_prospect) FROM Prospect p
-        LEFT JOIN TransferHistory t ON p.id_prospect = t.id_prospect
-        WHERE p.assignation = ? OR (
-          SELECT MAX(transfer_date) FROM TransferHistory
-          WHERE id_prospect = p.id_prospect AND to_user_id = ?
-        ) IS NOT NULL
+        LEFT JOIN (
+          SELECT t1.id_prospect, t1.to_user_id
+          FROM TransferHistory t1
+          WHERE t1.transfer_date = (
+            SELECT MAX(t2.transfer_date)
+            FROM TransferHistory t2
+            WHERE t2.id_prospect = t1.id_prospect
+          )
+        ) last_t ON p.id_prospect = last_t.id_prospect
+        WHERE p.deleted_at IS NULL AND (
+          (last_t.to_user_id IS NULL AND p.assignation = ?)
+          OR (last_t.to_user_id = ?)
+        )
         ''',
         [userId, userId],
       );
