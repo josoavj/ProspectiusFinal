@@ -3,8 +3,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../utils/exception_handler.dart';
 import '../utils/app_logger.dart';
+import 'connection_pool_service.dart';
 import 'migration_service.dart';
 import 'schema_initialization_service.dart';
+import 'secure_storage_service.dart';
 
 class MySQLConfig {
   final String host;
@@ -25,8 +27,8 @@ class MySQLConfig {
     return MySQLConfig(
       host: 'localhost',
       port: 3306,
-      user: 'root',
-      password: 'root',
+      user: '',
+      password: '',
       database: 'Prospectius',
     );
   }
@@ -35,17 +37,17 @@ class MySQLConfig {
     return MySQLConfig(
       host: json['host'] ?? 'localhost',
       port: json['port'] ?? 3306,
-      user: json['user'] ?? 'root',
-      password: json['password'] ?? 'root',
+      user: json['user'] ?? '',
+      password: json['password'] ?? '',
       database: json['database'] ?? 'Prospectius',
     );
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson({bool includePassword = false}) => {
         'host': host,
         'port': port,
         'user': user,
-        'password': password,
+        if (includePassword) 'password': password,
         'database': database,
       };
 
@@ -64,10 +66,13 @@ class MySQLConfig {
 class MySQLService {
   static final MySQLService _instance = MySQLService._internal();
 
-  dynamic _connection;
+  mysql.MySqlConnection? _connection;
   MySQLConfig _config = MySQLConfig.fromDefaults();
   bool _isConnected = false;
   MigrationService? _migrationService;
+  final ConnectionPoolService _pool = ConnectionPoolService();
+  bool _usePool = false;
+  final SecureStorageService _secureStorage = SecureStorageService();
 
   factory MySQLService() {
     return _instance;
@@ -80,14 +85,74 @@ class MySQLService {
   MigrationService? get migrationService => _migrationService;
 
   /// Obtient la connexion MySQL (usage interne pour transactions)
-  dynamic getConnection() {
+  mysql.MySqlConnection getConnection() {
     if (_connection == null || !_isConnected) {
       throw ConnectionException(
         message: 'MySQL non connecté',
         code: 'NOT_CONNECTED',
       );
     }
-    return _connection;
+    return _connection!;
+  }
+
+  Future<void> _connectInternal(
+    MySQLConfig config, {
+    bool runMigrations = true,
+    bool initPool = true,
+    bool persistConfig = true,
+  }) async {
+    AppLogger.info('Connexion à MySQL: ${config.host}:${config.port}');
+    _config = config;
+    _connection = await mysql.MySqlConnection.connect(
+      config.toConnectionSettings(),
+    );
+    _isConnected = true;
+
+    if (runMigrations) {
+      final schemaService = SchemaInitializationService(_connection!);
+      await schemaService.initializeSchema();
+
+      _migrationService = MigrationService(_connection!);
+
+      if (persistConfig) {
+        await saveConfig(config);
+      }
+
+      try {
+        await _migrationService!.runPendingMigrations();
+      } catch (e) {
+        AppLogger.warning('Erreur lors de l\'exécution des migrations: $e');
+      }
+    }
+
+    if (initPool) {
+      try {
+        await _pool.initialize(config);
+        _usePool = _pool.isInitialized;
+      } catch (e) {
+        _usePool = false;
+        AppLogger.warning('Pool de connexions non initialisé: $e');
+      }
+    }
+  }
+
+  Future<void> _reconnect() async {
+    await _connectInternal(
+      _config,
+      runMigrations: false,
+      initPool: false,
+      persistConfig: false,
+    );
+
+    if (_pool.isInitialized) {
+      try {
+        await _pool.reset();
+        _usePool = true;
+      } catch (e) {
+        _usePool = false;
+        AppLogger.warning('Pool non reinitialise: $e');
+      }
+    }
   }
 
   Future<void> loadConfig() async {
@@ -97,7 +162,17 @@ class MySQLService {
       if (configJson != null) {
         try {
           final configMap = jsonDecode(configJson) as Map<String, dynamic>;
+          final securePassword = await _secureStorage.getDbPassword();
           _config = MySQLConfig.fromJson(configMap);
+          if (securePassword != null) {
+            _config = MySQLConfig(
+              host: _config.host,
+              port: _config.port,
+              user: _config.user,
+              password: securePassword,
+              database: _config.database,
+            );
+          }
           AppLogger.info('Configuration MySQL chargée');
         } catch (e) {
           AppLogger.warning(
@@ -118,6 +193,9 @@ class MySQLService {
       final prefs = await SharedPreferences.getInstance();
       final configJson = jsonEncode(config.toJson());
       await prefs.setString('mysql_config', configJson);
+      if (config.password.isNotEmpty) {
+        await _secureStorage.saveDbPassword(config.password);
+      }
       _config = config;
       AppLogger.success('Configuration MySQL sauvegardée');
     } catch (e) {
@@ -128,32 +206,8 @@ class MySQLService {
 
   Future<bool> connect(MySQLConfig config) async {
     try {
-      AppLogger.info('Connexion à MySQL: ${config.host}:${config.port}');
-      _config = config;
-      // Create connection using the mysql1 package
-      _connection = await mysql.MySqlConnection.connect(
-        config.toConnectionSettings(),
-      );
-      _isConnected = true;
-
-      // Initialiser le service d'initialisation du schéma
-      final schemaService = SchemaInitializationService(_connection);
-      await schemaService.initializeSchema();
-
-      // Initialiser le service de migrations
-      _migrationService = MigrationService(_connection);
-
-      await saveConfig(config);
+      await _connectInternal(config);
       AppLogger.success('Connexion MySQL établie');
-
-      // Exécuter les migrations en attente
-      try {
-        await _migrationService!.runPendingMigrations();
-      } catch (e) {
-        AppLogger.warning('Erreur lors de l\'exécution des migrations: $e');
-        // Continuer même si les migrations échouent
-      }
-
       return true;
     } on ConnectionException {
       _isConnected = false;
@@ -172,10 +226,14 @@ class MySQLService {
 
   Future<void> disconnect() async {
     try {
+      if (_pool.isInitialized) {
+        await _pool.closeAll();
+      }
       if (_connection != null) {
         await _connection!.close();
         _connection = null;
         _isConnected = false;
+        _usePool = false;
         AppLogger.info('Déconnecté de MySQL');
       }
     } catch (e, stackTrace) {
@@ -191,7 +249,7 @@ class MySQLService {
           'Tentative de requête sans connexion active, tentative de reconnexion...');
       // Essayer de reconnecter automatiquement
       try {
-        await connect(_config);
+        await _reconnect();
       } catch (e) {
         AppLogger.error('Impossible de reconnecter à MySQL', e);
         throw ConnectionException(
@@ -201,6 +259,11 @@ class MySQLService {
       }
     }
     try {
+      if (_usePool && _pool.isInitialized) {
+        return await _pool.execute(
+          (connection) async => connection.query(sql, values),
+        );
+      }
       return await _connection!.query(sql, values);
     } catch (e, stackTrace) {
       AppLogger.error(
