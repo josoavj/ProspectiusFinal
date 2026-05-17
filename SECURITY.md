@@ -8,6 +8,7 @@
 ## 📊 Résumé Exécutif
 
 Cette revue évalue la sécurité de Prospectius v1.0.0 concernant :
+
 - ✅ Protection contre les attaques par force brute (Brute Force)
 - ✅ Protection contre les tests de pénétration (Penetration Testing)
 - ✅ Sécurité réseau
@@ -21,39 +22,48 @@ Cette revue évalue la sécurité de Prospectius v1.0.0 concernant :
 ## 🛡️ Points Forts Actuels
 
 ### 1. Hachage des Mots de Passe ✅
+
 - **Implémentation:** BCrypt avec salt automatique
 - **Force:** Excellent choix pour la sécurité
 - **Code:**
+
   ```dart
   final passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
   final isPasswordValid = BCrypt.checkpw(password, hashedPassword);
   ```
+
 - **Évaluation:** ✅ Sécurisé
 
 ### 2. Validation des Entrées ✅
+
 - **Implémentation:** Validateur personnalisé dans `validators.dart`
 - **Couverture:** Nom, prénom, email, username, mot de passe
 - **Évaluation:** ✅ Adéquat
 
 ### 3. Prepared Statements ✅
+
 - **Implémentation:** Paramètres de requête MySQL
 - **Protection:** Contre les injections SQL
 - **Code:**
+
   ```dart
   await _mysqlService.query(
     'SELECT * FROM Account WHERE username = ?',
     [username],
   );
   ```
+
 - **Évaluation:** ✅ Sécurisé
 
 ### 4. Logging et Audit ✅
+
 - **Implémentation:** Service de logging avec fichiers journaux
 - **Couverture:** Tentatives d'authentification, erreurs, opérations
 - **Stockage:** Journaux quotidiens dans `~/Prospectius/logs/`
 - **Évaluation:** ✅ Bon pour l'audit
 
 ### 5. Gestion des Erreurs ✅
+
 - **Implémentation:** Exceptions personnalisées
 - **Couplage:** Messages d'erreur génériques pour l'utilisateur
 - **Évaluation:** ✅ Informations sensibles protégées
@@ -67,6 +77,7 @@ Cette revue évalue la sécurité de Prospectius v1.0.0 concernant :
 **Risque:** Attaques par force brute possibles
 
 **Problème:**
+
 ```dart
 // Actuellement: pas de limite d'essais
 Future<bool> login(String username, String password) async {
@@ -75,12 +86,14 @@ Future<bool> login(String username, String password) async {
 ```
 
 **Impact:** 
+
 - Attaquant peut tenter 10 000 mots de passe par minute
 - Avec BCrypt (lent), toujours possible mais coûteux en temps
 
 **Recommandation:** ⚠️ **HAUTE PRIORITÉ**
 
 Implémentez un système de limite de tentatives:
+
 ```dart
 // À implémenter
 Future<bool> login(String username, String password) async {
@@ -100,6 +113,7 @@ Future<bool> login(String username, String password) async {
 **Risque:** Credentials compromises
 
 **Problème:**
+
 ```dart
 // Sauvegardé en texte clair dans SharedPreferences
 final configJson = jsonEncode(config.toJson());
@@ -109,6 +123,7 @@ await prefs.setString('mysql_config', configJson);
 ```
 
 **Impact:**
+
 - Password stocké en clair
 - SharedPreferences accessible sur filesystem
 - Un administrateur local peut extraire les credentials
@@ -116,6 +131,7 @@ await prefs.setString('mysql_config', configJson);
 **Recommandation:** ⚠️ **HAUTE PRIORITÉ**
 
 Chiffrer les credentials:
+
 ```dart
 // À implémenter
 class EncryptedStorage {
@@ -137,6 +153,7 @@ class EncryptedStorage {
 **Risque:** Données en clair sur le réseau
 
 **Problème:**
+
 ```dart
 // Connexion directe sans chiffrement
 _connection = await mysql.MySqlConnection.connect(
@@ -145,6 +162,7 @@ _connection = await mysql.MySqlConnection.connect(
 ```
 
 **Impact:**
+
 - Si MySQL n'est pas localhost, les données sont en clair
 - Credentials transmis en clair
 - Données de prospects exposées
@@ -153,11 +171,13 @@ _connection = await mysql.MySqlConnection.connect(
 **Recommandation:** ⚠️ **CRITIQUE POUR RÉSEAU**
 
 Actuellement acceptable **SEULEMENT POUR:**
+
 - ✅ Localhost (même machine)
 - ✅ VPN local sécurisé
 - ✅ Réseau privé fermé
 
 **À faire pour réseau public:**
+
 ```dart
 // À implémenter
 mysql.ConnectionSettings(
@@ -180,12 +200,14 @@ mysql.ConnectionSettings(
 **Risque:** Session hijacking possible
 
 **Problème:**
+
 ```dart
 // Stocké en clair dans SharedPreferences
 await _storageService.saveUserData(_currentUser!.username);
 ```
 
 **Impact:**
+
 - Pas de token/session
 - Si SharedPreferences est extraite, accès direct
 - Pas de revocation possible
@@ -194,6 +216,7 @@ await _storageService.saveUserData(_currentUser!.username);
 **Recommandation:** ⚠️ **MOYEN PRIORITÉ**
 
 Implémenter les tokens JWT:
+
 ```dart
 // À implémenter
 class TokenManager {
@@ -221,6 +244,7 @@ class TokenManager {
 **Risque:** Utilisateur peut accéder à toutes les données
 
 **Problème:**
+
 ```dart
 // Tous les utilisateurs accèdent aux mêmes données
 Future<List<Prospect>> getProspects(int userId) async {
@@ -229,6 +253,7 @@ Future<List<Prospect>> getProspects(int userId) async {
 ```
 
 **Impact:**
+
 - Utilisateur A peut voir les prospects de l'utilisateur B
 - Pas de séparation des données multi-utilisateurs
 - Isolation des données non garantie
@@ -236,6 +261,7 @@ Future<List<Prospect>> getProspects(int userId) async {
 **Recommandation:** ⚠️ **MOYEN PRIORITÉ**
 
 Vérifier les permissions à chaque requête:
+
 ```dart
 // À implémenter
 Future<List<Prospect>> getProspects(int userId) async {
@@ -275,11 +301,13 @@ Client Prospectius ← → MySQL Local (port 3306)
 ```
 
 **Sécurité:** ✅ **ACCEPTABLE**
+
 - Pas de transmission réseau
 - Pas de chiffrement requis
 - Configuration en clair acceptable
 
 **Checklist:**
+
 - ✅ MariaDB configuré localhost uniquement
 - ✅ Authentification MySQL activée
 - ✅ Logs activés pour audit
@@ -296,6 +324,7 @@ Client Prospectius ← VPN/LAN Sécurisé → MySQL
 **Sécurité:** ⚠️ **AMÉLIORATIONS REQUISES**
 
 **Checklist:**
+
 - ⚠️ HTTPS/TLS pour MySQL **REQUIS**
 - ⚠️ SSL Certificates pour la connexion
 - ⚠️ Rate limiting **REQUIS**
@@ -304,6 +333,7 @@ Client Prospectius ← VPN/LAN Sécurisé → MySQL
 - ✅ Firewall: restreindre IP sources
 
 **Commandes MySQL à configurer:**
+
 ```sql
 -- Forcer SSL pour les connexions
 ALTER USER 'root'@'%' REQUIRE SSL;
@@ -325,6 +355,7 @@ Client Prospectius ← Internet → MySQL
 **Sécurité:** ❌ **NON RECOMMANDÉ AVEC LA VERSION ACTUELLE**
 
 **Problèmes critiques:**
+
 - ❌ Pas de chiffrement bout-à-bout
 - ❌ Credentials en clair sur le réseau
 - ❌ Pas de protection DDoS
@@ -332,6 +363,7 @@ Client Prospectius ← Internet → MySQL
 - ❌ Pas de 2FA
 
 **À faire avant deployment public:**
+
 1. ❌ **REQUIS:** Reverse proxy (Nginx/Apache) avec HTTPS
 2. ❌ **REQUIS:** API Gateway avec authentification
 3. ❌ **REQUIS:** Rate limiting et throttling
@@ -356,6 +388,7 @@ Client Prospectius
 ## 📋 Checklist de Sécurité Actuelle
 
 ### Implémenté ✅
+
 - [x] Hachage bcrypt des mots de passe
 - [x] Validation des entrées
 - [x] Prepared statements (pas d'injection SQL)
@@ -364,6 +397,7 @@ Client Prospectius
 - [x] Support localhost uniquement (actuellement)
 
 ### À Implémenter ⚠️
+
 - [ ] Rate limiting sur authentification
 - [ ] Chiffrement des credentials
 - [ ] SSL/TLS pour MySQL (si réseau)
@@ -376,6 +410,7 @@ Client Prospectius
 - [ ] Backup chiffré
 
 ### Non Applicable (App Native) ✅
+
 - [x] CORS (app native)
 - [x] CSRF protection (app native)
 - [x] XSS protection (app native)
@@ -385,16 +420,19 @@ Client Prospectius
 ## 🔐 Recommandations par Priorité
 
 ### 🔴 CRITIQUE (Avant tout deployment réseau)
+
 1. **Rate Limiting** - Bloquer après N tentatives échouées
 2. **TLS/SSL pour MySQL** - Chiffrer la connexion réseau
 3. **Chiffrer les Credentials** - Pas en clair dans SharedPreferences
 
 ### 🟠 HAUTE PRIORITÉ (Avant production)
+
 4. **JWT Tokens** - Remplacer username stocké par token
 5. **RBAC** - Vérifier l'accès à chaque requête
 6. **Session Timeout** - Déconnecter après inactivité
 
 ### 🟡 MOYEN PRIORITÉ (À envisager)
+
 7. **2FA** - Second facteur d'authentification
 8. **CAPTCHA** - Anti-bot sur login
 9. **Audit Trail** - Historique détaillé des actions
@@ -405,6 +443,7 @@ Client Prospectius
 ## 🧪 Tests de Sécurité Recommandés
 
 ### Tests Manuels
+
 ```bash
 # 1. Brute Force
 for i in {1..100}; do
@@ -423,6 +462,7 @@ done
 ```
 
 ### Tests Automatisés
+
 - OWASP ZAP scanning
 - Burp Suite Community
 - SQLMap (injection SQL)
@@ -449,12 +489,14 @@ done
 ### ✅ Status Actuel: ACCEPTABLE POUR USAGE LOCAL
 
 Prospectius est **sécurisé pour un usage en localhost**, avec:
+
 - ✅ Protection contre les injections SQL
 - ✅ Hachage sécurisé des mots de passe
 - ✅ Logging complet pour audit
 - ✅ Gestion d'erreurs adéquate
 
 ### ⚠️ Limitations Actuelles:
+
 - ❌ **NON SÛRE pour réseau public** sans modifications
 - ⚠️ Pas de protection contre force brute
 - ⚠️ Credentials en clair (acceptable pour localhost)
@@ -462,16 +504,19 @@ Prospectius est **sécurisé pour un usage en localhost**, avec:
 ### 🚀 Roadmap Sécurité
 
 **Phase 1 (v1.1.0):**
+
 - Implémenter rate limiting
 - Ajouter JWT tokens
 - Chiffrer les credentials
 
 **Phase 2 (v1.2.0):**
+
 - RBAC complet
 - Session timeout
 - Audit trail détaillé
 
 **Phase 3 (v1.3.0):**
+
 - 2FA
 - CAPTCHA
 - Backup chiffré
@@ -481,6 +526,7 @@ Prospectius est **sécurisé pour un usage en localhost**, avec:
 ## 📞 Rapporter une Vulnérabilité
 
 Si vous découvrez une vulnérabilité:
+
 1. NE PAS la publier publiquement
 2. Contacter: security@prospectius.dev
 3. Inclure: description, impact, PoC si possible
