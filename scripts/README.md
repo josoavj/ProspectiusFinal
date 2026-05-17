@@ -28,32 +28,38 @@ bash setup.sh
 Ce script détecte automatiquement votre OS et exécute le bon installateur.
 
 **Windows:** Vous pouvez aussi directement utiliser les fichiers téléchargés depuis la [latest release](https://github.com/josoavj/ProspectiusFinal/releases/latest) :
+
 - Double-cliquez sur `prospectius.exe`
 - Lancez `install-windows.ps1` ou `install-windows.bat` pour configurer la base de données
 
 ### Option 2: Installation Manuelle
 
 **Linux:**
+
 ```bash
 bash install-linux.sh
 ```
 
 **macOS:**
+
 ```bash
 bash install-macos.sh
 ```
 
 **Windows (PowerShell - Recommandé):**
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File install-windows.ps1
 ```
 
 **Windows (CMD):**
+
 ```cmd
 install-windows.bat
 ```
 
 **Windows (Direct depuis la release):**
+
 1. Téléchargez les fichiers depuis la [latest release](https://github.com/josoavj/ProspectiusFinal/releases/latest)
 2. Installez MariaDB
 3. Double-cliquez sur `prospectius.exe`
@@ -81,6 +87,7 @@ bash install-linux.sh
 ```
 
 **Fonctionnalités:**
+
 - Détecte la distribution Linux (Ubuntu/Debian, Fedora/RHEL, Arch)
 - Installe les dépendances système requises
 - Installe et configure MariaDB
@@ -89,6 +96,7 @@ bash install-linux.sh
 - Affiche les instructions de lancement
 
 **Distributions Supportées:**
+
 - Ubuntu / Debian
 - Fedora / RHEL / CentOS
 - Arch Linux
@@ -101,6 +109,7 @@ bash install-macos.sh
 ```
 
 **Fonctionnalités:**
+
 - Vérifie Homebrew (installe si nécessaire)
 - Installe MariaDB via Homebrew
 - Démarre le service MariaDB
@@ -116,6 +125,7 @@ powershell -ExecutionPolicy Bypass -File install-windows.ps1
 ```
 
 **Fonctionnalités:**
+
 - Télécharge automatiquement `prospectius.exe` et `Prospectius.sql` depuis la latest release GitHub
 - Vérifie l'installation de MariaDB
 - Teste la connexion MySQL
@@ -124,6 +134,7 @@ powershell -ExecutionPolicy Bypass -File install-windows.ps1
 - Affiche les instructions de configuration
 
 **Avantages:**
+
 - Plus moderne que CMD
 - Meilleure gestion des erreurs
 - Couleurs pour une meilleure lisibilité
@@ -138,6 +149,7 @@ install-windows.bat
 ```
 
 **Fonctionnalités:**
+
 - Télécharge automatiquement `prospectius.exe` et `Prospectius.sql` depuis la latest release GitHub
 - Vérifie l'installation de MariaDB
 - Importe le schéma de base de données
@@ -145,6 +157,7 @@ install-windows.bat
 - Affiche les instructions de configuration
 
 **Avantages:**
+
 - Compatible avec tous les systèmes Windows
 - Pas de dépendances PowerShell
 - Téléchargement automatique des fichiers depuis la release
@@ -157,11 +170,13 @@ bash download-sql.sh
 ```
 
 **Fonctionnalités:**
+
 - Télécharge `Prospectius.sql` depuis la latest release ProspectiusFinal
 - Utilise curl ou wget (auto-détection)
 - Sauvegarde dans `scripts/prospectius.sql`
 
 **Utilité:**
+
 - Installation manuelle de la base de données
 - Mise à jour du schéma
 - Alternative aux scripts d'installation automatiques
@@ -174,6 +189,7 @@ bash validate.sh
 ```
 
 **Vérifie:**
+
 - ✅ Installation de Flutter
 - ✅ Installation de MySQL/MariaDB
 - ✅ Connectivité MySQL
@@ -182,6 +198,7 @@ bash validate.sh
 - ✅ Structure du projet
 
 **Affiche:**
+
 - Version Flutter
 - Configuration supportée
 - Taille du cache Flutter
@@ -189,6 +206,7 @@ bash validate.sh
 - État de la base de données
 
 **Sortie:**
+
 - ✅ Si tous les contrôles passent
 - ❌ Erreurs détectées avec solutions
 
@@ -200,15 +218,18 @@ bash clean.sh
 ```
 
 **Nettoie:**
+
 - Répertoire `build/`
 - Fichier `pubspec.lock`
 - Répertoire `.dart_tool`
 - Cache Flutter (rapport uniquement)
 
 **Réinstalle:**
+
 - Dépendances Flutter (`flutter pub get`)
 
 **Affiche:**
+
 - Diagnostic complet après nettoyage
 - Versions de Flutter et dépendances
 - État de la base de données
@@ -221,6 +242,7 @@ bash clean.sh
 ### Avant de lancer les scripts
 
 1. **Cloner le projet:**
+
    ```bash
    git clone <repository-url>
    cd prospectius
@@ -293,28 +315,33 @@ Vous pouvez éditer les scripts pour sauter certaines vérifications (non recomm
 ## 🆘 Dépannage
 
 ### Script Non Trouvé
+
 ```bash
 cd prospectius  # Assurez-vous d'être dans le bon répertoire
 bash scripts/setup.sh
 ```
 
 ### Permission Refusée (Linux/macOS)
+
 ```bash
 chmod +x scripts/*.sh
 bash scripts/setup.sh
 ```
 
 ### MySQL Non Détecté
+
 - **Linux:** `sudo systemctl start mariadb`
 - **macOS:** `brew services start mariadb`
 - **Windows:** Services.msc → Chercher MariaDB → Démarrer
 
 ### Script SQL Non Trouvé
+
 ```bash
 bash scripts/download-sql.sh
 ```
 
 ### PowerShell Policy Error (Windows)
+
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser
 powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
@@ -334,6 +361,7 @@ powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
 ## 💡 Conseils et Bonnes Pratiques
 
 1. **Toujours valider après installation:**
+
    ```bash
    bash scripts/validate.sh
    ```
@@ -343,11 +371,13 @@ powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
    - Relancez les scripts après un `git pull`
 
 3. **Sauvegarder la base de données:**
+
    ```bash
    mysqldump -u root -proot Prospectius > backup.sql
    ```
 
 4. **Nettoyer en cas de problèmes:**
+
    ```bash
    bash scripts/clean.sh
    ```
@@ -357,6 +387,7 @@ powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
 ## 📞 Support
 
 Pour les problèmes spécifiques:
+
 - Vérifiez [INSTALLATION.md](../INSTALLATION.md)
 - Consultez [ENVIRONMENT.md](../ENVIRONMENT.md)
 - Exécutez `validate.sh` pour un diagnostic

@@ -43,10 +43,11 @@
    - `Prospectius.sql`
 
 2. Installez MariaDB:
-   - Windows: https://mariadb.org/download/
+   - Windows: <https://mariadb.org/download/>
    - Linux: `sudo apt install mariadb-server`
 
 3. Importez la base de données:
+
    ```bash
    mysql -u root -proot < Prospectius.sql
    ```
@@ -76,16 +77,19 @@ Ce script détecte votre OS et lance l'installation appropriée.
 **Ou manuellement:**
 
 **Linux:**
+
 ```bash
 bash scripts/install-linux.sh
 ```
 
 **macOS:**
+
 ```bash
 bash scripts/install-macos.sh
 ```
 
 **Windows (PowerShell):**
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
 ```
@@ -100,6 +104,7 @@ powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
 ### Pour les Développeurs
 
 **Windows**
+
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) (version 3.16.0 ou supérieure)
 - [Dart 3.0.0+](https://dart.dev/get-dart) (inclus dans Flutter)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) avec les outils de développement C++
@@ -107,6 +112,7 @@ powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
 - Git
 
 **Linux (Ubuntu/Debian)**
+
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) (version 3.16.0 ou supérieure)
 - [Dart 3.0.0+](https://dart.dev/get-dart) (inclus dans Flutter)
 - Build essentials: `sudo apt install build-essential cmake git libgtk-3-dev pkg-config libssl-dev`
@@ -114,6 +120,7 @@ powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
 - Git
 
 **macOS**
+
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) (version 3.16.0 ou supérieure)
 - [Dart 3.0.0+](https://dart.dev/get-dart) (inclus dans Flutter)
 - [Xcode](https://apps.apple.com/us/app/xcode/id497799835)
@@ -136,6 +143,7 @@ flutter config --enable-linux-desktop    # Pour Linux
 ### 2. Installation de MariaDB
 
 #### Ubuntu/Debian
+
 ```bash
 sudo apt update
 sudo apt install mariadb-server
@@ -147,6 +155,7 @@ sudo systemctl enable mariadb
 ```
 
 #### Windows
+
 1. Télécharger depuis [mariadb.org](https://mariadb.org/download/)
 2. Installer avec les paramètres par défaut
 3. MariaDB sera accessible sur `localhost:3306`
@@ -162,6 +171,7 @@ mysql -u root -proot < scripts/Prospectius.sql
 ```
 
 Ou manuellement:
+
 ```bash
 mysql -u root -p
 # Dans le client MySQL:
@@ -172,6 +182,7 @@ EXIT;
 ## 🚀 Lancement de l'application
 
 ### Windows
+
 ```bash
 ## Mode debug
 flutter run -d windows
@@ -184,6 +195,7 @@ flutter build windows --release
 L'exécutable sera à: `build/windows/x64/runner/Release/prospectius.exe`
 
 ### Linux
+
 ```bash
 # Mode debug
 flutter run -d linux
@@ -197,6 +209,7 @@ L'exécutable sera à: `build/linux/x64/release/prospectius`
 ## 🗄️ Configuration de la Base de Données
 
 Au premier lancement, configurez la connexion:
+
 - **Hôte**: `localhost`
 - **Port**: `3306`
 - **Utilisateur**: `root` (ou votre utilisateur)
@@ -260,6 +273,7 @@ mysql -u root -p -e "SHOW DATABASES;"
 ```
 
 ### Problèmes de build
+
 ```bash
 flutter clean
 flutter pub get
@@ -283,6 +297,7 @@ Voir [INSTALLATION.md](INSTALLATION.md) pour des instructions détaillées.
 ### Pages et Fonctionnalités
 
 #### 🔍 Exploration (Nouvelle Fonctionnalité)
+
 - Recherche multi-critères en temps réel
 - Filtrage par catégorie (Entreprise, Particulier, Startup, PME, ETI)
 - Filtrage par plage de dates de création
@@ -290,17 +305,20 @@ Voir [INSTALLATION.md](INSTALLATION.md) pour des instructions détaillées.
 - Affichage détaillé des résultats avec contacts et informations
 
 #### 👥 Gestion des Prospects
+
 - Créer, modifier, consulter et supprimer des prospects
 - Enregistrement des informations de contact
 - Historique des interactions
 - Affichage du statut (Nouveau, En cours, Qualifié, Converti, Perdu)
 
 #### 📊 Statistiques
+
 - Tableaux de bord avec les indicateurs clés
 - Graphiques de conversion
 - Suivi des performances
 
 #### 💼 Gestion des Clients
+
 - Liste des prospects convertis en clients
 - Suivi des contrats
 - Historique commercial

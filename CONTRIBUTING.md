@@ -7,12 +7,14 @@ Merci de votre intérêt pour contribuer à Prospectius! Ce guide explique comme
 ### Configurer l'Environnement de Développement
 
 1. **Cloner le dépôt:**
+
    ```bash
    git clone <repository-url>
    cd prospectius
    ```
 
 2. **Installer les dépendances:**
+
    ```bash
    bash scripts/setup.sh
    # Ou manuellement:
@@ -20,11 +22,13 @@ Merci de votre intérêt pour contribuer à Prospectius! Ce guide explique comme
    ```
 
 3. **Valider l'installation:**
+
    ```bash
    bash scripts/validate.sh
    ```
 
 4. **Lancer l'app en mode debug:**
+
    ```bash
    flutter run
    ```
@@ -36,11 +40,13 @@ Merci de votre intérêt pour contribuer à Prospectius! Ce guide explique comme
 ### 1. Créer une Issue
 
 Avant de commencer, créez une issue pour discuter de:
+
 - **Bugs:** Décrire le comportement inattendu
 - **Features:** Expliquer la nouvelle fonctionnalité
 - **Améliorations:** Proposer l'optimisation
 
 **Format recommandé:**
+
 ```markdown
 ## Description
 Brève description du problème/feature
@@ -78,6 +84,7 @@ git checkout -b fix/bug-description
 ```
 
 **Conventions de nommage:**
+
 - `feature/user-authentication` - Nouvelle fonctionnalité
 - `fix/database-connection-error` - Correction de bug
 - `docs/installation-guide` - Documentation
@@ -87,6 +94,7 @@ git checkout -b fix/bug-description
 ### 3. Développer et Tester
 
 **Format du code:**
+
 ```bash
 # Formater le code Dart
 dart format lib/ test/
@@ -99,12 +107,14 @@ flutter analyze
 ```
 
 **Standards de code:**
+
 - Suivre les conventions Dart (PascalCase pour classes, camelCase pour variables)
 - Documentez les fonctions publiques avec des commentaires `///`
 - Maintenez une couverture de tests > 80%
 - Pas de `print()` en production (utiliser `debugPrint()`)
 
 **Exemple de code documenté:**
+
 ```dart
 /// Authentifie un utilisateur avec les identifiants fournis.
 ///
@@ -121,6 +131,7 @@ Future<Account> authenticate(String username, String password) async {
 ### 4. Tester
 
 **Avant de soumettre:**
+
 ```bash
 # Exécuter les tests
 flutter test
@@ -135,6 +146,7 @@ flutter build linux --release
 ```
 
 **Ajouter des tests:**
+
 - Créer `test/models/prospect_test.dart` pour les modèles
 - Créer `test/services/database_service_test.dart` pour les services
 - Créer `test/providers/auth_provider_test.dart` pour les providers
@@ -142,6 +154,7 @@ flutter build linux --release
 ### 5. Committer
 
 **Messages de commit clairs:**
+
 ```bash
 # Feature
 git commit -m "feat: add prospect search functionality
@@ -165,6 +178,7 @@ git commit -m "docs: update installation guide for Linux
 ```
 
 **Format:**
+
 ```
 <type>: <subject>
 
@@ -174,6 +188,7 @@ git commit -m "docs: update installation guide for Linux
 ```
 
 Types acceptés:
+
 - `feat:` - Nouvelle fonctionnalité
 - `fix:` - Correction de bug
 - `docs:` - Documentation
@@ -189,6 +204,7 @@ git push origin feature/description-courte
 ```
 
 **Template de Pull Request:**
+
 ```markdown
 ## Description
 Courte description des changements
@@ -263,6 +279,7 @@ lib/
 ### Types de Tests à Ajouter
 
 **Tests Unitaires:**
+
 ```dart
 // test/models/prospect_test.dart
 void main() {
@@ -281,6 +298,7 @@ void main() {
 ```
 
 **Tests de Fournisseur:**
+
 ```dart
 // test/providers/prospect_provider_test.dart
 void main() {
@@ -312,6 +330,7 @@ flutter test --coverage
 ### Ajouter de la Documentation
 
 1. **Code inline:**
+
    ```dart
    /// Description courte
    /// 
@@ -360,6 +379,7 @@ flutter test --coverage
 ## 📋 Processus de Review
 
 Les contributeurs doivent:
+
 1. Passer la validation automatisée
 2. Être approuvés par au moins 1 mainteneur
 3. Pas de conflits avec la branche principale
@@ -370,6 +390,7 @@ Les contributeurs doivent:
 ## 🎉 Après Acceptation
 
 Votre contribution sera:
+
 - Mergée dans `main`
 - Créditée dans les releases notes
 - Incluse dans la version suivante
