@@ -271,9 +271,9 @@ Les paramètres par défaut sont:
 
 Pour changer, lancez l'application et modifiez dans la première page de configuration.
 
-### Les paramètres sont locaux
+### Les paramètres sont sécurisés
 
-Les paramètres MySQL sont stockés localement (SharedPreferences) et peuvent être modifiés une seule fois à la première connexion.
+Les paramètres de connexion MySQL sont stockés localement (SharedPreferences), tandis que le mot de passe est stocké de manière chiffrée via le **Secure Storage** du système (Keychain/Keystore).
 
 Pour réinitialiser les paramètres:
 
