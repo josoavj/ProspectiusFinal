@@ -142,15 +142,15 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
       }
     } else {
       // Créer le prospect et l'interaction en même temps
-      final prospectCreated = await prospectProvider.createProspect(
-        authProvider.currentUser!.id,
-        _nomController.text,
-        _prenomController.text,
-        _emailController.text,
-        _telephoneController.text,
-        _adresseController.text,
-        _selectedType,
-      );
+      final prospectCreated = await prospectProvider.createProspect({
+        'userId': authProvider.currentUser!.id,
+        'nom': _nomController.text,
+        'prenom': _prenomController.text,
+        'email': _emailController.text,
+        'telephone': _telephoneController.text,
+        'adresse': _adresseController.text,
+        'type': _selectedType,
+      });
 
       // Si le prospect est créé, créer l'interaction
       if (prospectCreated && _interactionNoteController.text.isNotEmpty) {
@@ -181,7 +181,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
             authProvider.currentUser!.id,
             _selectedInteractionType,
             _interactionNoteController.text,
-            DateTime.now().toUtc(),
+            DateTime.now(),
           );
         }
       }
