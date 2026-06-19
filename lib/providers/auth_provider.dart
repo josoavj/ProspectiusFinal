@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import '../models/account.dart';
-import '../services/database_service.dart';
+import '../domain/repositories/i_auth_repository.dart';
 import '../services/mysql_service.dart';
-import '../services/storage_service.dart';
-import '../services/error_handling_service.dart';
-import '../services/rate_limit_service.dart';
 import '../utils/exception_handler.dart';
 import '../utils/app_logger.dart';
+import '../core/di/service_locator.dart';
 
 class AuthProvider extends ChangeNotifier {
+  final IAuthRepository _authRepository;
+  final MySQLService _mysqlService;
+  
   Account? _currentUser;
   bool _isLoading = false;
   String? _error;
@@ -18,111 +19,36 @@ class AuthProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isAuthenticated => _currentUser != null;
 
-  final DatabaseService _databaseService = DatabaseService();
-  final StorageService _storageService = StorageService();
-  final MySQLService _mysqlService = MySQLService();
-  final RateLimitService _rateLimitService = RateLimitService();
+  AuthProvider({IAuthRepository? authRepository, MySQLService? mysqlService})
+      : _authRepository = authRepository ?? sl.authRepository,
+        _mysqlService = mysqlService ?? sl.mysqlService;
 
   Future<bool> configureDatabase(MySQLConfig config) async {
-    _isLoading = true;
-    notifyListeners();
-
+    _setLoading(true);
     try {
-      await ErrorHandlingService.executeWithTimeout(
-        () => _mysqlService.connect(config),
-        operationName: 'Configuration de la base de données',
-        timeout: ErrorHandlingService.defaultTimeout,
-      );
-
-      _isLoading = false;
-      notifyListeners();
-      AppLogger.success('Base de données configurée');
-      return true;
-    } on TimeoutException catch (e) {
-      _error = 'Timeout: ${e.message}';
-      AppLogger.error('Timeout lors de la connexion', null);
-      _isLoading = false;
-      notifyListeners();
+      final success = await _mysqlService.connect(config);
+      if (success) AppLogger.success('Base de données connectée');
+      return success;
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
       return false;
-    } on ConnectionException catch (e) {
-      _error = e.message;
-      AppLogger.error('Erreur de connexion: ${e.message}');
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    } catch (e, stackTrace) {
-      _error = 'Erreur de connexion à la base de données: $e';
-      AppLogger.error('Erreur de connexion à MySQL', e, stackTrace);
-      _isLoading = false;
-      notifyListeners();
-      return false;
+    } finally {
+      _setLoading(false);
     }
   }
 
   Future<bool> login(String username, String password) async {
-    _isLoading = true;
+    _setLoading(true);
     _error = null;
-    notifyListeners();
-
     try {
-      final locked = await _rateLimitService.isAccountLocked(username);
-      if (locked) {
-        final remaining =
-            await _rateLimitService.getLockoutTimeRemaining(username);
-        throw ValidationException(
-          message:
-              'Compte verrouillé. Réessayez dans ${remaining ?? 0} secondes',
-          code: 'ACCOUNT_LOCKED',
-        );
-      }
-
-      if (!_mysqlService.isConnected) {
-        throw ConnectionException(
-          message: 'Base de données non connectée',
-          code: 'DB_NOT_CONNECTED',
-        );
-      }
-
-      _currentUser = await ErrorHandlingService.executeWithTimeout(
-        () => _databaseService.authenticate(username, password),
-        operationName: 'Authentification',
-        timeout: ErrorHandlingService.shortTimeout,
-      );
-      await _storageService.saveUserData(_currentUser!.username);
-      await _rateLimitService.recordSuccessfulLogin(username);
-
-      _isLoading = false;
-      notifyListeners();
-      AppLogger.success('Connexion réussie pour ${_currentUser!.fullName}');
+      _currentUser = await _authRepository.authenticate(username, password);
+      AppLogger.success('Utilisateur connecté: ${_currentUser!.username}');
       return true;
-    } on TimeoutException catch (e) {
-      _error = 'Timeout: ${e.message}';
-      AppLogger.error('Timeout lors de l\'authentification', null);
-      _isLoading = false;
-      notifyListeners();
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
       return false;
-    } on AppException catch (e) {
-      _error = e.message;
-      try {
-        await _rateLimitService.recordFailedAttempt(username);
-      } on RateLimitException catch (rateLimitError) {
-        _error = rateLimitError.message;
-      }
-      AppLogger.warning('Erreur d\'authentification: ${e.message}');
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    } catch (e, stackTrace) {
-      _error = 'Erreur: $e';
-      try {
-        await _rateLimitService.recordFailedAttempt(username);
-      } on RateLimitException catch (rateLimitError) {
-        _error = rateLimitError.message;
-      }
-      AppLogger.error('Erreur lors de la connexion', e, stackTrace);
-      _isLoading = false;
-      notifyListeners();
-      return false;
+    } finally {
+      _setLoading(false);
     }
   }
 
@@ -133,48 +59,28 @@ class AuthProvider extends ChangeNotifier {
     String username,
     String password,
   ) async {
-    _isLoading = true;
+    _setLoading(true);
     _error = null;
-    notifyListeners();
-
     try {
-      if (!_mysqlService.isConnected) {
-        throw ConnectionException(
-          message: 'Base de données non connectée',
-          code: 'DB_NOT_CONNECTED',
-        );
-      }
-
-      await _databaseService.createAccount(
-        nom,
-        prenom,
-        email,
-        username,
-        password,
-      );
-
-      _isLoading = false;
-      notifyListeners();
+      await _authRepository.createAccount({
+        'nom': nom,
+        'prenom': prenom,
+        'email': email,
+        'username': username,
+        'password': password,
+      });
       AppLogger.success('Compte créé avec succès');
       return true;
-    } on AppException catch (e) {
-      _error = e.message;
-      AppLogger.warning('Erreur lors de l\'inscription: ${e.message}');
-      _isLoading = false;
-      notifyListeners();
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
       return false;
-    } catch (e, stackTrace) {
-      _error = 'Erreur: $e';
-      AppLogger.error('Erreur lors de l\'inscription', e, stackTrace);
-      _isLoading = false;
-      notifyListeners();
-      return false;
+    } finally {
+      _setLoading(false);
     }
   }
 
-  Future<void> logout() async {
+  void logout() {
     _currentUser = null;
-    await _storageService.clearUserData();
     notifyListeners();
   }
 
@@ -183,9 +89,8 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> disconnect() async {
-    await _mysqlService.disconnect();
-    _currentUser = null;
+  void _setLoading(bool value) {
+    _isLoading = value;
     notifyListeners();
   }
 }

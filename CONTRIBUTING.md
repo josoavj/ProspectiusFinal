@@ -232,45 +232,32 @@ Related to #456
 
 ---
 
-## 📐 Architecture du Projet
+## 📐 Architecture du Projet (Clean Architecture)
 
 Respectez cette structure pour les nouveaux fichiers:
 
 ```
 lib/
-├── main.dart                    # Point d'entrée
-├── models/
-│   ├── account.dart             # Modèle utilisateur
-│   ├── prospect.dart            # Modèle prospect
-│   ├── interaction.dart         # Modèle interaction
-│   └── stats.dart               # Modèle statistiques
-├── services/
-│   ├── mysql_service.dart       # Gestion connexion MySQL
-│   ├── database_service.dart    # Opérations CRUD
-│   └── storage_service.dart     # Stockage local
-├── providers/
-│   ├── auth_provider.dart       # Auth & configuration DB
-│   ├── prospect_provider.dart   # Gestion prospects
-│   └── stats_provider.dart      # Gestion statistiques
-├── screens/
-│   ├── database_config_screen.dart
-│   ├── login_screen.dart
-│   ├── register_screen.dart
-│   ├── prospects_screen.dart
-│   ├── add_prospect_screen.dart
-│   ├── prospect_detail_screen.dart
-│   └── stats_screen.dart
-└── widgets/                     # Widgets réutilisables
-    └── custom_*.dart
+├── core/                # Constantes, DI, Thèmes
+├── data/
+│   ├── repositories/    # Implémentations des dépôts
+│   └── datasources/     # Sources de données (MySQL)
+├── domain/
+│   └── repositories/    # Interfaces (Contrats)
+├── models/              # Entités métier
+├── services/            # Services techniques
+├── providers/           # Gestion d'état (Provider)
+├── screens/             # UI
+└── widgets/             # Composants réutilisables
 ```
 
 **Ajouter une nouvelle feature:**
 
-1. Créer le modèle: `lib/models/your_model.dart`
-2. Ajouter au service: Méthode dans `database_service.dart`
-3. Créer le provider: `lib/providers/your_provider.dart`
-4. Créer l'écran: `lib/screens/your_screen.dart`
-5. Ajouter les tests: `test/providers/your_provider_test.dart`
+1. Définir l'interface du dépôt dans `lib/domain/repositories/`
+2. Créer le modèle dans `lib/models/`
+3. Implémenter le dépôt dans `lib/data/repositories/`
+4. Créer ou mettre à jour un provider dans `lib/providers/`
+5. Créer l'écran dans `lib/screens/`
 
 ---
 

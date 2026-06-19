@@ -8,8 +8,8 @@
 <p align="center">
   <!--Badges -->
   <img src="https://img.shields.io/badge/license-All%20Rights%20Reserved-red" alt="License">
-  <img src="https://img.shields.io/badge/flutter-v3.35.6-blue" alt="Flutter">
-  <img src="https://img.shields.io/badge/dart-v3.9.2-blue" alt="Dart">
+  <img src="https://img.shields.io/badge/flutter-%3E%3D3.0.0-blue" alt="Flutter">
+  <img src="https://img.shields.io/badge/dart-%3E%3D3.0.0-blue" alt="Dart">
   <img src="https://img.shields.io/badge/database-MySQL-orange" alt="Database">
   <img src="https://img.shields.io/github/last-commit/josoavj/ProspectiusFinal?style=flat-square" alt="Last Commit">
 </p>
@@ -21,6 +21,17 @@
 - **Gestion d'état:** Provider 6.0.0
 - **Base de données:** MySQL / MariaDB
 - **Schéma SQL:** [Base de données Prospectius](https://github.com/josoavj/dbProspectius)
+
+## 🏗️ Architecture
+
+Le projet suit les principes de la **Clean Architecture** pour garantir la maintenabilité et l'évolutivité. Pour plus de détails, consultez le [Guide d'Architecture](./docs/ARCHITECTURE.md).
+
+- **Core**: Contient les constantes (`SqlQueries`), l'injection de dépendances (`ServiceLocator`) et les thèmes.
+- **Domain**: Définit les contrats (Interfaces) via le **Repository Pattern**.
+- **Data**: Gère l'accès aux données (MySQL) et l'implémentation des dépôts.
+- **Presentation**: Couche UI (Screens & Widgets) gérée par **Provider**.
+
+---
 
 ## ✨ Fonctionnalités
 
@@ -221,28 +232,15 @@ Au premier lancement, configurez la connexion:
 ```
 prospectius/
 ├── lib/                    # Code source Dart/Flutter
-│   ├── main.dart          # Point d'entrée
-│   ├── models/            # Modèles de données
-│   ├── services/          # Services (MySQL, Storage)
-│   ├── providers/         # Gestion d'état
+│   ├── core/              # Constantes, DI (Service Locator), Thèmes
+│   ├── data/              # Implémentations des dépôts et sources de données
+│   ├── domain/            # Interfaces des dépôts (Contrats)
+│   ├── models/            # Modèles de données (Entities)
+│   ├── providers/         # Gestion d'état (Provider)
+│   ├── services/          # Services techniques (MySQL, Secure Storage, Logging)
 │   ├── screens/           # Écrans de l'application
-│   │   ├── exploration_screen.dart     # Recherche et filtrage avancés
-│   │   ├── prospects_screen.dart       # Gestion des prospects
-│   │   ├── stats_screen.dart          # Statistiques
-│   │   ├── clients_screen.dart        # Gestion des clients
-│   │   ├── export_prospects_screen.dart # Export données
-│   │   ├── profile_screen.dart        # Profil utilisateur
-│   │   ├── login_screen.dart          # Authentification
-│   │   ├── register_screen.dart       # Inscription
-│   │   ├── configuration_screen.dart  # Paramètres
-│   │   ├── database_config_screen.dart # Config BD
-│   │   ├── about_screen.dart          # À propos
-│   │   ├── add_prospect_screen.dart   # Ajouter prospect
-│   │   ├── edit_prospect_screen.dart  # Modifier prospect
-│   │   └── prospect_detail_screen.dart # Détails prospect
 │   ├── widgets/           # Widgets réutilisables
-│   │   └── sidebar_navigation.dart    # Menu latéral
-│   └── utils/             # Utilitaires
+│   └── utils/             # Utilitaires et formateurs
 ├── windows/               # Configuration Windows (C++)
 ├── linux/                 # Configuration Linux (C++)
 ├── test/                  # Tests

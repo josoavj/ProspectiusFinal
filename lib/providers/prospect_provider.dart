@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import '../models/prospect.dart';
 import '../models/interaction.dart';
-import '../services/database_service.dart';
-import '../services/error_handling_service.dart';
-import '../services/audit_service.dart';
-import '../services/transfer_service.dart';
-import '../services/mysql_service.dart';
+import '../domain/repositories/i_prospect_repository.dart';
 import '../utils/exception_handler.dart';
-import '../utils/app_logger.dart';
+import '../core/di/service_locator.dart';
 
 class ProspectProvider extends ChangeNotifier {
+  final IProspectRepository _repository;
+  
   List<Prospect> _prospects = [];
-  List<Interaction> _interactions = [];
+  final List<Interaction> _interactions = [];
   bool _isLoading = false;
   String? _error;
   Prospect? _selectedProspect;
@@ -22,221 +20,121 @@ class ProspectProvider extends ChangeNotifier {
   String? get error => _error;
   Prospect? get selectedProspect => _selectedProspect;
 
-  final DatabaseService _databaseService = DatabaseService();
-  AuditService? _auditService;
-  TransferService? _transferService;
+  ProspectProvider({IProspectRepository? repository}) 
+      : _repository = repository ?? sl.prospectRepository;
 
-  ProspectProvider() {
-    _initializeServices();
-  }
+  int _currentPage = 0;
+  final int _pageSize = 20;
+  bool _hasMore = true;
 
-  void _initializeServices() {
-    try {
-      final mysql = MySQLService();
-      if (mysql.isConnected) {
-        final connection = mysql.getConnection();
-        _auditService = AuditService(connection);
-        _transferService = TransferService(connection);
-      }
-    } catch (e) {
-      AppLogger.warning('Services d\'audit/transfert non disponibles: $e');
+  bool get hasMore => _hasMore;
+
+  Future<void> loadProspects(int userId, {bool refresh = true}) async {
+    if (refresh) {
+      _currentPage = 0;
+      _prospects = [];
+      _hasMore = true;
     }
-  }
+    
+    if (!_hasMore && !refresh) return;
 
-  void _ensureServices() {
-    if (_auditService != null && _transferService != null) return;
-
+    _setLoading(true);
     try {
-      final mysql = MySQLService();
-      if (mysql.isConnected) {
-        final connection = mysql.getConnection();
-        _auditService ??= AuditService(connection);
-        _transferService ??= TransferService(connection);
-      }
-    } catch (e) {
-      AppLogger.warning('Services d\'audit/transfert non disponibles: $e');
-    }
-  }
-
-  Future<void> loadProspects(int userId) async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      _prospects = await ErrorHandlingService.executeWithTimeout(
-        () => _databaseService.getProspects(userId),
-        operationName: 'Chargement des prospects',
-        timeout: ErrorHandlingService.defaultTimeout,
+      final newProspects = await _repository.getProspects(
+        userId, 
+        limit: _pageSize, 
+        offset: _currentPage * _pageSize
       );
-      AppLogger.success('${_prospects.length} prospect(s) chargé(s)');
-    } on TimeoutException catch (e) {
-      _error = 'Timeout: ${e.message}';
-      AppLogger.error('Timeout lors du chargement', null);
-    } on AppException catch (e) {
-      _error = e.message;
-      AppLogger.warning(
-          'Erreur lors du chargement des prospects: ${e.message}');
-    } catch (e, stackTrace) {
-      _error = 'Erreur: $e';
-      AppLogger.error('Erreur lors du chargement des prospects', e, stackTrace);
+      
+      if (newProspects.length < _pageSize) {
+        _hasMore = false;
+      }
+      
+      _prospects.addAll(newProspects);
+      _currentPage++;
+      _error = null;
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
+    } finally {
+      _setLoading(false);
     }
-    _isLoading = false;
-    notifyListeners();
   }
 
-  Future<bool> createProspect(
-    int userId,
-    String nom,
-    String prenom,
-    String email,
-    String telephone,
-    String adresse,
-    String type,
-  ) async {
-    _isLoading = true;
-    notifyListeners();
-
+  Future<bool> createProspect(Map<String, dynamic> data) async {
+    _setLoading(true);
     try {
-      await _databaseService.createProspect(
-        userId,
-        nom,
-        prenom,
-        email,
-        telephone,
-        adresse,
-        type,
-      );
+      await _repository.createProspect(data);
+      if (data.containsKey('userId')) {
+        await loadProspects(data['userId']);
+      }
+      return true;
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
 
+  Future<bool> updateProspect(int userId, int prospectId, Map<String, dynamic> data) async {
+    _setLoading(true);
+    try {
+      await _repository.updateProspect(prospectId, data);
       await loadProspects(userId);
       return true;
-    } on AppException catch (e) {
-      _error = e.message;
-      AppLogger.warning('Erreur lors de la création: ${e.message}');
-      _isLoading = false;
-      notifyListeners();
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
       return false;
-    } catch (e, stackTrace) {
-      _error = 'Erreur: $e';
-      AppLogger.error('Erreur lors de la création du prospect', e, stackTrace);
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<bool> updateProspect(
-    int userId,
-    int prospectId,
-    Map<String, dynamic> data,
-  ) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      await _databaseService.updateProspect(prospectId, data);
-      await loadProspects(userId);
-      return true;
-    } on AppException catch (e) {
-      _error = e.message;
-      AppLogger.warning('Erreur lors de la mise à jour: ${e.message}');
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    } catch (e, stackTrace) {
-      _error = 'Erreur: $e';
-      AppLogger.error(
-          'Erreur lors de la mise à jour du prospect', e, stackTrace);
-      _isLoading = false;
-      notifyListeners();
-      return false;
+    } finally {
+      _setLoading(false);
     }
   }
 
   Future<bool> deleteProspect(int userId, int prospectId) async {
-    _isLoading = true;
-    notifyListeners();
-
     try {
-      await _databaseService.deleteProspect(prospectId);
-
-      // Enregistrer l'audit
-      _ensureServices();
-      await _auditService?.logProspectDeletion(
-        prospectId: prospectId,
-        userId: userId,
-      );
-
+      await _repository.deleteProspect(prospectId);
       await loadProspects(userId);
       return true;
-    } on AppException catch (e) {
-      _error = e.message;
-      AppLogger.warning('Erreur lors de la suppression: ${e.message}');
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    } catch (e, stackTrace) {
-      _error = 'Erreur: $e';
-      AppLogger.error(
-          'Erreur lors de la suppression du prospect', e, stackTrace);
-      _isLoading = false;
-      notifyListeners();
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
       return false;
     }
   }
 
   Future<void> loadInteractions(int prospectId) async {
-    _isLoading = true;
-    notifyListeners();
-
+    _setLoading(true);
     try {
-      _interactions = await _databaseService.getInteractions(prospectId);
-      AppLogger.success('${_interactions.length} interaction(s) chargée(s)');
-    } on AppException catch (e) {
-      _error = e.message;
-      AppLogger.warning(
-          'Erreur lors du chargement des interactions: ${e.message}');
-    } catch (e, stackTrace) {
-      _error = 'Erreur: $e';
-      AppLogger.error(
-          'Erreur lors du chargement des interactions', e, stackTrace);
+      final results = await _repository.getInteractions(prospectId);
+      _interactions.clear();
+      _interactions.addAll(results);
+      _error = null;
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
+    } finally {
+      _setLoading(false);
     }
-    _isLoading = false;
-    notifyListeners();
   }
 
-  Future<bool> createInteraction(
-    int prospectId,
-    int userId,
-    String type,
-    String note,
-    DateTime dateInteraction,
-  ) async {
+  Future<bool> createInteraction(int prospectId, int userId, String type, String note, DateTime date) async {
     try {
-      await _databaseService.createInteraction(
-        prospectId,
-        userId,
-        type,
-        note,
-        dateInteraction,
-      );
-
+      await _repository.createInteraction({
+        'prospectId': prospectId,
+        'userId': userId,
+        'type': type,
+        'note': note,
+        'dateInteraction': date,
+      });
       await loadInteractions(prospectId);
-      AppLogger.success('Interaction créée avec succès');
-      notifyListeners();
       return true;
-    } on AppException catch (e) {
-      _error = e.message;
-      AppLogger.warning('Erreur lors de la création: ${e.message}');
-      notifyListeners();
-      return false;
-    } catch (e, stackTrace) {
-      _error = 'Erreur: $e';
-      AppLogger.error(
-          'Erreur lors de la création de l\'interaction', e, stackTrace);
-      notifyListeners();
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
       return false;
     }
+  }
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
   }
 
   void selectProspect(Prospect prospect) {
@@ -247,56 +145,5 @@ class ProspectProvider extends ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
-  }
-
-  /// Transfère un prospect d'un utilisateur à un autre
-  Future<bool> transferProspect({
-    required int prospectId,
-    required int fromUserId,
-    required int toUserId,
-    String? reason,
-    String? notes,
-  }) async {
-    try {
-      _ensureServices();
-      if (_transferService == null) {
-        _error = 'Service de transfert non disponible';
-        notifyListeners();
-        return false;
-      }
-
-      await _transferService!.createTransfer(
-        prospectId: prospectId,
-        fromUserId: fromUserId,
-        toUserId: toUserId,
-        reason: reason,
-        notes: notes,
-      );
-
-      // Enregistrer l'audit
-      if (_auditService != null) {
-        await _auditService!.logAudit(
-          tableName: 'Prospect',
-          recordId: prospectId,
-          action: 'UPDATE',
-          userId: fromUserId,
-          description: 'Prospect transféré à User #$toUserId',
-        );
-      }
-
-      AppLogger.success('Prospect transféré avec succès');
-      notifyListeners();
-      return true;
-    } on AppException catch (e) {
-      _error = e.message;
-      AppLogger.warning('Erreur lors du transfert: ${e.message}');
-      notifyListeners();
-      return false;
-    } catch (e, stackTrace) {
-      _error = 'Erreur: $e';
-      AppLogger.error('Erreur lors du transfert du prospect', e, stackTrace);
-      notifyListeners();
-      return false;
-    }
   }
 }

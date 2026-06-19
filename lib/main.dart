@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'core/di/service_locator.dart';
 import 'providers/auth_provider.dart';
 import 'providers/prospect_provider.dart';
 import 'providers/stats_provider.dart';
@@ -8,31 +9,30 @@ import 'providers/audit_provider.dart';
 import 'screens/database_config_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/prospects_screen.dart';
+import 'screens/about_screen.dart';
+import 'screens/logs_viewer_screen.dart';
+import 'screens/exploration_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/export_prospects_screen.dart';
-import 'screens/about_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/clients_screen.dart';
 import 'screens/configuration_screen.dart';
-import 'screens/exploration_screen.dart';
-import 'screens/audit_transfer_screen.dart';
-import 'screens/logs_viewer_screen.dart';
 import 'widgets/sidebar_navigation.dart';
 import 'services/mysql_service.dart';
-import 'services/logging_service.dart';
 import 'services/secure_storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialiser le service de logging
-  await LoggingService().initialize();
+  // Initialisation du Service Locator (DI)
+  await sl.setup();
 
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+  
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -45,18 +45,17 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Prospectius',
-        theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+        theme: ThemeData(
+          primarySwatch: Colors.blue, 
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        ),
         home: const AuthWrapper(),
         debugShowCheckedModeBanner: false,
         routes: {
           '/config': (_) => const DatabaseConfigScreen(),
           '/login': (_) => const LoginScreen(),
           '/prospects': (_) => const MainScreen(),
-          '/audit_transfer': (context) {
-            final prospectId =
-                ModalRoute.of(context)?.settings.arguments as int?;
-            return AuditTransferScreen(prospectId: prospectId ?? 0);
-          },
         },
       ),
     );
@@ -193,25 +192,25 @@ class _MainScreenState extends State<MainScreen> {
   Widget _getScreen(int index) {
     switch (index) {
       case 0:
-        return ProspectsScreen();
+        return const ProspectsScreen();
       case 1:
-        return ExplorationScreen();
+        return const ExplorationScreen();
       case 2:
-        return StatsScreen();
+        return const StatsScreen();
       case 3:
-        return ClientsScreen();
+        return const ClientsScreen();
       case 4:
-        return ExportProspectsScreen();
+        return const ExportProspectsScreen();
       case 5:
-        return AboutScreen();
+        return const AboutScreen();
       case 6:
-        return ProfileScreen();
+        return const ProfileScreen();
       case 7:
-        return ConfigurationScreen();
+        return const ConfigurationScreen();
       case 8:
-        return LogsViewerScreen();
+        return const LogsViewerScreen();
       default:
-        return ProspectsScreen();
+        return const ProspectsScreen();
     }
   }
 }
