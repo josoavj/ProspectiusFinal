@@ -485,4 +485,59 @@ End If
       return null;
     }
   }
+
+  /// Importe les prospects depuis un fichier Excel
+  Future<List<Map<String, dynamic>>> importProspectsFromExcel(String filePath) async {
+    try {
+      final bytes = File(filePath).readAsBytesSync();
+      final excel = Excel.decodeBytes(bytes);
+      final prospects = <Map<String, dynamic>>[];
+
+      for (final table in excel.tables.keys) {
+        final sheet = excel.tables[table]!;
+        if (sheet.maxRows <= 1) continue;
+
+        // On suppose que la première ligne est l'en-tête
+        // Colonnes attendues: Nom, Prénom, Email, Téléphone, Adresse, Type
+        for (int i = 1; i < sheet.maxRows; i++) {
+          final row = sheet.rows[i];
+          if (row.isEmpty) continue;
+
+          prospects.add({
+            'nom': row.length > 0 ? row[0]?.value?.toString() ?? '' : '',
+            'prenom': row.length > 1 ? row[1]?.value?.toString() ?? '' : '',
+            'email': row.length > 2 ? row[2]?.value?.toString() ?? '' : '',
+            'telephone': row.length > 3 ? row[3]?.value?.toString() ?? '' : '',
+            'adresse': row.length > 4 ? row[4]?.value?.toString() ?? '' : '',
+            'type': row.length > 5 ? row[5]?.value?.toString() ?? 'particulier' : 'particulier',
+          });
+        }
+        break; // On ne lit que la première feuille
+      }
+      return prospects;
+    } catch (e) {
+      AppLogger.error('Erreur lors de l\'import Excel', e);
+      throw Exception('Erreur lors de l\'import du fichier Excel: $e');
+    }
+  }
+
+  /// Ouvre un dialogue pour choisir un fichier à importer
+  Future<String?> pickImportFile() async {
+    try {
+      if (Platform.isLinux) {
+        final result = await Process.run('zenity', ['--file-selection', '--title=Choisir le fichier Excel à importer', '--file-filter=*.xlsx']);
+        if (result.exitCode == 0) return result.stdout.toString().trim();
+      } else if (Platform.isWindows) {
+        final result = await Process.run('powershell', [
+          '-Command',
+          r'[System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null; $fileDialog = New-Object System.Windows.Forms.OpenFileDialog; $fileDialog.Filter = "Excel Files (*.xlsx)|*.xlsx"; if ($fileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { $fileDialog.FileName }'
+        ]);
+        if (result.exitCode == 0) return result.stdout.toString().trim();
+      }
+      return null;
+    } catch (e) {
+      AppLogger.error('Erreur lors de la sélection du fichier', e);
+      return null;
+    }
+  }
 }
