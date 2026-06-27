@@ -19,6 +19,9 @@ class SchemaInitializationService {
       await _createStatusHistoryTable();
       await _createTransferHistoryTable();
       await _createAuditLogsTable();
+      await _createTasksTable();
+      await _createDocumentsTable();
+      await _createCustomFieldsTables();
 
       AppLogger.success('✓ Schéma de base de données initialisé avec succès');
     } catch (e, stackTrace) {
@@ -58,24 +61,26 @@ class SchemaInitializationService {
       await _connection.query('''
         CREATE TABLE IF NOT EXISTS Prospect (
           id_prospect INT AUTO_INCREMENT PRIMARY KEY,
-          nomp VARCHAR(50),
+          nomp VARCHAR(50) NOT NULL,
           prenomp VARCHAR(50),
           telephone VARCHAR(30),
           email VARCHAR(100),
           adresse VARCHAR(100),
-          type ENUM ('particulier', 'societe', 'organisation'),
+          type ENUM ('particulier', 'societe', 'organisation') NOT NULL,
           status ENUM ('nouveau', 'interesse', 'negociation', 'perdu', 'converti') DEFAULT 'nouveau',
           creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           date_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          deleted_at TIMESTAMP NULL,
           assignation INT,
           FOREIGN KEY (assignation) REFERENCES Account(id_compte) ON DELETE SET NULL,
           INDEX idx_assignation (assignation),
           INDEX idx_status (status),
-          INDEX idx_assignation_creation (assignation, creation),
-          INDEX idx_assignation_status (assignation, status)
+          INDEX idx_prospect_full_name (nomp, prenomp),
+          INDEX idx_email (email),
+          INDEX idx_deleted (deleted_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       ''');
-      AppLogger.success('Table Prospect créée/vérifiée');
+      AppLogger.success('Table Prospect créée/vérifiée avec index');
     } catch (e, stackTrace) {
       AppLogger.error(
           'Erreur lors de la création de la table Prospect', e, stackTrace);
@@ -191,6 +196,85 @@ class SchemaInitializationService {
     } catch (e, stackTrace) {
       AppLogger.error('Erreur lors de la création de la table TransferHistory',
           e, stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Crée la table taches
+  Future<void> _createTasksTable() async {
+    try {
+      await _connection.query('''
+        CREATE TABLE IF NOT EXISTS taches (
+          id_tache INT AUTO_INCREMENT PRIMARY KEY,
+          id_prospect INT NOT NULL,
+          titre VARCHAR(255) NOT NULL,
+          description TEXT,
+          date_echeance DATETIME NOT NULL,
+          est_complete BOOLEAN DEFAULT FALSE,
+          creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          deleted_at TIMESTAMP NULL,
+          FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect) ON DELETE CASCADE,
+          INDEX idx_prospect (id_prospect),
+          INDEX idx_echeance (date_echeance),
+          INDEX idx_status_date (est_complete, date_echeance)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      ''');
+      AppLogger.success('Table taches créée/vérifiée');
+    } catch (e, stackTrace) {
+      AppLogger.error('Erreur lors de la création de la table taches', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Crée la table documents
+  Future<void> _createDocumentsTable() async {
+    try {
+      await _connection.query('''
+        CREATE TABLE IF NOT EXISTS documents (
+          id_document INT AUTO_INCREMENT PRIMARY KEY,
+          id_prospect INT NOT NULL,
+          nom VARCHAR(255) NOT NULL,
+          chemin_fichier VARCHAR(512) NOT NULL,
+          type_mime VARCHAR(100),
+          taille INT,
+          creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          deleted_at TIMESTAMP NULL,
+          FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect) ON DELETE CASCADE,
+          INDEX idx_prospect (id_prospect),
+          INDEX idx_creation (creation)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      ''');
+      AppLogger.success('Table documents créée/vérifiée');
+    } catch (e, stackTrace) {
+      AppLogger.error('Erreur lors de la création de la table documents', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Crée les tables pour les champs personnalisés
+  Future<void> _createCustomFieldsTables() async {
+    try {
+      await _connection.query('''
+        CREATE TABLE IF NOT EXISTS champs_personnalises (
+          id_champ INT AUTO_INCREMENT PRIMARY KEY,
+          nom VARCHAR(100) NOT NULL,
+          type_donnee ENUM('texte', 'nombre', 'date', 'booleen') DEFAULT 'texte'
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      ''');
+
+      await _connection.query('''
+        CREATE TABLE IF NOT EXISTS valeurs_champs_personnalises (
+          id_prospect INT NOT NULL,
+          id_champ INT NOT NULL,
+          valeur TEXT,
+          PRIMARY KEY (id_prospect, id_champ),
+          FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect) ON DELETE CASCADE,
+          FOREIGN KEY (id_champ) REFERENCES champs_personnalises(id_champ) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      ''');
+      AppLogger.success('Tables des champs personnalisés créées/vérifiées');
+    } catch (e, stackTrace) {
+      AppLogger.error('Erreur lors de la création des tables de champs personnalisés', e, stackTrace);
       rethrow;
     }
   }
