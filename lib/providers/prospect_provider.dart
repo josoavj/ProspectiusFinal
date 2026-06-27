@@ -101,6 +101,17 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateProspectStatus(int userId, int prospectId, String newStatus) async {
+    try {
+      await _repository.updateProspect(prospectId, {'status': newStatus});
+      await loadProspects(userId);
+      return true;
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
+      return false;
+    }
+  }
+
   Future<void> loadInteractions(int prospectId) async {
     _setLoading(true);
     try {
