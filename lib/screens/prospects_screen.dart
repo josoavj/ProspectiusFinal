@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
+import '../services/excel_service.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
 import 'add_prospect_screen.dart';
@@ -33,6 +34,38 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
     }
   }
 
+  void _handleImport() async {
+    final excelService = ExcelService();
+    final filePath = await excelService.pickImportFile();
+    if (filePath != null && mounted) {
+      try {
+        final prospects = await excelService.importProspectsFromExcel(filePath);
+        final prospectProvider = context.read<ProspectProvider>();
+        final authProvider = context.read<AuthProvider>();
+        
+        int count = 0;
+        for (var data in prospects) {
+          data['userId'] = authProvider.currentUser?.id;
+          final success = await prospectProvider.createProspect(data);
+          if (success) count++;
+        }
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$count prospects importés avec succès')),
+          );
+          _loadProspects();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erreur lors de l\'import: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,6 +79,12 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    OutlinedButton.icon(
+                      onPressed: _handleImport,
+                      icon: const Icon(Icons.upload_file),
+                      label: const Text('Importer Excel'),
+                    ),
+                    const SizedBox(width: 8),
                     ElevatedButton.icon(
                       onPressed:
                           prospectProvider.isLoading ? null : _loadProspects,
