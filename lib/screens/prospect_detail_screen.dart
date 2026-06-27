@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/prospect.dart';
+import '../models/task.dart';
+import '../models/document.dart';
+import '../models/custom_field.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
+import '../providers/task_provider.dart';
+import '../providers/document_provider.dart';
+import '../providers/custom_field_provider.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
 import 'edit_prospect_screen.dart';
@@ -16,79 +22,27 @@ class ProspectDetailScreen extends StatefulWidget {
   State<ProspectDetailScreen> createState() => _ProspectDetailScreenState();
 }
 
-class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
+class _ProspectDetailScreenState extends State<ProspectDetailScreen> with SingleTickerProviderStateMixin {
   late Prospect _currentProspect;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _currentProspect = widget.prospect;
-    // Load interactions after the frame
+    _tabController = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
   }
 
   void _loadData() {
-    final prospectProvider = context.read<ProspectProvider>();
-    prospectProvider.loadInteractions(_currentProspect.id);
-  }
-
-  void _handleDelete() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmer la suppression'),
-        content: const Text('Êtes-vous sûr de vouloir supprimer ce prospect?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Supprimer'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      final authProvider = context.read<AuthProvider>();
-      final prospectProvider = context.read<ProspectProvider>();
-
-      if (authProvider.currentUser != null) {
-        final success = await prospectProvider.deleteProspect(
-          authProvider.currentUser!.id,
-          _currentProspect.id,
-        );
-        if (success && mounted) {
-          Navigator.of(context).pop();
-        }
-      }
-    }
-  }
-
-  void _handleUpdate() {
-    Navigator.of(context)
-        .push(
-      MaterialPageRoute(
-        builder: (_) => EditProspectScreen(prospect: _currentProspect),
-      ),
-    )
-        .then((updatedProspect) {
-      if (updatedProspect != null && updatedProspect is Prospect) {
-        setState(() {
-          _currentProspect = updatedProspect;
-        });
-        _loadData();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+    final id = _currentProspect.id;
+    context.read<ProspectProvider>().loadInteractions(id);
+    context.read<TaskProvider>().loadTasks(id);
+    context.read<DocumentProvider>().loadDocuments(id);
+    context.read<CustomFieldProvider>().loadValuesForProspect(id);
+    context.read<CustomFieldProvider>().loadFields();
   }
 
   @override
@@ -96,188 +50,288 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_currentProspect.fullName),
-        elevation: 0,
         actions: [
-          PopupMenuButton(
-            onSelected: (value) {
-              if (value == 'delete') {
-                _handleDelete();
-              } else if (value == 'audit') {
-                Navigator.of(context).pushNamed(
-                  '/audit_transfer',
-                  arguments: _currentProspect.id,
-                );
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem(
-                value: 'audit',
-                child: Row(
-                  children: [
-                    Icon(Icons.history, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Text('Audit et transferts'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Supprimer', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
-              ),
-            ],
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: _handleUpdate,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: _handleDelete,
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Infos', icon: Icon(Icons.info_outline)),
+            Tab(text: 'Tâches', icon: Icon(Icons.task_alt)),
+            Tab(text: 'Documents', icon: Icon(Icons.description_outlined)),
+            Tab(text: 'Champs Perso', icon: Icon(Icons.add_box_outlined)),
+          ],
+        ),
       ),
-      body: SingleChildScrollView(
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildInfoTab(),
+          _buildTasksTab(),
+          _buildDocumentsTab(),
+          _buildCustomFieldsTab(),
+        ],
+      ),
+      floatingActionButton: _buildFab(),
+    );
+  }
+
+  Widget? _buildFab() {
+    return ListenableBuilder(
+      listenable: _tabController,
+      builder: (context, child) {
+        if (_tabController.index == 1) {
+          return FloatingActionButton(
+            onPressed: _showAddTaskDialog,
+            child: const Icon(Icons.add_task),
+          );
+        }
+        if (_tabController.index == 2) {
+          return FloatingActionButton(
+            onPressed: _handleAddDocument,
+            child: const Icon(Icons.upload_file),
+          );
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildInfoTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildInfoCard(),
+          const SizedBox(height: 24),
+          Text('Interactions', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          _buildInteractionsList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Informations du prospect
-            Card(
-              margin: const EdgeInsets.all(16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // En-tête avec nom et statut
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                TextFormatter.capitalize(
-                                    _currentProspect.fullName),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                TextFormatter.formatType(_currentProspect.type),
-                                style: TextStyle(color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Chip(
-                          label: Text(TextFormatter.formatStatus(
-                              _currentProspect.status)),
-                          backgroundColor: _getStatusColor(
-                            _currentProspect.status,
-                          ),
-                          labelPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 12),
-                    _buildInfoRow('Email', _currentProspect.email),
-                    _buildInfoRow('Téléphone', _currentProspect.telephone),
-                    _buildInfoRow('Adresse', _currentProspect.adresse),
-                    _buildInfoRow(
-                      'Créé le',
-                      '${_currentProspect.creation.day}/${_currentProspect.creation.month}/${_currentProspect.creation.year}',
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 44,
-                      child: ElevatedButton.icon(
-                        onPressed: _handleUpdate,
-                        icon: const Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                        ),
-                        label: const Text('Mettre à jour',
-                            style: TextStyle(color: Colors.white)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[700],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  TextFormatter.formatType(_currentProspect.type),
+                  style: TextStyle(color: Colors.grey[600]),
                 ),
-              ),
-            ),
-            // Historique des interactions
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Interactions',
-                  style: Theme.of(context).textTheme.titleLarge,
+                Chip(
+                  label: Text(TextFormatter.formatStatus(_currentProspect.status)),
+                  backgroundColor: _getStatusColor(_currentProspect.status),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(height: 8),
-            // Liste des interactions
-            Consumer<ProspectProvider>(
-              builder: (context, prospectProvider, _) {
-                return SimpleStateBuilder(
-                  isLoading: prospectProvider.isLoading,
-                  error: prospectProvider.error,
-                  child: prospectProvider.interactions.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(
-                            'Aucune interaction',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: prospectProvider.interactions.length,
-                          itemBuilder: (context, index) {
-                            final interaction =
-                                prospectProvider.interactions[index];
-                            return Card(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 4,
-                              ),
-                              child: ListTile(
-                                leading: Icon(
-                                  _getInteractionIcon(interaction.type),
-                                ),
-                                title: Text(
-                                    TextFormatter.capitalize(interaction.type)),
-                                subtitle: Text(interaction.note),
-                                trailing: Text(
-                                  '${interaction.dateInteraction.day}/${interaction.dateInteraction.month}/${interaction.dateInteraction.year}',
-                                  style: TextStyle(color: Colors.grey[600]),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
+            const Divider(),
+            _buildInfoRow('Email', _currentProspect.email),
+            _buildInfoRow('Téléphone', _currentProspect.telephone),
+            _buildInfoRow('Adresse', _currentProspect.adresse),
+            _buildInfoRow('Assigné à ID', _currentProspect.assignation.toString()),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildInteractionsList() {
+    return Consumer<ProspectProvider>(
+      builder: (context, provider, _) {
+        return SimpleStateBuilder(
+          isLoading: provider.isLoading,
+          error: provider.error,
+          child: provider.interactions.isEmpty
+              ? const Center(child: Text('Aucune interaction'))
+              : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: provider.interactions.length,
+                  itemBuilder: (context, index) {
+                    final interaction = provider.interactions[index];
+                    return ListTile(
+                      leading: Icon(_getInteractionIcon(interaction.type)),
+                      title: Text(interaction.type),
+                      subtitle: Text(interaction.note),
+                      trailing: Text('${interaction.dateInteraction.day}/${interaction.dateInteraction.month}'),
+                    );
+                  },
+                ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTasksTab() {
+    return Consumer<TaskProvider>(
+      builder: (context, provider, _) {
+        return SimpleStateBuilder(
+          isLoading: provider.isLoading,
+          error: provider.error,
+          child: provider.tasks.isEmpty
+              ? const Center(child: Text('Aucune tâche prévue'))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: provider.tasks.length,
+                  itemBuilder: (context, index) {
+                    final task = provider.tasks[index];
+                    return CheckboxListTile(
+                      title: Text(task.title, style: TextStyle(
+                        decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                      )),
+                      subtitle: Text('${task.description}\nÉchéance: ${task.dueDate.day}/${task.dueDate.month}'),
+                      value: task.isCompleted,
+                      onChanged: (val) => provider.toggleTaskStatus(task),
+                      secondary: IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: () => provider.deleteTask(task.id, _currentProspect.id),
+                      ),
+                    );
+                  },
+                ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDocumentsTab() {
+    return Consumer<DocumentProvider>(
+      builder: (context, provider, _) {
+        return SimpleStateBuilder(
+          isLoading: provider.isLoading,
+          error: provider.error,
+          child: provider.documents.isEmpty
+              ? const Center(child: Text('Aucun document'))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: provider.documents.length,
+                  itemBuilder: (context, index) {
+                    final doc = provider.documents[index];
+                    return ListTile(
+                      leading: const Icon(Icons.insert_drive_file),
+                      title: Text(doc.name),
+                      subtitle: Text('${(doc.size / 1024).toStringAsFixed(1)} KB'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => provider.deleteDocument(doc.id, _currentProspect.id),
+                      ),
+                      onTap: () {
+                        // Action pour ouvrir le document (url_launcher ou autre)
+                      },
+                    );
+                  },
+                ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCustomFieldsTab() {
+    return Consumer<CustomFieldProvider>(
+      builder: (context, provider, _) {
+        final values = provider.getValues(_currentProspect.id);
+        return SimpleStateBuilder(
+          isLoading: provider.isLoading,
+          error: provider.error,
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: provider.fields.length,
+            itemBuilder: (context, index) {
+              final field = provider.fields[index];
+              final value = values.firstWhere((v) => v.idField == field.id, 
+                orElse: () => CustomFieldValue(idProspect: _currentProspect.id, idField: field.id, value: '')).value;
+              
+              return ListTile(
+                title: Text(field.name),
+                subtitle: Text(value.isEmpty ? 'Non renseigné' : value),
+                trailing: const Icon(Icons.edit, size: 16),
+                onTap: () => _showEditCustomFieldDialog(field, value),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddTaskDialog() {
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nouvelle tâche'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Titre')),
+            TextField(controller: descController, decoration: const InputDecoration(labelText: 'Description')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () {
+              context.read<TaskProvider>().addTask(Task(
+                id: 0,
+                idProspect: _currentProspect.id,
+                title: titleController.text,
+                description: descController.text,
+                dueDate: DateTime.now().add(const Duration(days: 1)),
+                createdAt: DateTime.now(),
+              ));
+              Navigator.pop(context);
+            },
+            child: const Text('Ajouter'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleAddDocument() {
+    // Dans une vraie app, on utiliserait file_picker
+    // Ici on simule l'ajout pour la démo si nécessaire, ou on implémente si possible
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sélection de fichier non implémentée (nécessite file_picker)')));
+  }
+
+  void _showEditCustomFieldDialog(CustomField field, String currentValue) {
+    final controller = TextEditingController(text: currentValue);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Modifier ${field.name}'),
+        content: TextField(controller: controller, decoration: InputDecoration(labelText: field.name)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () {
+              context.read<CustomFieldProvider>().saveValue(_currentProspect.id, field.id, controller.text);
+              Navigator.pop(context);
+            },
+            child: const Text('Enregistrer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ... helper methods from original file ...
   Widget _buildInfoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -292,31 +346,57 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> {
 
   IconData _getInteractionIcon(String type) {
     switch (type.toLowerCase()) {
-      case 'appel':
-        return Icons.call;
-      case 'email':
-        return Icons.email;
-      case 'réunion':
-        return Icons.people;
-      default:
-        return Icons.message;
+      case 'appel': return Icons.call;
+      case 'email': return Icons.email;
+      case 'réunion': return Icons.people;
+      default: return Icons.message;
     }
   }
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'nouveau':
-        return Colors.blue[100]!;
-      case 'interesse':
-        return Colors.amber[100]!;
-      case 'negociation':
-        return Colors.orange[100]!;
-      case 'converti':
-        return const Color.fromARGB(255, 6, 206, 112).withValues(alpha: 0.1);
-      case 'perdu':
-        return Colors.red[100]!;
-      default:
-        return Colors.grey[100]!;
+      case 'nouveau': return Colors.blue[100]!;
+      case 'interesse': return Colors.amber[100]!;
+      case 'negociation': return Colors.orange[100]!;
+      case 'converti': return Colors.green[100]!;
+      case 'perdu': return Colors.red[100]!;
+      default: return Colors.grey[100]!;
     }
+  }
+
+  void _handleDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmer la suppression'),
+        content: const Text('Êtes-vous sûr de vouloir supprimer ce prospect?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Supprimer')),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final authProvider = context.read<AuthProvider>();
+      if (authProvider.currentUser != null) {
+        final success = await context.read<ProspectProvider>().deleteProspect(
+          authProvider.currentUser!.id,
+          _currentProspect.id,
+        );
+        if (success && mounted) Navigator.of(context).pop();
+      }
+    }
+  }
+
+  void _handleUpdate() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => EditProspectScreen(prospect: _currentProspect)),
+    ).then((updatedProspect) {
+      if (updatedProspect != null && updatedProspect is Prospect) {
+        setState(() { _currentProspect = updatedProspect; });
+        _loadData();
+      }
+    });
   }
 }

@@ -6,6 +6,9 @@ import 'providers/auth_provider.dart';
 import 'providers/prospect_provider.dart';
 import 'providers/stats_provider.dart';
 import 'providers/audit_provider.dart';
+import 'providers/task_provider.dart';
+import 'providers/document_provider.dart';
+import 'providers/custom_field_provider.dart';
 import 'screens/database_config_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/prospects_screen.dart';
@@ -16,6 +19,7 @@ import 'screens/stats_screen.dart';
 import 'screens/export_prospects_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/clients_screen.dart';
+import 'screens/pipeline_screen.dart';
 import 'screens/configuration_screen.dart';
 import 'widgets/sidebar_navigation.dart';
 import 'services/mysql_service.dart';
@@ -42,6 +46,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => StatsProvider()),
         ChangeNotifierProvider(create: (_) => AuditNotifier()),
         ChangeNotifierProvider(create: (_) => TransferNotifier()),
+        ChangeNotifierProvider(create: (_) => TaskProvider()),
+        ChangeNotifierProvider(create: (_) => DocumentProvider()),
+        ChangeNotifierProvider(create: (_) => CustomFieldProvider()),
       ],
       child: MaterialApp(
         title: 'Prospectius',
@@ -169,20 +176,22 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return 'Prospects';
       case 1:
-        return 'Exploration';
+        return 'Pipeline';
       case 2:
-        return 'Statistiques';
+        return 'Exploration';
       case 3:
-        return 'Clients';
+        return 'Statistiques';
       case 4:
-        return 'Exporter';
+        return 'Clients';
       case 5:
-        return 'À propos';
+        return 'Exporter';
       case 6:
-        return 'Profil';
+        return 'À propos';
       case 7:
-        return 'Paramètres';
+        return 'Profil';
       case 8:
+        return 'Paramètres';
+      case 9:
         return 'Logs';
       default:
         return 'Prospectius';
@@ -194,20 +203,22 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return const ProspectsScreen();
       case 1:
-        return const ExplorationScreen();
+        return const PipelineScreen();
       case 2:
-        return const StatsScreen();
+        return const ExplorationScreen();
       case 3:
-        return const ClientsScreen();
+        return const StatsScreen();
       case 4:
-        return const ExportProspectsScreen();
+        return const ClientsScreen();
       case 5:
-        return const AboutScreen();
+        return const ExportProspectsScreen();
       case 6:
-        return const ProfileScreen();
+        return const AboutScreen();
       case 7:
-        return const ConfigurationScreen();
+        return const ProfileScreen();
       case 8:
+        return const ConfigurationScreen();
+      case 9:
         return const LogsViewerScreen();
       default:
         return const ProspectsScreen();

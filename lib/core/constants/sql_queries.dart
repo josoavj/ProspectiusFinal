@@ -53,4 +53,48 @@ class SqlQueries {
     FROM Prospect 
     WHERE assignation = ? AND deleted_at IS NULL
   ''';
+
+  // Tasks
+  static const String selectTasksByProspectId = '''
+    SELECT * FROM taches 
+    WHERE id_prospect = ? AND deleted_at IS NULL
+    ORDER BY date_echeance ASC
+  ''';
+
+  static const String insertTask = '''
+    INSERT INTO taches (id_prospect, titre, description, date_echeance, est_complete, creation)
+    VALUES (?, ?, ?, ?, ?, NOW())
+  ''';
+
+  static const String updateTaskStatus = '''
+    UPDATE taches SET est_complete = ? WHERE id_tache = ? AND deleted_at IS NULL
+  ''';
+
+  // Documents
+  static const String selectDocumentsByProspectId = '''
+    SELECT * FROM documents 
+    WHERE id_prospect = ? AND deleted_at IS NULL
+    ORDER BY creation DESC
+  ''';
+
+  static const String insertDocument = '''
+    INSERT INTO documents (id_prospect, nom, chemin_fichier, type_mime, taille, creation)
+    VALUES (?, ?, ?, ?, ?, NOW())
+  ''';
+
+  // Custom Fields
+  static const String selectCustomFields = 'SELECT * FROM champs_personnalises';
+  
+  static const String selectValuesByProspectId = '''
+    SELECT v.*, c.nom as nom_champ 
+    FROM valeurs_champs_personnalises v
+    JOIN champs_personnalises c ON v.id_champ = c.id_champ
+    WHERE v.id_prospect = ?
+  ''';
+
+  static const String upsertCustomFieldValue = '''
+    INSERT INTO valeurs_champs_personnalises (id_prospect, id_champ, valeur)
+    VALUES (?, ?, ?)
+    ON DUPLICATE KEY UPDATE valeur = VALUES(valeur)
+  ''';
 }

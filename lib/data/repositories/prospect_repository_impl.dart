@@ -3,21 +3,29 @@ import '../../models/prospect.dart';
 import '../../models/interaction.dart';
 import '../../models/stats.dart';
 import '../../services/mysql_service.dart';
+import '../../services/cache_service.dart';
 import '../../core/constants/sql_queries.dart';
 
 class ProspectRepositoryImpl implements IProspectRepository {
   final MySQLService _mysqlService;
+  final CacheService _cache = CacheService();
 
   ProspectRepositoryImpl(this._mysqlService);
 
   @override
   Future<List<Prospect>> getProspects(int userId, {int limit = 20, int offset = 0}) async {
+    // Tentative de récupération depuis le cache si on est sur la première page
+    if (offset == 0) {
+      final cached = _cache.getProspects(userId);
+      if (cached != null) return cached;
+    }
+
     final results = await _mysqlService.query(
       SqlQueries.selectProspectsByUserId,
       [userId, limit, offset],
     );
 
-    return results.map((row) => Prospect(
+    final prospects = results.map((row) => Prospect(
       id: (row['id_prospect'] as num).toInt(),
       nom: row['nomp'] as String? ?? '',
       prenom: row['prenomp'] as String? ?? '',
@@ -30,6 +38,13 @@ class ProspectRepositoryImpl implements IProspectRepository {
       dateUpdate: DateTime.parse(row['date_update'].toString()),
       assignation: (row['assignation'] as num?)?.toInt() ?? 0,
     )).toList();
+
+    // Mise en cache si c'est la première page
+    if (offset == 0) {
+      _cache.setProspects(userId, prospects);
+    }
+
+    return prospects;
   }
 
   @override
@@ -46,11 +61,12 @@ class ProspectRepositoryImpl implements IProspectRepository {
         data['userId'],
       ],
     );
+    _cache.invalidate(data['userId'] as int);
   }
 
   @override
   Future<void> updateProspect(int id, Map<String, dynamic> data) async {
-    // Liste blanche des colonnes autorisées pour éviter l'injection de colonnes
+    // ... code existant ...
     const allowedColumns = {
       'nomp',
       'prenomp',
@@ -73,18 +89,21 @@ class ProspectRepositoryImpl implements IProspectRepository {
     });
 
     if (updates.isEmpty) return;
-
     values.add(id);
 
     await _mysqlService.query(
       'UPDATE Prospect SET ${updates.join(", ")}, date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
       values,
     );
+    
+    // Invalider le cache (on pourrait être plus fin, mais c'est sûr)
+    _cache.clearAll(); 
   }
 
   @override
   Future<void> deleteProspect(int id) async {
     await _mysqlService.query(SqlQueries.softDeleteProspect, [id]);
+    _cache.clearAll();
   }
 
   @override
