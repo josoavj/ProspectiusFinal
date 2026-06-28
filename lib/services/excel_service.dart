@@ -504,7 +504,7 @@ End If
           if (row.isEmpty) continue;
 
           prospects.add({
-            'nom': row.length > 0 ? row[0]?.value?.toString() ?? '' : '',
+            'nom': row.isNotEmpty ? row[0]?.value?.toString() ?? '' : '',
             'prenom': row.length > 1 ? row[1]?.value?.toString() ?? '' : '',
             'email': row.length > 2 ? row[2]?.value?.toString() ?? '' : '',
             'telephone': row.length > 3 ? row[3]?.value?.toString() ?? '' : '',
