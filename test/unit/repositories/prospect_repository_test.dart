@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:prospectius/data/repositories/prospect_repository_impl.dart';
+import 'package:prospectius/models/prospect.dart';
 import 'package:prospectius/services/mysql_service.dart';
 import 'package:mysql1/mysql1.dart';
 
@@ -38,7 +39,13 @@ void main() {
 
       when(() => mockRow.fields).thenReturn(rowData);
       when(() => mockRow[any()]).thenAnswer((inv) => rowData[inv.positionalArguments[0]]);
-      when(() => mockResults.iterator).thenReturn([mockRow].iterator);
+      
+      // Stubbing map since Results is an Iterable
+      when(() => mockResults.map<Prospect>(any())).thenAnswer((invocation) {
+        final fn = invocation.positionalArguments[0] as Prospect Function(ResultRow);
+        return [fn(mockRow)];
+      });
+
       when(() => mockMySQL.query(any(), any())).thenAnswer((_) async => mockResults);
 
       final result = await repository.getProspects(1);
