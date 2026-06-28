@@ -8,7 +8,7 @@ class CustomFieldProvider extends ChangeNotifier {
   final ICustomFieldRepository _repository;
   
   List<CustomField> _fields = [];
-  Map<int, List<CustomFieldValue>> _prospectValues = {};
+  final Map<int, List<CustomFieldValue>> _prospectValues = {};
   bool _isLoading = false;
   String? _error;
 
