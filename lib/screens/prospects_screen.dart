@@ -40,6 +40,7 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
     if (filePath != null && mounted) {
       try {
         final prospects = await excelService.importProspectsFromExcel(filePath);
+        if (!mounted) return;
         final prospectProvider = context.read<ProspectProvider>();
         final authProvider = context.read<AuthProvider>();
         

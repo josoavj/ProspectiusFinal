@@ -11,7 +11,7 @@ class CustomFieldRepositoryImpl implements ICustomFieldRepository {
   @override
   Future<List<CustomField>> getCustomFields() async {
     final results = await _mysqlService.query(SqlQueries.selectCustomFields);
-    return results.map((row) => CustomField.fromJson(row)).toList();
+    return results.map((row) => CustomField.fromJson(row.fields)).toList();
   }
 
   @override
@@ -20,7 +20,7 @@ class CustomFieldRepositoryImpl implements ICustomFieldRepository {
       SqlQueries.selectValuesByProspectId,
       [prospectId],
     );
-    return results.map((row) => CustomFieldValue.fromJson(row)).toList();
+    return results.map((row) => CustomFieldValue.fromJson(row.fields)).toList();
   }
 
   @override

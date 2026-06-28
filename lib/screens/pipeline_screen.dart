@@ -59,8 +59,9 @@ class _PipelineScreenState extends State<PipelineScreen> {
 
   Widget _buildPipelineColumn(String status, List<Prospect> prospects) {
     return DragTarget<Prospect>(
-      onWillAccept: (data) => data?.status != status,
-      onAccept: (prospect) {
+      onWillAcceptWithDetails: (details) => details.data.status != status,
+      onAcceptWithDetails: (details) {
+        final prospect = details.data;
         final authProvider = context.read<AuthProvider>();
         context.read<ProspectProvider>().updateProspectStatus(
           authProvider.currentUser!.id,
@@ -95,7 +96,7 @@ class _PipelineScreenState extends State<PipelineScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(status).withOpacity(0.2),
+                        color: _getStatusColor(status).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
