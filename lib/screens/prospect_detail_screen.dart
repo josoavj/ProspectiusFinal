@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../models/task.dart';
-import '../models/document.dart';
 import '../models/custom_field.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
@@ -99,7 +98,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
             child: const Icon(Icons.upload_file),
           );
         }
-        return null;
+        return const SizedBox.shrink();
       },
     );
   }
