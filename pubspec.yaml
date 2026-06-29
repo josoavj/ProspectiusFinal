@@ -14,6 +14,7 @@ dependencies:
   # UI & State Management
   provider: ^6.0.0
   cupertino_icons: ^1.0.2
+  google_fonts: ^6.2.1
 
   # Database
   mysql1: ^0.20.0
