@@ -1,100 +1,82 @@
-# 🛡️ Politique de Sécurité - Prospectius
+# Politique de Sécurité - Prospectius
 
-**Dernière révision:** 4 décembre 2025  
-**Version:** 1.1.0 (Architecture Sécurisée)  
-**Statut Global:** ✅ **SÉCURISÉ POUR USAGE PROFESSIONNEL (LAN/VPN)**
-
----
-
-## 📊 Résumé Exécutif
-
-Cette revue confirme que Prospectius v1.1.0 intègre les standards de sécurité modernes pour la protection des données CRM :
-
-- ✅ **Protection Intégrale** contre les injections SQL (Prepared Statements + White-listing).
-- ✅ **Chiffrement au Repos** des identifiants de connexion (Secure Storage).
-- ✅ **Hachage Robuste** des mots de passe (BCrypt).
-- ✅ **Contrôle d'Accès** basé sur l'assignation (RBAC).
-- ✅ **Limitation de Débit** (Rate Limiting) sur l'authentification.
+**Dernière révision :** 5 décembre 2025  
+**Version :** 1.2.0 (Intégrité et Performance)  
+**Statut Global :** Certifié pour usage professionnel (LAN/VPN)
 
 ---
 
-## 🛡️ Piliers de Sécurité Implémentés
+## Résumé Exécutif
 
-### 1. Protection des Identifiants (Secure Storage) ✅
-Les informations sensibles (mot de passe de la base de données) ne sont plus stockées en texte clair.
-- **Technologie:** `FlutterSecureStorage` (Keychain pour iOS/macOS, Keystore pour Android).
-- **Avantage:** Même avec un accès physique au système de fichiers, les credentials restent illisibles.
+L'architecture de Prospectius v1.2.0 repose sur des standards de sécurité industriels garantissant la confidentialité, l'intégrité et la disponibilité des données CRM. Cette version introduit des mécanismes avancés de protection contre la perte de données et une optimisation des performances réduisant les vecteurs d'attaque par déni de service.
 
-### 2. Défense Contre les Injections SQL ✅
-Une double couche de protection est désormais active :
-- **Requêtes Préparées:** Utilisation systématique de paramètres `?` via `SqlQueries`.
-- **Liste Blanche (White-listing):** Le dépôt (`ProspectRepository`) filtre strictement les colonnes autorisées lors des mises à jour, empêchant toute manipulation de la structure de la base par l'utilisateur.
-
-### 3. Sécurité des Mots de Passe ✅
-- **Algorithme:** BCrypt avec sel automatique.
-- **Résistance:** Protection native contre les attaques par dictionnaire et les tables arc-en-ciel.
-
-### 4. Contrôle d'Accès et Isolation (RBAC) ✅
-L'architecture en couches (Clean Architecture) impose une isolation stricte des données :
-- Chaque requête SQL est filtrée par l'ID de l'utilisateur authentifié (`assignation = ?`).
-- Un utilisateur ne peut ni voir, ni modifier les prospects d'un autre collaborateur.
-
-### 5. Protection Anti-Force Brute ✅
-- **Mécanisme:** `RateLimitService`.
-- **Action:** Verrouillage temporaire du compte après plusieurs tentatives infructueuses pour ralentir les attaques automatisées.
-
-### 6. Audit et Traçabilité ✅
-- **Logging:** Système de journaux quotidiens chiffrés et isolés dans le dossier utilisateur.
-- **Audit Trail:** Historique complet des interactions et des modifications par prospect.
+### Mesures principales
+- Protection systématique contre les injections SQL via requêtes préparées.
+- Chiffrement des identifiants au repos (Secure Storage).
+- Hachage cryptographique des mots de passe (BCrypt).
+- Contrôle d'accès basé sur les rôles et l'assignation (RBAC).
+- Intégrité renforcée par la suppression logique (Soft Deletes).
+- Validation stricte des entrées par liste blanche.
 
 ---
 
-## 🌐 Scénarios d'Usage et Exigences
+## Piliers de Sécurité Implémentés
 
-### Scenario 1: Usage Local ou LAN (Recommandé) ✅
-*Client Prospectius ↔ Serveur MariaDB (Même réseau ou VPN)*
-- **Statut:** SÉCURISÉ.
-- **Configuration:** Firewall port 3306 restreint aux IPs autorisées.
+### 1. Protection des Identifiants (Secure Storage)
+Les secrets de connexion (mots de passe de base de données, jetons) sont stockés dans les enclaves sécurisées du système :
+- **iOS/macOS :** Keychain.
+- **Android :** Keystore (chiffrement matériel).
+- **Conséquence :** Les données restent chiffrées même en cas d'accès physique au stockage de l'appareil.
 
-### Scenario 2: Usage Réseau Public / Internet ⚠️
-*Client Prospectius ↔ Serveur MariaDB distant*
-- **Exigence Critique:** L'activation du SSL/TLS est impérative pour chiffrer le flux réseau entre l'application et le serveur.
-- **Recommandation:** Utiliser un tunnel SSH ou un VPN pour une sécurité maximale.
+### 2. Sécurité de la Couche de Données
+- **Requêtes Paramétrées :** Aucune concaténation de chaînes n'est autorisée. L'utilisation du service `SqlQueries` assure que les entrées utilisateurs sont traitées comme des données et non comme du code exécutable.
+- **Liste Blanche (White-listing) :** Le dépôt `ProspectRepository` filtre les colonnes autorisées lors des opérations d'écriture, interdisant toute modification non sollicitée de la structure de la table.
+- **Intégrité des données :** L'implémentation des "Soft Deletes" permet de marquer les données comme supprimées sans retrait physique immédiat, offrant une protection contre les erreurs humaines et une traçabilité pour les audits.
+
+### 3. Authentification et Autorisation
+- **Hachage :** Utilisation de BCrypt avec sel unique par utilisateur, rendant les attaques par tables arc-en-ciel inefficaces.
+- **Isolation (RBAC) :** Chaque utilisateur est strictement limité aux prospects qui lui sont assignés. La couche Repository injecte systématiquement l'ID de l'utilisateur authentifié dans les clauses WHERE.
+- **Protection Anti-Force Brute :** Le `RateLimitService` bloque temporairement les tentatives de connexion après plusieurs échecs consécutifs.
+
+### 4. Disponibilité et Performance
+- **Indexation :** Des index composites optimisés réduisent la charge processeur du serveur de base de données, limitant les risques de saturation lors de recherches intensives.
+- **Mise en cache :** Le `CacheService` réduit la latence et le nombre de requêtes sortantes, protégeant ainsi l'infrastructure contre les pics de charge.
 
 ---
 
-## 📋 Checklist de Conformité
+## Scénarios d'Usage et Exigences
 
-- [x] Chiffrement des identifiants (AES/KeyStore)
-- [x] Hachage BCrypt des mots de passe
+### Usage LAN / VPN (Standard)
+*Flux : Client Prospectius ↔ Serveur MariaDB/MySQL*
+- Configuration recommandée pour une sécurité optimale.
+- Firewall : Port 3306 restreint aux segments réseau autorisés.
+
+### Usage sur Réseau Public (Internet)
+- **Exigence :** L'activation du protocole SSL/TLS est obligatoire pour le transport des données.
+- **Recommandation :** Utilisation d'un tunnel SSH ou d'un VPN pour masquer l'infrastructure.
+
+---
+
+## Audit et Conformité
+
+- [x] Chiffrement AES/KeyStore des credentials
+- [x] Hachage BCrypt (mots de passe)
 - [x] Requêtes SQL paramétrées (Anti-SQLi)
-- [x] Filtrage par liste blanche des colonnes
-- [x] Isolation des données par utilisateur
-- [x] Rate limiting actif
-- [x] Système de logs d'audit
-- [x] Gestion sécurisée des erreurs (pas de fuite d'info technique)
+- [x] Liste blanche des colonnes (Repository)
+- [x] Soft Deletes (Intégrité des données)
+- [x] Isolation des données par utilisateur (RBAC)
+- [x] Protection contre le brute-force (Rate limiting)
+- [x] Logs d'audit et historique des transferts
+- [x] Suite de tests de sécurité automatisée
 
 ---
 
-## 📊 Score de Sécurité Global
+## Rapporter une Vulnérabilité
 
-| Aspect | Score | Statut |
-|:--- |:--- |:--- |
-| **Stockage des données** | 9/10 | ✅ Excellent (Secure Storage) |
-| **Intégrité SQL** | 10/10 | ✅ Blindé (White-listing) |
-| **Authentification** | 8/10 | ✅ Robuste (BCrypt + Rate Limit) |
-| **Autorisation** | 9/10 | ✅ Précis (RBAC Repository) |
-| **Confidentialité Réseau** | 6/10 | ⚠️ Dépend de la config SSL |
-| **GLOBAL** | **8.4/10** | **✅ HAUT NIVEAU DE SÉCURITÉ** |
+Pour signaler une faille de sécurité, merci de contacter exclusivement :  
+**josoavonjiniaina13@gmail.com**
 
----
-
-## 📞 Rapporter une Vulnérabilité
-
-Si vous découvrez une faille de sécurité :
-1. Contactez : josoavonjiniaina13@gmail.com
-2. Ne publiez pas l'information avant résolution.
-3. Nous nous engageons à répondre sous 48h.
+Nous nous engageons à analyser et répondre à tout signalement sous 48 heures. Nous demandons de respecter le principe de divulgation responsable en ne publiant aucune information technique avant la mise à disposition d'un correctif.
 
 ---
 *Document généré par le système d'audit Prospectius - Décembre 2025*

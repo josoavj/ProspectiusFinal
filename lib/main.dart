@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'core/di/service_locator.dart';
 import 'providers/auth_provider.dart';
 import 'providers/prospect_provider.dart';
@@ -9,6 +10,7 @@ import 'providers/audit_provider.dart';
 import 'providers/task_provider.dart';
 import 'providers/document_provider.dart';
 import 'providers/custom_field_provider.dart';
+import 'providers/settings_provider.dart';
 import 'screens/database_config_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/prospects_screen.dart';
@@ -49,20 +51,46 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TaskProvider()),
         ChangeNotifierProvider(create: (_) => DocumentProvider()),
         ChangeNotifierProvider(create: (_) => CustomFieldProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
-      child: MaterialApp(
-        title: 'Prospectius',
-        theme: ThemeData(
-          primarySwatch: Colors.blue, 
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        ),
-        home: const AuthWrapper(),
-        debugShowCheckedModeBanner: false,
-        routes: {
-          '/config': (_) => const DatabaseConfigScreen(),
-          '/login': (_) => const LoginScreen(),
-          '/prospects': (_) => const MainScreen(),
+      child: Consumer<SettingsProvider>(
+        builder: (context, settings, _) {
+          return MaterialApp(
+            title: 'Prospectius',
+            theme: ThemeData(
+              primarySwatch: Colors.blue, 
+              useMaterial3: true,
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+              textTheme: GoogleFonts.lexendTextTheme(),
+              fontFamily: GoogleFonts.lexend().fontFamily,
+            ),
+            darkTheme: ThemeData(
+              brightness: Brightness.dark,
+              useMaterial3: true,
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Colors.blue,
+                brightness: Brightness.dark,
+              ),
+              textTheme: GoogleFonts.lexendTextTheme(ThemeData.dark().textTheme),
+              fontFamily: GoogleFonts.lexend().fontFamily,
+            ),
+            themeMode: settings.themeMode,
+            builder: (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(settings.fontSizeFactor),
+                ),
+                child: child!,
+              );
+            },
+            home: const AuthWrapper(),
+            debugShowCheckedModeBanner: false,
+            routes: {
+              '/config': (_) => const DatabaseConfigScreen(),
+              '/login': (_) => const LoginScreen(),
+              '/prospects': (_) => const MainScreen(),
+            },
+          );
         },
       ),
     );
