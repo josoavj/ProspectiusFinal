@@ -32,8 +32,15 @@ class ProspectRepositoryImpl implements IProspectRepository {
       email: row['email'] as String? ?? '',
       telephone: row['telephone'] as String? ?? '',
       adresse: row['adresse'] as String? ?? '',
-      type: row['type'] as String? ?? '',
+      type: row['type'] as String? ?? 'particulier',
       status: row['status'] as String? ?? 'nouveau',
+      priorite: row['priorite'] as String? ?? 'moyenne',
+      source: row['source'] as String?,
+      nomEntreprise: row['nom_entreprise'] as String?,
+      poste: row['poste'] as String?,
+      linkedinUrl: row['linkedin_url'] as String?,
+      siteWeb: row['site_web'] as String?,
+      description: row['description'] as String?,
       creation: DateTime.parse(row['creation'].toString()),
       dateUpdate: DateTime.parse(row['date_update'].toString()),
       assignation: (row['assignation'] as num?)?.toInt() ?? 0,
@@ -59,6 +66,13 @@ class ProspectRepositoryImpl implements IProspectRepository {
         data['adresse'],
         data['type'],
         data['userId'],
+        data['priorite'] ?? 'moyenne',
+        data['source'],
+        data['nomEntreprise'],
+        data['poste'],
+        data['linkedinUrl'],
+        data['siteWeb'],
+        data['description'],
       ],
     );
     _cache.invalidate(data['userId'] as int);
@@ -66,7 +80,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
 
   @override
   Future<void> updateProspect(int id, Map<String, dynamic> data) async {
-    // ... code existant ...
+    // Liste blanche des colonnes autorisées
     const allowedColumns = {
       'nomp',
       'prenomp',
@@ -75,7 +89,14 @@ class ProspectRepositoryImpl implements IProspectRepository {
       'adresse',
       'type',
       'status',
-      'assignation'
+      'assignation',
+      'priorite',
+      'source',
+      'nom_entreprise',
+      'poste',
+      'linkedin_url',
+      'site_web',
+      'description'
     };
 
     final updates = <String>[];
@@ -132,7 +153,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
         data['userId'],
         data['type'],
         data['note'],
-        data['dateInteraction'],
+        (data['dateInteraction'] as DateTime).toUtc(),
       ],
     );
   }
