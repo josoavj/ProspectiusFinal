@@ -260,8 +260,10 @@ class AboutScreen extends StatelessWidget {
           CircleAvatar(
             radius: 28,
             backgroundColor: Colors.blue[100],
-            backgroundImage:
-                avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+            backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+            onBackgroundImageError: avatarUrl.isNotEmpty 
+                ? (exception, stackTrace) => AppLogger.warning('Erreur chargement avatar organisation: $exception')
+                : null,
             child: avatarUrl.isEmpty
                 ? Icon(Icons.business, size: 24, color: Colors.blue[600])
                 : null,
@@ -331,6 +333,7 @@ class AboutScreen extends StatelessWidget {
               radius: 32,
               backgroundColor: Colors.blue[100],
               backgroundImage: NetworkImage(avatarUrl),
+              onBackgroundImageError: (exception, stackTrace) => AppLogger.warning('Erreur chargement avatar développeur: $exception'),
               child: Icon(Icons.person, color: Colors.blue[600], size: 32),
             )
           else
