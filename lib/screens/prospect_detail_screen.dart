@@ -252,9 +252,9 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
             itemCount: provider.fields.length,
             itemBuilder: (context, index) {
               final field = provider.fields[index];
-              final value = values.firstWhere((v) => v.idField == field.id, 
+              final value = values.firstWhere((v) => v.idField == field.id,
                 orElse: () => CustomFieldValue(idProspect: _currentProspect.id, idField: field.id, value: '')).value;
-              
+
               return ListTile(
                 title: Text(field.name),
                 subtitle: Text(value.isEmpty ? 'Non renseigné' : value),

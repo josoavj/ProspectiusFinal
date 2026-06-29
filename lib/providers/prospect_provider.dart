@@ -54,7 +54,7 @@ class ProspectProvider extends ChangeNotifier {
       _currentPage++;
       _error = null;
     } catch (e) {
-      _error = ExceptionHandler.getErrorMessage(e as Exception);
+      _error = _formatError(e);
     } finally {
       _setLoading(false);
     }
@@ -69,7 +69,7 @@ class ProspectProvider extends ChangeNotifier {
       }
       return true;
     } catch (e) {
-      _error = ExceptionHandler.getErrorMessage(e as Exception);
+      _error = _formatError(e);
       return false;
     } finally {
       _setLoading(false);
@@ -83,7 +83,7 @@ class ProspectProvider extends ChangeNotifier {
       await loadProspects(userId);
       return true;
     } catch (e) {
-      _error = ExceptionHandler.getErrorMessage(e as Exception);
+      _error = _formatError(e);
       return false;
     } finally {
       _setLoading(false);
@@ -96,7 +96,7 @@ class ProspectProvider extends ChangeNotifier {
       await loadProspects(userId);
       return true;
     } catch (e) {
-      _error = ExceptionHandler.getErrorMessage(e as Exception);
+      _error = _formatError(e);
       return false;
     }
   }
@@ -107,7 +107,7 @@ class ProspectProvider extends ChangeNotifier {
       await loadProspects(userId);
       return true;
     } catch (e) {
-      _error = ExceptionHandler.getErrorMessage(e as Exception);
+      _error = _formatError(e);
       return false;
     }
   }
@@ -120,7 +120,7 @@ class ProspectProvider extends ChangeNotifier {
       _interactions.addAll(results);
       _error = null;
     } catch (e) {
-      _error = ExceptionHandler.getErrorMessage(e as Exception);
+      _error = _formatError(e);
     } finally {
       _setLoading(false);
     }
@@ -138,9 +138,16 @@ class ProspectProvider extends ChangeNotifier {
       await loadInteractions(prospectId);
       return true;
     } catch (e) {
-      _error = ExceptionHandler.getErrorMessage(e as Exception);
+      _error = _formatError(e);
       return false;
     }
+  }
+
+  String _formatError(dynamic e) {
+    if (e is Exception) {
+      return ExceptionHandler.getErrorMessage(e);
+    }
+    return 'Une erreur inattendue est survenue: $e';
   }
 
   void _setLoading(bool value) {

@@ -235,6 +235,40 @@ class MigrationService {
     }
   }
 
+  /// Ajoute les nouveaux champs CRM à la table Prospect
+  Future<void> addCRMFieldsToProspects() async {
+    const migrationName = 'add_crm_fields_to_prospects';
+
+    try {
+      final applied = await getAppliedMigrations();
+      if (applied.contains(migrationName)) {
+        return;
+      }
+
+      await _connection.query('''
+        ALTER TABLE Prospect
+        ADD COLUMN priorite ENUM ('basse', 'moyenne', 'haute') DEFAULT 'moyenne',
+        ADD COLUMN source VARCHAR(100),
+        ADD COLUMN nom_entreprise VARCHAR(100),
+        ADD COLUMN poste VARCHAR(100),
+        ADD COLUMN linkedin_url VARCHAR(255),
+        ADD COLUMN site_web VARCHAR(255),
+        ADD COLUMN description TEXT;
+      ''');
+
+      await recordMigration(migrationName);
+      AppLogger.success('Champs CRM ajoutés à la table Prospect');
+    } catch (e, stackTrace) {
+      if (e.toString().contains('Duplicate column') || e.toString().contains('1060')) {
+        AppLogger.warning('Certains champs CRM existent déjà');
+        await recordMigration(migrationName);
+        return;
+      }
+      AppLogger.error('Erreur lors de l\'ajout des champs CRM', e, stackTrace);
+      rethrow;
+    }
+  }
+
   /// Exécute toutes les migrations en attente
   Future<void> runPendingMigrations() async {
     try {
@@ -245,6 +279,7 @@ class MigrationService {
       await addSoftDeleteToInteractions();
       await createAuditLogsTable();
       await addTrackingColumnsToProspects();
+      await addCRMFieldsToProspects();
       await addPerformanceIndexes();
 
       AppLogger.success('Toutes les migrations ont été exécutées');

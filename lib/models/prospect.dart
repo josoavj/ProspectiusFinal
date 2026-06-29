@@ -7,6 +7,13 @@ class Prospect {
   final String adresse;
   final String type;
   final String status;
+  final String priorite;
+  final String? source;
+  final String? nomEntreprise;
+  final String? poste;
+  final String? linkedinUrl;
+  final String? siteWeb;
+  final String? description;
   final DateTime creation;
   final DateTime dateUpdate;
   final int assignation;
@@ -20,6 +27,13 @@ class Prospect {
     required this.adresse,
     required this.type,
     required this.status,
+    this.priorite = 'moyenne',
+    this.source,
+    this.nomEntreprise,
+    this.poste,
+    this.linkedinUrl,
+    this.siteWeb,
+    this.description,
     required this.creation,
     required this.dateUpdate,
     required this.assignation,
@@ -33,8 +47,15 @@ class Prospect {
       email: json['email'] as String? ?? '',
       telephone: json['telephone'] as String? ?? '',
       adresse: json['adresse'] as String? ?? '',
-      type: json['type'] as String? ?? '',
+      type: json['type'] as String? ?? 'particulier',
       status: json['status'] as String? ?? 'nouveau',
+      priorite: json['priorite'] as String? ?? 'moyenne',
+      source: json['source'] as String?,
+      nomEntreprise: json['nom_entreprise'] as String?,
+      poste: json['poste'] as String?,
+      linkedinUrl: json['linkedin_url'] as String?,
+      siteWeb: json['site_web'] as String?,
+      description: json['description'] as String?,
       creation: DateTime.parse(json['creation'] as String),
       dateUpdate: DateTime.parse(json['date_update'] as String),
       assignation: json['assignation'] as int? ?? 0,
@@ -50,6 +71,13 @@ class Prospect {
         'adresse': adresse,
         'type': type,
         'status': status,
+        'priorite': priorite,
+        'source': source,
+        'nom_entreprise': nomEntreprise,
+        'poste': poste,
+        'linkedin_url': linkedinUrl,
+        'site_web': siteWeb,
+        'description': description,
         'creation': creation.toIso8601String(),
         'date_update': dateUpdate.toIso8601String(),
         'assignation': assignation,
