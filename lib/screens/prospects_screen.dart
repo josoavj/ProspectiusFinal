@@ -169,66 +169,70 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
 
   Widget _buildProspectListItem(BuildContext context, Prospect prospect,
       ProspectProvider prospectProvider) {
-    return GestureDetector(
-      onTap: () {
-        prospectProvider.selectProspect(prospect);
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => ProspectDetailScreen(prospect: prospect),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            prospectProvider.selectProspect(prospect);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ProspectDetailScreen(prospect: prospect),
+              ),
+            );
+          },
           borderRadius: BorderRadius.circular(8),
-        ),
-        child: ListTile(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          leading: CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.blue[500],
-            child: Text(
-              prospect.prenom.isNotEmpty
-                  ? prospect.prenom[0].toUpperCase()
-                  : '?',
+          child: ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            leading: CircleAvatar(
+              radius: 22,
+              backgroundColor: Colors.blue[500],
+              child: Text(
+                prospect.prenom.isNotEmpty
+                    ? prospect.prenom[0].toUpperCase()
+                    : '?',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            title: Text(
+              TextFormatter.capitalize(prospect.fullName),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
               ),
             ),
-          ),
-          title: Text(
-            TextFormatter.capitalize(prospect.fullName),
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+            subtitle: Text(
+              prospect.email.isEmpty ? '-' : prospect.email,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          subtitle: Text(
-            prospect.email.isEmpty ? '-' : prospect.email,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: _getStatusColor(prospect.status),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              TextFormatter.formatStatus(prospect.status),
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: _getStatusColor(prospect.status),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                TextFormatter.formatStatus(prospect.status),
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
