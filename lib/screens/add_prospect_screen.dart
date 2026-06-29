@@ -19,30 +19,38 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   late TextEditingController _emailController;
   late TextEditingController _telephoneController;
   late TextEditingController _adresseController;
+  late TextEditingController _sourceController;
+  late TextEditingController _nomEntrepriseController;
+  late TextEditingController _posteController;
+  late TextEditingController _linkedinController;
+  late TextEditingController _siteWebController;
+  late TextEditingController _descriptionController;
   late TextEditingController _interactionNoteController;
+
   String _selectedType = 'particulier';
   String _selectedStatus = 'nouveau';
+  String _selectedPriorite = 'moyenne';
   String _selectedInteractionType = 'appel';
 
   @override
   void initState() {
     super.initState();
     _nomController = TextEditingController(text: widget.prospect?.nom ?? '');
-    _prenomController = TextEditingController(
-      text: widget.prospect?.prenom ?? '',
-    );
-    _emailController = TextEditingController(
-      text: widget.prospect?.email ?? '',
-    );
-    _telephoneController = TextEditingController(
-      text: widget.prospect?.telephone ?? '',
-    );
-    _adresseController = TextEditingController(
-      text: widget.prospect?.adresse ?? '',
-    );
+    _prenomController = TextEditingController(text: widget.prospect?.prenom ?? '');
+    _emailController = TextEditingController(text: widget.prospect?.email ?? '');
+    _telephoneController = TextEditingController(text: widget.prospect?.telephone ?? '');
+    _adresseController = TextEditingController(text: widget.prospect?.adresse ?? '');
+    _sourceController = TextEditingController(text: widget.prospect?.source ?? '');
+    _nomEntrepriseController = TextEditingController(text: widget.prospect?.nomEntreprise ?? '');
+    _posteController = TextEditingController(text: widget.prospect?.poste ?? '');
+    _linkedinController = TextEditingController(text: widget.prospect?.linkedinUrl ?? '');
+    _siteWebController = TextEditingController(text: widget.prospect?.siteWeb ?? '');
+    _descriptionController = TextEditingController(text: widget.prospect?.description ?? '');
     _interactionNoteController = TextEditingController();
+
     _selectedType = widget.prospect?.type ?? 'particulier';
     _selectedStatus = widget.prospect?.status ?? 'nouveau';
+    _selectedPriorite = widget.prospect?.priorite ?? 'moyenne';
   }
 
   @override
@@ -52,6 +60,12 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _emailController.dispose();
     _telephoneController.dispose();
     _adresseController.dispose();
+    _sourceController.dispose();
+    _nomEntrepriseController.dispose();
+    _posteController.dispose();
+    _linkedinController.dispose();
+    _siteWebController.dispose();
+    _descriptionController.dispose();
     _interactionNoteController.dispose();
     super.dispose();
   }
@@ -62,47 +76,46 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
 
     if (authProvider.currentUser == null) return;
 
-    // Afficher le dialogue de confirmation
     final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(
-                widget.prospect != null
-                    ? 'Confirmer la modification'
-                    : 'Créer le prospect',
-              ),
-              content: Text(
-                widget.prospect != null
-                    ? 'Êtes-vous sûr de vouloir modifier ce prospect?'
-                    : 'Êtes-vous sûr de vouloir créer ce prospect?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Annuler'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 6, 206, 112),
-                  ),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text(
-                    'Confirmer',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            );
-          },
-        ) ??
-        false;
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(widget.prospect != null ? 'Confirmer la modification' : 'Créer le prospect'),
+        content: Text('Êtes-vous sûr de vouloir continuer ?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 6, 206, 112)),
+            child: const Text('Confirmer', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    ) ?? false;
 
     if (!confirmed) return;
 
+    final data = {
+      'userId': authProvider.currentUser!.id,
+      'nom': _nomController.text,
+      'prenom': _prenomController.text,
+      'email': _emailController.text,
+      'telephone': _telephoneController.text,
+      'adresse': _adresseController.text,
+      'type': _selectedType,
+      'status': _selectedStatus,
+      'priorite': _selectedPriorite,
+      'source': _sourceController.text,
+      'nomEntreprise': _nomEntrepriseController.text,
+      'poste': _posteController.text,
+      'linkedinUrl': _linkedinController.text,
+      'siteWeb': _siteWebController.text,
+      'description': _descriptionController.text,
+    };
+
+    bool success;
     if (widget.prospect != null) {
-      await prospectProvider
-          .updateProspect(authProvider.currentUser!.id, widget.prospect!.id, {
+      // Pour l'update, le repository utilise des clés SQL
+      final updateData = {
         'nomp': _nomController.text,
         'prenomp': _prenomController.text,
         'email': _emailController.text,
@@ -110,337 +123,140 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
         'adresse': _adresseController.text,
         'type': _selectedType,
         'status': _selectedStatus,
-      });
-
-      // Afficher le message de succès dans un dialogue
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Succès'),
-              content: const Text('Prospect modifié avec succès'),
-              actions: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 6, 206, 112),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Fermer la boîte de dialogue
-                    Navigator.of(context)
-                        .pop(); // Retourner à l'écran précédent
-                  },
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      }
+        'priorite': _selectedPriorite,
+        'source': _sourceController.text,
+        'nom_entreprise': _nomEntrepriseController.text,
+        'poste': _posteController.text,
+        'linkedin_url': _linkedinController.text,
+        'site_web': _siteWebController.text,
+        'description': _descriptionController.text,
+      };
+      success = await prospectProvider.updateProspect(authProvider.currentUser!.id, widget.prospect!.id, updateData);
     } else {
-      // Créer le prospect et l'interaction en même temps
-      final prospectCreated = await prospectProvider.createProspect({
-        'userId': authProvider.currentUser!.id,
-        'nom': _nomController.text,
-        'prenom': _prenomController.text,
-        'email': _emailController.text,
-        'telephone': _telephoneController.text,
-        'adresse': _adresseController.text,
-        'type': _selectedType,
-      });
-
-      // Si le prospect est créé, créer l'interaction
-      if (prospectCreated && _interactionNoteController.text.isNotEmpty) {
-        final createdProspect = prospectProvider.prospects.firstWhere(
-          (p) =>
-              p.nom == _nomController.text &&
-              p.prenom == _prenomController.text,
-          orElse: () {
-            return Prospect(
-              id: -1,
-              assignation: 0,
-              nom: '',
-              prenom: '',
-              email: '',
-              telephone: '',
-              adresse: '',
-              type: '',
-              status: '',
-              creation: DateTime.now(),
-              dateUpdate: DateTime.now(),
-            );
-          },
+      success = await prospectProvider.createProspect(data);
+      
+      // Interaction initiale
+      if (success && _interactionNoteController.text.isNotEmpty) {
+        final created = prospectProvider.prospects.firstWhere(
+          (p) => p.nom == _nomController.text && p.prenom == _prenomController.text,
+          orElse: () => widget.prospect ?? Prospect(id: -1, nom: '', prenom: '', email: '', telephone: '', adresse: '', type: '', status: '', creation: DateTime.now(), dateUpdate: DateTime.now(), assignation: 0)
         );
-
-        if (createdProspect.id != -1) {
-          await prospectProvider.createInteraction(
-            createdProspect.id,
-            authProvider.currentUser!.id,
-            _selectedInteractionType,
-            _interactionNoteController.text,
-            DateTime.now(),
-          );
+        if (created.id != -1) {
+          await prospectProvider.createInteraction(created.id, authProvider.currentUser!.id, _selectedInteractionType, _interactionNoteController.text, DateTime.now());
         }
       }
+    }
 
-      // Afficher le message de succès dans un dialogue
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Succès'),
-              content: const Text('Prospect créé avec succès'),
-              actions: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 6, 206, 112),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Fermer la boîte de dialogue
-                    Navigator.of(context)
-                        .pop(); // Retourner à l'écran précédent
-                  },
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      }
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.prospect != null ? 'Mis à jour' : 'Créé')));
+      Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.prospect != null ? 'Éditer prospect' : 'Nouveau prospect',
-        ),
-        elevation: 0,
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _prenomController,
-                    decoration: InputDecoration(
-                      labelText: 'Prénom',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _nomController,
-                    decoration: InputDecoration(
-                      labelText: 'Nom',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _telephoneController,
-                    decoration: InputDecoration(
-                      labelText: 'Téléphone',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _adresseController,
-                    decoration: InputDecoration(
-                      labelText: 'Adresse',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedType,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedType = value ?? 'particulier';
-                      });
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Type',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    items: ['particulier', 'societe', 'organisation']
-                        .map(
-                          (type) =>
-                              DropdownMenuItem(value: type, child: Text(type)),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: _selectedStatus,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedStatus = value ?? 'nouveau';
-                      });
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Statut',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    items: [
-                      'nouveau',
-                      'interesse',
-                      'negociation',
-                      'converti',
-                      'perdu'
-                    ]
-                        .map(
-                          (status) => DropdownMenuItem(
-                              value: status, child: Text(status)),
-                        )
-                        .toList(),
-                  ),
-                  // Afficher les champs d'interaction uniquement à la création
-                  if (widget.prospect == null) ...[
-                    const SizedBox(height: 32),
-                    const Divider(),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Interaction initiale',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedInteractionType,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedInteractionType = value ?? 'appel';
-                        });
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Type d\'interaction',
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      items: ['appel', 'email', 'reunion', 'message', 'autre']
-                          .map(
-                            (type) => DropdownMenuItem(
-                                value: type, child: Text(type)),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _interactionNoteController,
-                      decoration: InputDecoration(
-                        labelText: 'Note d\'interaction',
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        hintText:
-                            'Décrivez votre interaction avec le prospect...',
-                      ),
-                      maxLines: 4,
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _handleSave,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 6, 206, 112),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        widget.prospect != null ? 'Mettre à jour' : 'Créer',
-                        style:
-                            const TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
+      appBar: AppBar(title: Text(widget.prospect != null ? 'Éditer prospect' : 'Nouveau prospect')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildSection('Informations Personnelles', [
+              _buildField(_prenomController, 'Prénom', Icons.person_outline),
+              _buildField(_nomController, 'Nom', Icons.person),
+              _buildField(_emailController, 'Email', Icons.email_outlined, type: TextInputType.emailAddress),
+              _buildField(_telephoneController, 'Téléphone', Icons.phone_outlined, type: TextInputType.phone),
+              _buildField(_adresseController, 'Adresse', Icons.location_on_outlined),
+            ]),
+            const SizedBox(height: 16),
+            _buildSection('Professionnel', [
+              _buildDropdown('Type', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!)),
+              if (_selectedType != 'particulier') ...[
+                _buildField(_nomEntrepriseController, 'Entreprise', Icons.business),
+                _buildField(_posteController, 'Poste', Icons.work_outline),
+              ],
+              _buildDropdown('Priorité', _selectedPriorite, ['basse', 'moyenne', 'haute'], (val) => setState(() => _selectedPriorite = val!)),
+              _buildDropdown('Statut', _selectedStatus, ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'], (val) => setState(() => _selectedStatus = val!)),
+            ]),
+            const SizedBox(height: 16),
+            _buildSection('Digital & Source', [
+              _buildField(_sourceController, 'Source (ex: LinkedIn, Salon...)', Icons.source),
+              _buildField(_siteWebController, 'Site Web', Icons.language, type: TextInputType.url),
+              _buildField(_linkedinController, 'URL LinkedIn', Icons.link, type: TextInputType.url),
+            ]),
+            const SizedBox(height: 16),
+            _buildSection('Notes', [
+              _buildField(_descriptionController, 'Description / Contexte', Icons.note_outlined, maxLines: 3),
+            ]),
+            if (widget.prospect == null) ...[
+              const SizedBox(height: 16),
+              _buildSection('Interaction Initiale', [
+                _buildDropdown('Type d\'échange', _selectedInteractionType, ['appel', 'email', 'reunion', 'message', 'autre'], (val) => setState(() => _selectedInteractionType = val!)),
+                _buildField(_interactionNoteController, 'Note de l\'échange', Icons.chat_bubble_outline, maxLines: 2),
+              ]),
+            ],
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: _handleSave,
+                style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 6, 206, 112)),
+                child: Text(widget.prospect != null ? 'Enregistrer les modifications' : 'Créer le prospect', style: const TextStyle(color: Colors.white)),
               ),
             ),
-          ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSection(String title, List<Widget> children) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey[200]!),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue)),
+            const SizedBox(height: 16),
+            ...children.expand((w) => [w, const SizedBox(height: 12)]).toList()..removeLast(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildField(TextEditingController controller, String label, IconData icon, {TextInputType type = TextInputType.text, int maxLines = 1}) {
+    return TextField(
+      controller: controller,
+      keyboardType: type,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      ),
+    );
+  }
+
+  Widget _buildDropdown(String label, String value, List<String> items, Function(String?) onChanged) {
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
     );
   }
 }
