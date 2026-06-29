@@ -181,33 +181,36 @@ class SidebarNavigation extends StatelessWidget {
     required int index,
   }) {
     final isSelected = selectedIndex == index;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isSelected ? Colors.blue[50] : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        border: isSelected
-            ? const Border(
-                left: BorderSide(color: Colors.blue, width: 4),
-              )
-            : null,
-      ),
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: isSelected ? Colors.blue : Colors.grey,
+    return Material(
+      color: isSelected ? Colors.blue[50] : Colors.transparent,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: isSelected
+              ? const Border(
+                  left: BorderSide(color: Colors.blue, width: 4),
+                )
+              : null,
         ),
-        title: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.blue : Colors.black87,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+        child: ListTile(
+          leading: Icon(
+            icon,
+            color: isSelected ? Colors.blue : Colors.grey,
           ),
+          title: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.blue : Colors.black87,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+          onTap: () {
+            Navigator.of(context).pop(); // Ferme le drawer
+            onItemSelected(index);
+          },
         ),
-        onTap: () {
-          Navigator.of(context).pop(); // Ferme le drawer
-          onItemSelected(index);
-        },
       ),
     );
   }
