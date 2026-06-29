@@ -4,6 +4,7 @@ import '../services/mysql_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/secure_storage_service.dart';
+import '../providers/settings_provider.dart';
 
 class ConfigurationScreen extends StatefulWidget {
   const ConfigurationScreen({super.key});
@@ -386,36 +387,95 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             ),
             const SizedBox(height: 24),
             // Section Apparence
-            _buildSettingSection(
-              icon: Icons.palette,
-              title: 'Apparence',
-              subtitle: 'Personnalisez l\'interface',
-              children: [
-                _buildSettingItem(
-                  icon: Icons.brightness_6,
-                  label: 'Mode sombre',
-                  trailing: Switch(value: false, onChanged: (_) {}),
-                ),
-                _buildSettingItem(
-                  icon: Icons.text_fields,
-                  label: 'Taille du texte',
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                ),
-              ],
+            Consumer<SettingsProvider>(
+              builder: (context, settings, _) {
+                return _buildSettingSection(
+                  icon: Icons.palette_outlined,
+                  title: 'Apparence',
+                  subtitle: 'Personnalisez votre expérience visuelle',
+                  children: [
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Mode de thème',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: SegmentedButton<ThemeMode>(
+                        segments: const [
+                          ButtonSegment(
+                            value: ThemeMode.light,
+                            icon: Icon(Icons.light_mode_outlined),
+                            label: Text('Clair'),
+                          ),
+                          ButtonSegment(
+                            value: ThemeMode.dark,
+                            icon: Icon(Icons.dark_mode_outlined),
+                            label: Text('Sombre'),
+                          ),
+                          ButtonSegment(
+                            value: ThemeMode.system,
+                            icon: Icon(Icons.settings_suggest_outlined),
+                            label: Text('Auto'),
+                          ),
+                        ],
+                        selected: {settings.themeMode},
+                        onSelectionChanged: (Set<ThemeMode> newSelection) {
+                          settings.setThemeMode(newSelection.first);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Taille du texte',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          '${(settings.fontSizeFactor * 100).toInt()}%',
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Slider(
+                      value: settings.fontSizeFactor,
+                      min: 0.8,
+                      max: 1.4,
+                      divisions: 6,
+                      onChanged: (double value) {
+                        settings.setFontSizeFactor(value);
+                      },
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 16),
             // Section Notifications
-            _buildSettingSection(
-              icon: Icons.notifications,
-              title: 'Notifications',
-              subtitle: 'Gérez vos préférences',
-              children: [
-                _buildSettingItem(
-                  icon: Icons.notifications_active,
-                  label: 'Notifications activées',
-                  trailing: Switch(value: true, onChanged: (_) {}),
-                ),
-              ],
+            Consumer<SettingsProvider>(
+              builder: (context, settings, _) {
+                return _buildSettingSection(
+                  icon: Icons.notifications,
+                  title: 'Notifications',
+                  subtitle: 'Gérez vos préférences',
+                  children: [
+                    _buildSettingItem(
+                      icon: Icons.notifications_active,
+                      label: 'Notifications activées',
+                      trailing: Switch(
+                        value: settings.notificationsEnabled,
+                        onChanged: settings.toggleNotifications,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 16),
             // Section À propos
