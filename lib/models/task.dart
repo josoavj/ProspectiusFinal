@@ -19,12 +19,12 @@ class Task {
 
   factory Task.fromJson(Map<String, dynamic> json) {
     return Task(
-      id: json['id_tache'] as int,
-      idProspect: json['id_prospect'] as int,
+      id: (num.tryParse((json['id_tache'] ?? 0).toString()) ?? 0).toInt(),
+      idProspect: (num.tryParse((json['id_prospect'] ?? 0).toString()) ?? 0).toInt(),
       title: json['titre']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       dueDate: DateTime.parse(json['date_echeance'].toString()),
-      isCompleted: (json['est_complete'] as int? ?? 0) == 1,
+      isCompleted: (num.tryParse((json['est_complete'] ?? 0).toString()) ?? 0) == 1,
       createdAt: DateTime.parse(json['creation'].toString()),
     );
   }
