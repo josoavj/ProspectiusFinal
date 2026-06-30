@@ -198,7 +198,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          TextFormatter.capitalize(interaction.type),
+                                          TextFormatter.formatInteractionType(interaction.type),
                                           style: const TextStyle(fontWeight: FontWeight.bold),
                                         ),
                                       ],
@@ -352,44 +352,64 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: const Text('Nouvelle Interaction'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  initialValue: type,
-                  decoration: const InputDecoration(labelText: 'Type'),
-                  items: ['appel', 'email', 'reunion', 'message', 'autre'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                  onChanged: (val) => setDialogState(() => type = val!),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: newStatus,
-                  decoration: const InputDecoration(labelText: 'Nouveau Statut'),
-                  items: ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                  onChanged: (val) => setDialogState(() => newStatus = val!),
-                ),
-                const SizedBox(height: 12),
-                FutureBuilder<List<Account>>(
-                  future: authProvider.getAllUsers(),
-                  builder: (context, snapshot) {
-                    final users = snapshot.data ?? [];
-                    return DropdownButtonFormField<int?>(
-                      initialValue: selectedAssigneId,
-                      decoration: const InputDecoration(labelText: 'Assigné à (optionnel)'),
-                      items: [
-                        const DropdownMenuItem(value: null, child: Text('Personne')),
-                        ...users.map((acc) => DropdownMenuItem(value: acc.id, child: Text(acc.fullName)))
-                      ],
-                      onChanged: (val) => setDialogState(() => selectedAssigneId = val),
-                    );
-                  }
-                ),
-                const SizedBox(height: 12),
-                TextField(controller: noteController, decoration: const InputDecoration(labelText: 'Note de l\'échange'), maxLines: 3),
-                const SizedBox(height: 12),
-                TextField(controller: suiviController, decoration: const InputDecoration(labelText: 'Suivi / Action à faire'), maxLines: 2),
-              ],
+          content: SizedBox(
+            width: 500, // Largeur fixe pour éviter les sauts d'interface
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    initialValue: type,
+                    decoration: const InputDecoration(labelText: 'Type'),
+                    items: ['appel', 'email', 'reunion', 'message', 'autre'].map((t) => DropdownMenuItem(value: t, child: Text(TextFormatter.formatInteractionType(t)))).toList(),
+                    onChanged: (val) => setDialogState(() => type = val!),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: newStatus,
+                    decoration: const InputDecoration(labelText: 'Nouveau Statut'),
+                    items: ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'].map((s) => DropdownMenuItem(value: s, child: Text(TextFormatter.formatStatus(s)))).toList(),
+                    onChanged: (val) => setDialogState(() => newStatus = val!),
+                  ),
+                  const SizedBox(height: 12),
+                  FutureBuilder<List<Account>>(
+                    future: authProvider.getAllUsers(),
+                    builder: (context, snapshot) {
+                      final users = snapshot.data ?? [];
+                      return DropdownButtonFormField<int?>(
+                        initialValue: selectedAssigneId,
+                        decoration: const InputDecoration(labelText: 'Assigné à (optionnel)'),
+                        items: [
+                          const DropdownMenuItem(value: null, child: Text('Personne')),
+                          ...users.map((acc) => DropdownMenuItem(value: acc.id, child: Text(acc.fullName)))
+                        ],
+                        onChanged: (val) => setDialogState(() => selectedAssigneId = val),
+                      );
+                    }
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: noteController, 
+                    decoration: const InputDecoration(
+                      labelText: 'Note de l\'échange',
+                      hintText: 'Que s\'est-il passé ?',
+                    ), 
+                    minLines: 4,
+                    maxLines: 6, // Limite la croissance en hauteur
+                    onChanged: (val) => setDialogState(() {}), // Pour activer le bouton Enregistrer
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: suiviController, 
+                    decoration: const InputDecoration(
+                      labelText: 'Suivi / Action à faire',
+                      hintText: 'Ex: Rappeler dans 2 jours',
+                    ), 
+                    minLines: 2,
+                    maxLines: 3,
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -427,17 +447,33 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Nouvelle tâche'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Titre')),
-            TextField(controller: descController, decoration: const InputDecoration(labelText: 'Description')),
-          ],
+        content: SizedBox(
+          width: 450,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController, 
+                decoration: const InputDecoration(labelText: 'Titre de la tâche'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descController, 
+                decoration: const InputDecoration(
+                  labelText: 'Description (optionnel)',
+                  hintText: 'Détails du rappel...',
+                ),
+                minLines: 3,
+                maxLines: 5,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
           ElevatedButton(
             onPressed: () {
+              if (titleController.text.isEmpty) return;
               context.read<TaskProvider>().addTask(Task(
                 id: 0,
                 idProspect: _currentProspect.id,
@@ -467,7 +503,17 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Modifier ${field.name}'),
-        content: TextField(controller: controller, decoration: InputDecoration(labelText: field.name)),
+        content: SizedBox(
+          width: 400,
+          child: TextField(
+            controller: controller, 
+            decoration: InputDecoration(
+              labelText: field.name,
+              hintText: 'Saisissez la valeur...',
+            ),
+            autofocus: true,
+          ),
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
           ElevatedButton(

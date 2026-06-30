@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
+import '../utils/text_formatter.dart';
 
 class EditProspectScreen extends StatefulWidget {
   final Prospect prospect;
@@ -142,13 +143,13 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                 ]),
                 const SizedBox(height: 16),
                 _buildSection('Professionnel', [
-                  _buildDropdown('Type', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!)),
+                  _buildDropdown('Type', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!), labelFormatter: TextFormatter.formatType),
                   if (_selectedType != 'particulier') ...[
                     _buildField(_nomEntrepriseController, 'Entreprise', Icons.business),
                     _buildField(_posteController, 'Poste', Icons.work_outline),
                   ],
-                  _buildDropdown('Priorité', _selectedPriorite, ['basse', 'moyenne', 'haute'], (val) => setState(() => _selectedPriorite = val!)),
-                  _buildDropdown('Statut', _selectedStatus, ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'], (val) => setState(() => _selectedStatus = val!)),
+                  _buildDropdown('Priorité', _selectedPriorite, ['basse', 'moyenne', 'haute'], (val) => setState(() => _selectedPriorite = val!), labelFormatter: TextFormatter.formatPriority),
+                  _buildDropdown('Statut', _selectedStatus, ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'], (val) => setState(() => _selectedStatus = val!), labelFormatter: TextFormatter.formatStatus),
                 ]),
                 const SizedBox(height: 16),
                 _buildSection('Digital & Source', [
@@ -212,7 +213,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     );
   }
 
-  Widget _buildDropdown(String label, String value, List<String> items, Function(String?) onChanged) {
+  Widget _buildDropdown(String label, String value, List<String> items, Function(String?) onChanged, {String Function(String)? labelFormatter}) {
     return DropdownButtonFormField<String>(
       initialValue: value,
       onChanged: onChanged,
@@ -221,7 +222,10 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
-      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      items: items.map((e) => DropdownMenuItem(
+        value: e, 
+        child: Text(labelFormatter != null ? labelFormatter(e) : e),
+      )).toList(),
     );
   }
 }

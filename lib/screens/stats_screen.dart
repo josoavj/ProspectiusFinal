@@ -140,7 +140,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     const SizedBox(height: 32),
                     // Distribution par statut - Graphique en barres
                     Text(
-                      'Distribution par Statut',
+                      'Distribution par statut',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 24),
