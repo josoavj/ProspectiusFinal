@@ -41,7 +41,7 @@ class Prospect {
 
   factory Prospect.fromJson(Map<String, dynamic> json) {
     return Prospect(
-      id: json['id_prospect'] as int,
+      id: (num.tryParse((json['id_prospect'] ?? 0).toString()) ?? 0).toInt(),
       nom: json['nomp']?.toString() ?? '',
       prenom: json['prenomp']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
@@ -58,7 +58,7 @@ class Prospect {
       description: json['description']?.toString(),
       creation: DateTime.parse(json['creation'].toString()),
       dateUpdate: DateTime.parse(json['date_update'].toString()),
-      assignation: json['assignation'] as int? ?? 0,
+      assignation: (num.tryParse((json['assignation'] ?? 0).toString()) ?? 0).toInt(),
     );
   }
 
