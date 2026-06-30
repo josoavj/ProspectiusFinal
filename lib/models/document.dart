@@ -21,11 +21,11 @@ class Document {
     return Document(
       id: json['id_document'] as int,
       idProspect: json['id_prospect'] as int,
-      name: json['nom'] as String? ?? '',
-      filePath: json['chemin_fichier'] as String? ?? '',
-      mimeType: json['type_mime'] as String? ?? '',
+      name: json['nom']?.toString() ?? '',
+      filePath: json['chemin_fichier']?.toString() ?? '',
+      mimeType: json['type_mime']?.toString() ?? '',
       size: json['taille'] as int? ?? 0,
-      createdAt: DateTime.parse(json['creation'] as String),
+      createdAt: DateTime.parse(json['creation'].toString()),
     );
   }
 
