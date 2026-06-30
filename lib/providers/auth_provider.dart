@@ -58,6 +58,7 @@ class AuthProvider extends ChangeNotifier {
     String email,
     String username,
     String password,
+    String typeCompte,
   ) async {
     _setLoading(true);
     _error = null;
@@ -68,6 +69,7 @@ class AuthProvider extends ChangeNotifier {
         'email': email,
         'username': username,
         'password': password,
+        'type_compte': typeCompte,
       });
       AppLogger.success('Compte créé avec succès');
       return true;
@@ -92,5 +94,14 @@ class AuthProvider extends ChangeNotifier {
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  Future<List<Account>> getAllUsers() async {
+    try {
+      return await _authRepository.getAllAccounts();
+    } catch (e) {
+      AppLogger.error('Erreur récupération utilisateurs', e);
+      return [];
+    }
   }
 }
