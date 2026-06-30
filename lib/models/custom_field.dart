@@ -63,8 +63,8 @@ class CustomFieldValue {
     return CustomFieldValue(
       idProspect: json['id_prospect'] as int,
       idField: json['id_champ'] as int,
-      value: json['valeur'] as String? ?? '',
-      fieldName: json['nom_champ'] as String?,
+      value: json['valeur']?.toString() ?? '',
+      fieldName: json['nom_champ']?.toString(),
     );
   }
 }
