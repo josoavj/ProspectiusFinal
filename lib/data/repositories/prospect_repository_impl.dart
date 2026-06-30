@@ -146,16 +146,45 @@ class ProspectRepositoryImpl implements IProspectRepository {
 
   @override
   Future<void> createInteraction(Map<String, dynamic> data) async {
-    await _mysqlService.query(
-      SqlQueries.insertInteraction,
-      [
-        data['prospectId'],
-        data['userId'],
-        data['type'],
-        data['note'],
-        (data['dateInteraction'] as DateTime).toUtc(),
-      ],
-    );
+    // Utilisation d'une transaction pour garantir l'atomicité
+    // (L'insertion de l'interaction et la mise à jour du statut)
+    final connection = _mysqlService.getConnection();
+    
+    await connection.transaction((ctx) async {
+      // 1. Insérer l'interaction
+      await ctx.query(
+        SqlQueries.insertInteraction,
+        [
+          data['prospectId'],
+          data['userId'],
+          data['idAssigne'],
+          data['type'],
+          data['note'],
+          data['suivi'],
+          (data['dateInteraction'] as DateTime).toUtc(),
+        ],
+      );
+
+      // 2. Mise à jour automatique du statut du prospect si demandé ou nécessaire
+      // Si c'est la première interaction ('nouveau'), on passe à 'interesse' par défaut
+      // ou on utilise le statut spécifiquement passé dans data['newStatus']
+      String? newStatus = data['newStatus'] as String?;
+      
+      if (newStatus != null) {
+        await ctx.query(
+          'UPDATE Prospect SET status = ?, date_update = NOW() WHERE id_prospect = ?',
+          [newStatus, data['prospectId']],
+        );
+      } else {
+        // Logique par défaut: nouveau -> interesse
+        await ctx.query(
+          'UPDATE Prospect SET status = "interesse", date_update = NOW() WHERE id_prospect = ? AND status = "nouveau"',
+          [data['prospectId']],
+        );
+      }
+    });
+
+    _cache.clearAll();
   }
 
   @override
