@@ -21,11 +21,11 @@ class Task {
     return Task(
       id: json['id_tache'] as int,
       idProspect: json['id_prospect'] as int,
-      title: json['titre'] as String? ?? '',
-      description: json['description'] as String? ?? '',
-      dueDate: DateTime.parse(json['date_echeance'] as String),
+      title: json['titre']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      dueDate: DateTime.parse(json['date_echeance'].toString()),
       isCompleted: (json['est_complete'] as int? ?? 0) == 1,
-      createdAt: DateTime.parse(json['creation'] as String),
+      createdAt: DateTime.parse(json['creation'].toString()),
     );
   }
 
