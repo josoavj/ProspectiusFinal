@@ -103,17 +103,22 @@ class SchemaInitializationService {
           id_interaction INT AUTO_INCREMENT PRIMARY KEY,
           id_prospect INT,
           id_compte INT,
-          type ENUM('email', 'appel', 'sms', 'reunion'),
+          id_assigne INT,
+          type ENUM('email', 'appel', 'sms', 'reunion', 'message', 'autre'),
           note TEXT,
-          date_interaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          suivi TEXT,
+          date_interaction DATETIME DEFAULT CURRENT_TIMESTAMP,
+          deleted_at TIMESTAMP NULL,
           FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect) ON DELETE CASCADE,
           FOREIGN KEY (id_compte) REFERENCES Account(id_compte) ON DELETE CASCADE,
+          FOREIGN KEY (id_assigne) REFERENCES Account(id_compte) ON DELETE SET NULL,
           INDEX idx_prospect (id_prospect),
           INDEX idx_compte (id_compte),
+          INDEX idx_assigne (id_assigne),
           INDEX idx_prospect_date (id_prospect, date_interaction)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       ''');
-      AppLogger.success('Table Interaction créée/vérifiée');
+      AppLogger.success('Table Interaction créée/vérifiée avec suivi et assignation');
     } catch (e, stackTrace) {
       AppLogger.error(
           'Erreur lors de la création de la table Interaction', e, stackTrace);
