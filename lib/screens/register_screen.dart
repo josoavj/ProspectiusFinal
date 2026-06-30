@@ -17,6 +17,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  String _selectedRole = 'Utilisateur';
 
   @override
   void dispose() {
@@ -44,6 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _emailController.text,
       _usernameController.text,
       _passwordController.text,
+      _selectedRole,
     );
 
     if (success && mounted) {
@@ -150,6 +152,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedRole,
+                    decoration: InputDecoration(
+                      labelText: 'Type de compte',
+                      prefixIcon: const Icon(Icons.badge),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    items: ['Administrateur', 'Utilisateur', 'Commercial']
+                        .map((role) => DropdownMenuItem(
+                              value: role,
+                              child: Text(role),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() {
+                          _selectedRole = val;
+                        });
+                      }
+                    },
                   ),
                   const SizedBox(height: 24),
                   Consumer<AuthProvider>(
