@@ -2,16 +2,20 @@ class Interaction {
   final int id;
   final int idProspect;
   final int idCompte;
+  final int? idAssigne;
   final String type;
   final String note;
+  final String? suivi;
   final DateTime dateInteraction;
 
   Interaction({
     required this.id,
     required this.idProspect,
     required this.idCompte,
+    this.idAssigne,
     required this.type,
     required this.note,
+    this.suivi,
     required this.dateInteraction,
   });
 
@@ -20,9 +24,11 @@ class Interaction {
       id: json['id_interaction'] as int,
       idProspect: json['id_prospect'] as int,
       idCompte: json['id_compte'] as int,
-      type: json['type'] as String? ?? '',
-      note: json['note'] as String? ?? '',
-      dateInteraction: DateTime.parse(json['date_interaction'] as String),
+      idAssigne: json['id_assigne'] as int?,
+      type: json['type']?.toString() ?? '',
+      note: json['note']?.toString() ?? '',
+      suivi: json['suivi']?.toString(),
+      dateInteraction: DateTime.parse(json['date_interaction'].toString()),
     );
   }
 
@@ -30,8 +36,10 @@ class Interaction {
         'id_interaction': id,
         'id_prospect': idProspect,
         'id_compte': idCompte,
+        'id_assigne': idAssigne,
         'type': type,
         'note': note,
+        'suivi': suivi,
         'date_interaction': dateInteraction.toIso8601String(),
       };
 }
