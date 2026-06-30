@@ -109,10 +109,14 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Changer la configuration'),
-          content: const Text(
-            'Vous êtes sur le point de modifier la configuration de la base de données. '
-            'Cette action est risquée et pourrait déconnecter l\'application. Continuer ?',
+          content: const SizedBox(
+            width: 400,
+            child: Text(
+              'Vous êtes sur le point de modifier la configuration de la base de données. '
+              'Cette action est risquée et pourrait déconnecter l\'application. Continuer ?',
+            ),
           ),
+          actions: [
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
