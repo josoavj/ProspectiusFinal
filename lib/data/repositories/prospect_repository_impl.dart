@@ -25,26 +25,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
       [userId, limit, offset],
     );
 
-    final prospects = results.map((row) => Prospect(
-      id: (row['id_prospect'] as num).toInt(),
-      nom: row['nomp']?.toString() ?? '',
-      prenom: row['prenomp']?.toString() ?? '',
-      email: row['email']?.toString() ?? '',
-      telephone: row['telephone']?.toString() ?? '',
-      adresse: row['adresse']?.toString() ?? '',
-      type: row['type']?.toString() ?? 'particulier',
-      status: row['status']?.toString() ?? 'nouveau',
-      priorite: row['priorite']?.toString() ?? 'moyenne',
-      source: row['source']?.toString(),
-      nomEntreprise: row['nom_entreprise']?.toString(),
-      poste: row['poste']?.toString(),
-      linkedinUrl: row['linkedin_url']?.toString(),
-      siteWeb: row['site_web']?.toString(),
-      description: row['description']?.toString(),
-      creation: DateTime.parse(row['creation'].toString()),
-      dateUpdate: DateTime.parse(row['date_update'].toString()),
-      assignation: (row['assignation'] as num?)?.toInt() ?? 0,
-    )).toList();
+    final prospects = results.map((row) => Prospect.fromJson(row.fields)).toList();
 
     // Mise en cache si c'est la première page
     if (offset == 0) {
@@ -134,14 +115,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
       [prospectId],
     );
 
-    return results.map((row) => Interaction(
-      id: (row['id_interaction'] as num).toInt(),
-      idProspect: (row['id_prospect'] as num).toInt(),
-      idCompte: (row['id_compte'] as num).toInt(),
-      type: row['type'] as String,
-      note: row['note']?.toString() ?? '',
-      dateInteraction: DateTime.parse(row['date_interaction'].toString()),
-    )).toList();
+    return results.map((row) => Interaction.fromJson(row.fields)).toList();
   }
 
   @override
