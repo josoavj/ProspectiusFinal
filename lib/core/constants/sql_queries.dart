@@ -34,8 +34,8 @@ class SqlQueries {
 
   static const String insertInteraction = '''
     INSERT INTO Interaction 
-    (id_prospect, id_compte, type, note, date_interaction)
-    VALUES (?, ?, ?, ?, ?)
+    (id_prospect, id_compte, id_assigne, type, note, suivi, date_interaction)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   ''';
 
   // Stats

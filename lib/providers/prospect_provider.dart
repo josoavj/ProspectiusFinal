@@ -143,6 +143,36 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> createInteractionComplex({
+    required int prospectId,
+    required int userId,
+    required String type,
+    required String note,
+    required DateTime date,
+    int? idAssigne,
+    String? suivi,
+    String? newStatus,
+  }) async {
+    try {
+      await _repository.createInteraction({
+        'prospectId': prospectId,
+        'userId': userId,
+        'idAssigne': idAssigne,
+        'type': type,
+        'note': note,
+        'suivi': suivi,
+        'dateInteraction': date,
+        'newStatus': newStatus,
+      });
+      await loadInteractions(prospectId);
+      await loadProspects(userId); // Rafraîchir pour voir le nouveau statut
+      return true;
+    } catch (e) {
+      _error = _formatError(e);
+      return false;
+    }
+  }
+
   String _formatError(dynamic e) {
     if (e is Exception) {
       return ExceptionHandler.getErrorMessage(e);

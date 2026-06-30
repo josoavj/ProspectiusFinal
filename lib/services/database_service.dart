@@ -50,15 +50,7 @@ class DatabaseService {
         );
       }
 
-      final user = Account(
-        id: (row['id_compte'] as num).toInt(),
-        nom: row['nom'] as String,
-        prenom: row['prenom'] as String,
-        email: row['email'] as String,
-        username: row['username'] as String,
-        typeCompte: row['type_compte'] as String,
-        dateCreation: DateTime.parse(row['date_creation'].toString()),
-      );
+      final user = Account.fromJson(row.fields);
 
       AppLogger.success('Authentification réussie pour ${user.fullName}');
       return user;

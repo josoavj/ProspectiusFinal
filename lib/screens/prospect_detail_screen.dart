@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../models/task.dart';
 import '../models/custom_field.dart';
+import '../models/account.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
 import '../providers/task_provider.dart';
@@ -155,22 +156,91 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
         return SimpleStateBuilder(
           isLoading: provider.isLoading,
           error: provider.error,
-          child: provider.interactions.isEmpty
-              ? const Center(child: Text('Aucune interaction'))
-              : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: provider.interactions.length,
-                  itemBuilder: (context, index) {
-                    final interaction = provider.interactions[index];
-                    return ListTile(
-                      leading: Icon(_getInteractionIcon(interaction.type)),
-                      title: Text(interaction.type),
-                      subtitle: Text(interaction.note),
-                      trailing: Text('${interaction.dateInteraction.day}/${interaction.dateInteraction.month}'),
-                    );
-                  },
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _showAddInteractionDialog,
+                  icon: const Icon(Icons.add_comment_outlined),
+                  label: const Text('Ajouter un échange'),
                 ),
+              ),
+              provider.interactions.isEmpty
+                  ? const Center(child: Text('Aucune interaction'))
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: provider.interactions.length,
+                      itemBuilder: (context, index) {
+                        final interaction = provider.interactions[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: Colors.grey[200]!),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 16,
+                                          backgroundColor: Colors.blue[50],
+                                          child: Icon(_getInteractionIcon(interaction.type), size: 14, color: Colors.blue),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          TextFormatter.capitalize(interaction.type),
+                                          style: const TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      '${interaction.dateInteraction.day}/${interaction.dateInteraction.month} à ${interaction.dateInteraction.hour}:${interaction.dateInteraction.minute.toString().padLeft(2, '0')}',
+                                      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  interaction.note,
+                                  style: const TextStyle(fontSize: 14, height: 1.4),
+                                ),
+                                if (interaction.suivi != null && interaction.suivi!.isNotEmpty) ...[
+                                  const Divider(height: 20),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.assignment_turned_in_outlined, size: 14, color: Colors.green),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'À faire: ${interaction.suivi}',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.green[700],
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ],
+          ),
         );
       },
     );
@@ -265,6 +335,88 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           ),
         );
       },
+    );
+  }
+
+  void _showAddInteractionDialog() {
+    final authProvider = context.read<AuthProvider>();
+    final prospectProvider = context.read<ProspectProvider>();
+    final noteController = TextEditingController();
+    final suiviController = TextEditingController();
+    String type = 'appel';
+    int? selectedAssigneId;
+    String newStatus = _currentProspect.status;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Nouvelle Interaction'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  initialValue: type,
+                  decoration: const InputDecoration(labelText: 'Type'),
+                  items: ['appel', 'email', 'reunion', 'message', 'autre'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                  onChanged: (val) => setDialogState(() => type = val!),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: newStatus,
+                  decoration: const InputDecoration(labelText: 'Nouveau Statut'),
+                  items: ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                  onChanged: (val) => setDialogState(() => newStatus = val!),
+                ),
+                const SizedBox(height: 12),
+                FutureBuilder<List<Account>>(
+                  future: authProvider.getAllUsers(),
+                  builder: (context, snapshot) {
+                    final users = snapshot.data ?? [];
+                    return DropdownButtonFormField<int?>(
+                      initialValue: selectedAssigneId,
+                      decoration: const InputDecoration(labelText: 'Assigné à (optionnel)'),
+                      items: [
+                        const DropdownMenuItem(value: null, child: Text('Personne')),
+                        ...users.map((acc) => DropdownMenuItem(value: acc.id, child: Text(acc.fullName)))
+                      ],
+                      onChanged: (val) => setDialogState(() => selectedAssigneId = val),
+                    );
+                  }
+                ),
+                const SizedBox(height: 12),
+                TextField(controller: noteController, decoration: const InputDecoration(labelText: 'Note de l\'échange'), maxLines: 3),
+                const SizedBox(height: 12),
+                TextField(controller: suiviController, decoration: const InputDecoration(labelText: 'Suivi / Action à faire'), maxLines: 2),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+            ElevatedButton(
+              onPressed: noteController.text.isEmpty
+                  ? null
+                  : () async {
+                      await prospectProvider.createInteractionComplex(
+                        prospectId: _currentProspect.id,
+                        userId: authProvider.currentUser!.id,
+                        type: type,
+                        note: noteController.text,
+                        date: DateTime.now(),
+                        idAssigne: selectedAssigneId,
+                        suivi: suiviController.text,
+                        newStatus: newStatus,
+                      );
+                      if (!context.mounted) return;
+                      Navigator.pop(context);
+                      _loadData();
+                    },
+              child: const Text('Enregistrer'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

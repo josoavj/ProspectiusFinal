@@ -269,6 +269,34 @@ class MigrationService {
     }
   }
 
+  /// Ajoute les champs de suivi et d'assignation aux interactions
+  Future<void> addEnhancedInteractionFields() async {
+    const migrationName = 'add_enhanced_interaction_fields';
+
+    try {
+      final applied = await getAppliedMigrations();
+      if (applied.contains(migrationName)) return;
+
+      await _connection.query('''
+        ALTER TABLE Interaction
+        ADD COLUMN id_assigne INT AFTER id_compte,
+        ADD COLUMN suivi TEXT AFTER note,
+        MODIFY COLUMN date_interaction DATETIME DEFAULT CURRENT_TIMESTAMP,
+        ADD FOREIGN KEY (id_assigne) REFERENCES Account(id_compte) ON DELETE SET NULL,
+        ADD INDEX idx_assigne (id_assigne);
+      ''');
+
+      await recordMigration(migrationName);
+      AppLogger.success('Champs de suivi et assignation ajoutés aux interactions');
+    } catch (e, stackTrace) {
+      if (e.toString().contains('Duplicate column') || e.toString().contains('1060')) {
+        await recordMigration(migrationName);
+        return;
+      }
+      AppLogger.error('Erreur migration interactions', e, stackTrace);
+    }
+  }
+
   /// Exécute toutes les migrations en attente
   Future<void> runPendingMigrations() async {
     try {
@@ -280,6 +308,7 @@ class MigrationService {
       await createAuditLogsTable();
       await addTrackingColumnsToProspects();
       await addCRMFieldsToProspects();
+      await addEnhancedInteractionFields();
       await addPerformanceIndexes();
 
       AppLogger.success('Toutes les migrations ont été exécutées');

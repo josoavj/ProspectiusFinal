@@ -14,6 +14,7 @@ class SchemaInitializationService {
       AppLogger.info('Initialisation du schéma de la base de données...');
 
       await _createAccountsTable();
+      await _createAccountTriggers();
       await _createProspectsTable();
       await _createInteractionsTable();
       await _createStatusHistoryTable();
@@ -52,6 +53,36 @@ class SchemaInitializationService {
       AppLogger.error(
           'Erreur lors de la création de la table Account', e, stackTrace);
       rethrow;
+    }
+  }
+
+  /// Crée les triggers pour la table Account (validation et limites)
+  Future<void> _createAccountTriggers() async {
+    try {
+      // Trigger pour limiter à 3 administrateurs
+      await _connection.query('''
+        CREATE TRIGGER IF NOT EXISTS avant_ajout_compte_admin BEFORE INSERT ON Account FOR EACH ROW
+        BEGIN
+            IF NEW.type_compte = 'Administrateur' AND (SELECT COUNT(*) FROM Account WHERE type_compte = 'Administrateur') >= 3 THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La limite de 3 comptes Administrateur est atteinte.';
+            END IF;
+        END
+      ''');
+
+      // Trigger pour validation email simple
+      await _connection.query('''
+        CREATE TRIGGER IF NOT EXISTS validation_email_insert BEFORE INSERT ON Account FOR EACH ROW
+        BEGIN
+            IF NEW.email NOT LIKE '%@%.%' THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Format d\'email invalide.';
+            END IF;
+        END
+      ''');
+
+      AppLogger.success('Triggers Account créés/vérifiés');
+    } catch (e) {
+      // Certains serveurs MySQL ne supportent pas IF NOT EXISTS sur les triggers
+      AppLogger.warning('Note: Création des triggers (déjà existants ou non supportés)');
     }
   }
 
@@ -103,17 +134,22 @@ class SchemaInitializationService {
           id_interaction INT AUTO_INCREMENT PRIMARY KEY,
           id_prospect INT,
           id_compte INT,
-          type ENUM('email', 'appel', 'sms', 'reunion'),
+          id_assigne INT,
+          type ENUM('email', 'appel', 'sms', 'reunion', 'message', 'autre'),
           note TEXT,
-          date_interaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          suivi TEXT,
+          date_interaction DATETIME DEFAULT CURRENT_TIMESTAMP,
+          deleted_at TIMESTAMP NULL,
           FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect) ON DELETE CASCADE,
           FOREIGN KEY (id_compte) REFERENCES Account(id_compte) ON DELETE CASCADE,
+          FOREIGN KEY (id_assigne) REFERENCES Account(id_compte) ON DELETE SET NULL,
           INDEX idx_prospect (id_prospect),
           INDEX idx_compte (id_compte),
+          INDEX idx_assigne (id_assigne),
           INDEX idx_prospect_date (id_prospect, date_interaction)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       ''');
-      AppLogger.success('Table Interaction créée/vérifiée');
+      AppLogger.success('Table Interaction créée/vérifiée avec suivi et assignation');
     } catch (e, stackTrace) {
       AppLogger.error(
           'Erreur lors de la création de la table Interaction', e, stackTrace);

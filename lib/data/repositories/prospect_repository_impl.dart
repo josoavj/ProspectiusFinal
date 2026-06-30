@@ -25,26 +25,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
       [userId, limit, offset],
     );
 
-    final prospects = results.map((row) => Prospect(
-      id: (row['id_prospect'] as num).toInt(),
-      nom: row['nomp'] as String? ?? '',
-      prenom: row['prenomp'] as String? ?? '',
-      email: row['email'] as String? ?? '',
-      telephone: row['telephone'] as String? ?? '',
-      adresse: row['adresse'] as String? ?? '',
-      type: row['type'] as String? ?? 'particulier',
-      status: row['status'] as String? ?? 'nouveau',
-      priorite: row['priorite'] as String? ?? 'moyenne',
-      source: row['source'] as String?,
-      nomEntreprise: row['nom_entreprise'] as String?,
-      poste: row['poste'] as String?,
-      linkedinUrl: row['linkedin_url'] as String?,
-      siteWeb: row['site_web'] as String?,
-      description: row['description'] as String?,
-      creation: DateTime.parse(row['creation'].toString()),
-      dateUpdate: DateTime.parse(row['date_update'].toString()),
-      assignation: (row['assignation'] as num?)?.toInt() ?? 0,
-    )).toList();
+    final prospects = results.map((row) => Prospect.fromJson(row.fields)).toList();
 
     // Mise en cache si c'est la première page
     if (offset == 0) {
@@ -134,28 +115,50 @@ class ProspectRepositoryImpl implements IProspectRepository {
       [prospectId],
     );
 
-    return results.map((row) => Interaction(
-      id: (row['id_interaction'] as num).toInt(),
-      idProspect: (row['id_prospect'] as num).toInt(),
-      idCompte: (row['id_compte'] as num).toInt(),
-      type: row['type'] as String,
-      note: row['note']?.toString() ?? '',
-      dateInteraction: DateTime.parse(row['date_interaction'].toString()),
-    )).toList();
+    return results.map((row) => Interaction.fromJson(row.fields)).toList();
   }
 
   @override
   Future<void> createInteraction(Map<String, dynamic> data) async {
-    await _mysqlService.query(
-      SqlQueries.insertInteraction,
-      [
-        data['prospectId'],
-        data['userId'],
-        data['type'],
-        data['note'],
-        (data['dateInteraction'] as DateTime).toUtc(),
-      ],
-    );
+    // Utilisation d'une transaction pour garantir l'atomicité
+    // (L'insertion de l'interaction et la mise à jour du statut)
+    final connection = _mysqlService.getConnection();
+    
+    await connection.transaction((ctx) async {
+      // 1. Insérer l'interaction
+      await ctx.query(
+        SqlQueries.insertInteraction,
+        [
+          data['prospectId'],
+          data['userId'],
+          data['idAssigne'],
+          data['type'],
+          data['note'],
+          data['suivi'],
+          (data['dateInteraction'] as DateTime).toUtc(),
+        ],
+      );
+
+      // 2. Mise à jour automatique du statut du prospect si demandé ou nécessaire
+      // Si c'est la première interaction ('nouveau'), on passe à 'interesse' par défaut
+      // ou on utilise le statut spécifiquement passé dans data['newStatus']
+      String? newStatus = data['newStatus'] as String?;
+      
+      if (newStatus != null) {
+        await ctx.query(
+          'UPDATE Prospect SET status = ?, date_update = NOW() WHERE id_prospect = ?',
+          [newStatus, data['prospectId']],
+        );
+      } else {
+        // Logique par défaut: nouveau -> interesse
+        await ctx.query(
+          'UPDATE Prospect SET status = "interesse", date_update = NOW() WHERE id_prospect = ? AND status = "nouveau"',
+          [data['prospectId']],
+        );
+      }
+    });
+
+    _cache.clearAll();
   }
 
   @override

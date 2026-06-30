@@ -28,15 +28,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       throw AuthException(message: 'Mot de passe incorrect', code: 'INVALID_PASSWORD');
     }
 
-    return Account(
-      id: (row['id_compte'] as num).toInt(),
-      nom: row['nom'] as String,
-      prenom: row['prenom'] as String,
-      email: row['email'] as String,
-      username: row['username'] as String,
-      typeCompte: row['type_compte'] as String,
-      dateCreation: DateTime.parse(row['date_creation'].toString()),
-    );
+    return Account.fromJson(row.fields);
   }
 
   @override
@@ -51,8 +43,14 @@ class AuthRepositoryImpl implements IAuthRepository {
         data['email'],
         data['username'],
         passwordHash,
-        'Utilisateur',
+        data['type_compte'] ?? 'Utilisateur',
       ],
     );
+  }
+
+  @override
+  Future<List<Account>> getAllAccounts() async {
+    final results = await _mysqlService.query('SELECT * FROM Account ORDER BY nom, prenom');
+    return results.map((row) => Account.fromJson(row.fields)).toList();
   }
 }
