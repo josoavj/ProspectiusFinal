@@ -19,13 +19,13 @@ class Account {
 
   factory Account.fromJson(Map<String, dynamic> json) {
     return Account(
-      id: json['id'] as int,
-      nom: json['nom'] as String,
-      prenom: json['prenom'] as String,
-      email: json['email'] as String,
-      username: json['username'] as String,
-      typeCompte: json['type_compte'] as String,
-      dateCreation: DateTime.parse(json['date_creation'] as String),
+      id: (num.tryParse((json['id_compte'] ?? json['id'] ?? 0).toString()) ?? 0).toInt(),
+      nom: json['nom']?.toString() ?? '',
+      prenom: json['prenom']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      username: json['username']?.toString() ?? '',
+      typeCompte: (json['type_compte'] ?? json['typeCompte'])?.toString() ?? 'Utilisateur',
+      dateCreation: DateTime.parse((json['date_creation'] ?? json['dateCreation'] ?? DateTime.now().toIso8601String()).toString()),
     );
   }
 
