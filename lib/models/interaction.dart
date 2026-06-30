@@ -21,10 +21,10 @@ class Interaction {
 
   factory Interaction.fromJson(Map<String, dynamic> json) {
     return Interaction(
-      id: json['id_interaction'] as int,
-      idProspect: json['id_prospect'] as int,
-      idCompte: json['id_compte'] as int,
-      idAssigne: json['id_assigne'] as int?,
+      id: (num.tryParse((json['id_interaction'] ?? 0).toString()) ?? 0).toInt(),
+      idProspect: (num.tryParse((json['id_prospect'] ?? 0).toString()) ?? 0).toInt(),
+      idCompte: (num.tryParse((json['id_compte'] ?? 0).toString()) ?? 0).toInt(),
+      idAssigne: json['id_assigne'] != null ? (num.tryParse(json['id_assigne'].toString())?.toInt()) : null,
       type: json['type']?.toString() ?? '',
       note: json['note']?.toString() ?? '',
       suivi: json['suivi']?.toString(),
