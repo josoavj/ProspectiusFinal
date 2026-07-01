@@ -14,202 +14,145 @@ class SidebarNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      child: Container(
-        color: Colors.white,
-        child: Column(
-          children: [
-            // Header
-            Container(
-              color: Colors.blue,
-              width: double.infinity,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Prospectius',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Consumer<AuthProvider>(
-                      builder: (context, authProvider, _) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              authProvider.currentUser?.fullName ??
-                                  'Utilisateur',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              authProvider.currentUser?.email ?? '',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
-            ),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-            // Navigation Items
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+    return Drawer(
+      child: Column(
+        children: [
+          // Header
+          Container(
+            color: colorScheme.primary,
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 40, 16, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildNavItem(
-                    context,
-                    icon: Icons.people,
-                    label: 'Prospects',
-                    index: 0,
+                  Text(
+                    'Prospectius',
+                    style: TextStyle(
+                      color: colorScheme.onPrimary,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.view_kanban,
-                    label: 'Pipeline',
-                    index: 1,
-                  ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.search,
-                    label: 'Exploration',
-                    index: 2,
-                  ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.bar_chart,
-                    label: 'Statistiques',
-                    index: 3,
-                  ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.check_circle,
-                    label: 'Clients',
-                    index: 4,
-                  ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.download,
-                    label: 'Exporter',
-                    index: 5,
-                  ),
-                  const Divider(
-                    height: 16,
-                  ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.person,
-                    label: 'Profil',
-                    index: 7,
-                  ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.info,
-                    label: 'À propos',
-                    index: 6,
-                  ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.settings,
-                    label: 'Paramètres',
-                    index: 8,
-                  ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.description,
-                    label: 'Logs',
-                    index: 9,
+                  const SizedBox(height: 16),
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, _) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            authProvider.currentUser?.fullName ?? 'Utilisateur',
+                            style: TextStyle(
+                              color: colorScheme.onPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            authProvider.currentUser?.email ?? '',
+                            style: TextStyle(
+                              color: colorScheme.onPrimary.withValues(alpha: 0.8),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
             ),
+          ),
 
-            // Footer avec bouton déconnexion
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Colors.grey[300]!),
+          // Navigation Items
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              children: [
+                _buildNavItem(context, Icons.people, 'Prospects', 0),
+                _buildNavItem(context, Icons.view_kanban, 'Pipeline', 1),
+                _buildNavItem(context, Icons.search, 'Exploration', 2),
+                _buildNavItem(context, Icons.bar_chart, 'Statistiques', 3),
+                _buildNavItem(context, Icons.check_circle, 'Clients', 4),
+                _buildNavItem(context, Icons.download, 'Exporter', 5),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Divider(color: colorScheme.outlineVariant),
                 ),
-              ),
-              child: Consumer<AuthProvider>(
-                builder: (context, authProvider, _) {
-                  return SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        _showLogoutConfirm(context, authProvider);
-                      },
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Déconnexion'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  );
-                },
+                _buildNavItem(context, Icons.person, 'Profil', 7),
+                _buildNavItem(context, Icons.info, 'À propos', 6),
+                _buildNavItem(context, Icons.settings, 'Paramètres', 8),
+                _buildNavItem(context, Icons.description, 'Logs', 9),
+              ],
+            ),
+          ),
+
+          // Footer
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: colorScheme.outlineVariant),
               ),
             ),
-          ],
-        ),
+            child: Consumer<AuthProvider>(
+              builder: (context, authProvider, _) {
+                return SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showLogoutConfirm(context, authProvider),
+                    icon: const Icon(Icons.logout),
+                    label: const Text('Déconnexion'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.error,
+                      foregroundColor: colorScheme.onError,
+                      elevation: 0,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildNavItem(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required int index,
-  }) {
+  Widget _buildNavItem(BuildContext context, IconData icon, String label, int index) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isSelected = selectedIndex == index;
-    return Material(
-      color: isSelected ? Colors.blue[50] : Colors.transparent,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: isSelected
-              ? const Border(
-                  left: BorderSide(color: Colors.blue, width: 4),
-                )
-              : null,
-        ),
-        child: ListTile(
-          leading: Icon(
-            icon,
-            color: isSelected ? Colors.blue : Colors.grey,
-          ),
-          title: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.blue : Colors.black87,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            ),
-          ),
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: Material(
+        color: isSelected ? colorScheme.primaryContainer : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
           onTap: () {
-            Navigator.of(context).pop(); // Ferme le drawer
+            Navigator.of(context).pop();
             onItemSelected(index);
           },
+          borderRadius: BorderRadius.circular(12),
+          child: ListTile(
+            visualDensity: VisualDensity.compact,
+            leading: Icon(
+              icon,
+              color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurfaceVariant,
+            ),
+            title: Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         ),
       ),
     );
@@ -218,29 +161,24 @@ class SidebarNavigation extends StatelessWidget {
   void _showLogoutConfirm(BuildContext context, AuthProvider authProvider) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Déconnexion'),
-          content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                authProvider.logout();
-                Navigator.of(context).pushReplacementNamed('/login');
-              },
-              child: const Text(
-                'Déconnexion',
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: const Text('Déconnexion'),
+        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              authProvider.logout();
+              Navigator.of(context).pushReplacementNamed('/login');
+            },
+            child: Text('Déconnexion', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          ),
+        ],
+      ),
     );
   }
 }
