@@ -9,7 +9,7 @@ class AppLogger {
       errorMethodCount: 8,
       lineLength: 120,
       colors: true,
-      printEmojis: true,
+      printEmojis: false,
       dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
     ),
   );
@@ -63,7 +63,7 @@ class AppLogger {
     } else {
       _logger.t(message);
     }
-    _fileLogger.logInfo('✓ $message');
+    _fileLogger.logInfo('[SUCCESS] $message');
   }
 
   /// Log avec un titre de section
@@ -84,7 +84,7 @@ class AppLogger {
 
   /// Log les résultats de requête
   static void logResponse(String method, int rows) {
-    _logger.i('[$method] ✓ $rows row(s) affected');
-    _fileLogger.logInfo('[$method] ✓ $rows row(s) affected');
+    _logger.i('[$method] $rows row(s) affected');
+    _fileLogger.logInfo('[$method] $rows row(s) affected');
   }
 }
