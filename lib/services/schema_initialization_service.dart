@@ -24,7 +24,7 @@ class SchemaInitializationService {
       await _createDocumentsTable();
       await _createCustomFieldsTables();
 
-      AppLogger.success('✓ Schéma de base de données initialisé avec succès');
+      AppLogger.success('Schema de base de données initialisé avec succès');
     } catch (e, stackTrace) {
       AppLogger.error(
           'Erreur lors de l\'initialisation du schéma', e, stackTrace);
