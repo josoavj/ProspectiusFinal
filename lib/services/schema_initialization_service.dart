@@ -24,7 +24,7 @@ class SchemaInitializationService {
       await _createDocumentsTable();
       await _createCustomFieldsTables();
 
-      AppLogger.success('✓ Schéma de base de données initialisé avec succès');
+      AppLogger.success('Schema de base de données initialisé avec succès');
     } catch (e, stackTrace) {
       AppLogger.error(
           'Erreur lors de l\'initialisation du schéma', e, stackTrace);
@@ -74,7 +74,7 @@ class SchemaInitializationService {
         CREATE TRIGGER IF NOT EXISTS validation_email_insert BEFORE INSERT ON Account FOR EACH ROW
         BEGIN
             IF NEW.email NOT LIKE '%@%.%' THEN
-                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Format d\'email invalide.';
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Format d'email invalide.';
             END IF;
         END
       ''');

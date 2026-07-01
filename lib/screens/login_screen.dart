@@ -18,11 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
@@ -31,34 +26,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _handleLogin() async {
     final username = _usernameController.text.trim();
-
-    // ignore: use_build_context_synchronously
     final authProvider = context.read<AuthProvider>();
 
     try {
-      final success =
-          await authProvider.login(username, _passwordController.text);
+      final success = await authProvider.login(username, _passwordController.text);
 
       if (!mounted) return;
 
       if (success) {
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => const SplashScreen(),
-            ),
-          );
-        }
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const SplashScreen()),
+        );
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(authProvider.error ?? 'Erreur de connexion'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.error ?? 'Erreur de connexion'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
       }
     } catch (e) {
       AppLogger.error('Erreur lors de la connexion', e);
@@ -67,40 +52,39 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(32.0),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.business_center,
-                      size: 80, color: Colors.blue[700]),
+                  Icon(Icons.business_center_rounded, size: 84, color: colorScheme.primary),
                   const SizedBox(height: 24),
                   Text(
                     'Prospectius',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue[700],
+                          color: colorScheme.primary,
                         ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Gestion de Prospects CRM',
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
                   ),
                   const SizedBox(height: 48),
                   TextField(
                     controller: _usernameController,
                     decoration: InputDecoration(
                       labelText: 'Nom d\'utilisateur',
-                      prefixIcon: const Icon(Icons.person),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -109,49 +93,37 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Mot de passe',
-                      prefixIcon: const Icon(Icons.lock),
+                      prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
+                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 24),
                   Consumer<AuthProvider>(
                     builder: (context, authProvider, _) {
                       if (authProvider.error != null) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.red[100],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.error, color: Colors.red[700]),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    authProvider.error!,
-                                    style: TextStyle(color: Colors.red[700]),
-                                  ),
+                        return Container(
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: 24),
+                          decoration: BoxDecoration(
+                            color: colorScheme.errorContainer,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: colorScheme.error),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.error_outline, color: colorScheme.onErrorContainer),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  authProvider.error!,
+                                  style: TextStyle(color: colorScheme.onErrorContainer),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         );
                       }
@@ -159,55 +131,32 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   SizedBox(
-                    width: 180,
-                    height: 44,
-                    child: Consumer<AuthProvider>(
-                      builder: (context, authProvider, _) {
-                        return ElevatedButton(
-                          onPressed:
-                              authProvider.isLoading ? null : _handleLogin,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[700],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: authProvider.isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Text(
-                                  'Connexion',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                        );
-                      },
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: context.watch<AuthProvider>().isLoading ? null : _handleLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: context.watch<AuthProvider>().isLoading
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Text('Se connecter', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Pas encore de compte? '),
+                      Text('Pas encore de compte? ', style: TextStyle(color: colorScheme.onSurfaceVariant)),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const RegisterScreen(),
-                            ),
+                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
                           );
                         },
-                        child: const Text('S\'inscrire'),
+                        child: const Text('S\'inscrire maintenant'),
                       ),
                     ],
                   ),

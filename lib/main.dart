@@ -58,14 +58,22 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             title: 'Prospectius',
             theme: ThemeData(
-              primarySwatch: Colors.blue, 
               useMaterial3: true,
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Colors.blue,
+                brightness: Brightness.light,
+              ),
               textTheme: GoogleFonts.lexendTextTheme(),
               fontFamily: GoogleFonts.lexend().fontFamily,
+              cardTheme: CardThemeData(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey[200]!),
+                ),
+              ),
             ),
             darkTheme: ThemeData(
-              brightness: Brightness.dark,
               useMaterial3: true,
               colorScheme: ColorScheme.fromSeed(
                 seedColor: Colors.blue,
@@ -73,6 +81,17 @@ class MyApp extends StatelessWidget {
               ),
               textTheme: GoogleFonts.lexendTextTheme(ThemeData.dark().textTheme),
               fontFamily: GoogleFonts.lexend().fontFamily,
+              cardTheme: CardThemeData(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey[800]!),
+                ),
+              ),
+              scaffoldBackgroundColor: const Color(0xFF121212),
+              drawerTheme: const DrawerThemeData(
+                backgroundColor: Color(0xFF1E1E1E),
+              ),
             ),
             themeMode: settings.themeMode,
             builder: (context, child) {

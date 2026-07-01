@@ -126,6 +126,8 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Modifier le prospect')),
       body: _isLoading 
@@ -134,7 +136,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildSection('Informations Personnelles', [
+                _buildSection(context, 'Informations Personnelles', [
                   _buildField(_prenomController, 'Prénom', Icons.person_outline),
                   _buildField(_nomController, 'Nom', Icons.person),
                   _buildField(_emailController, 'Email', Icons.email_outlined, type: TextInputType.emailAddress),
@@ -142,7 +144,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                   _buildField(_adresseController, 'Adresse', Icons.location_on_outlined),
                 ]),
                 const SizedBox(height: 16),
-                _buildSection('Professionnel', [
+                _buildSection(context, 'Professionnel', [
                   _buildDropdown('Type', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!), labelFormatter: TextFormatter.formatType),
                   if (_selectedType != 'particulier') ...[
                     _buildField(_nomEntrepriseController, 'Entreprise', Icons.business),
@@ -152,23 +154,27 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                   _buildDropdown('Statut', _selectedStatus, ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'], (val) => setState(() => _selectedStatus = val!), labelFormatter: TextFormatter.formatStatus),
                 ]),
                 const SizedBox(height: 16),
-                _buildSection('Digital & Source', [
+                _buildSection(context, 'Digital & Source', [
                   _buildField(_sourceController, 'Source', Icons.source),
                   _buildField(_siteWebController, 'Site Web', Icons.language, type: TextInputType.url),
                   _buildField(_linkedinController, 'URL LinkedIn', Icons.link, type: TextInputType.url),
                 ]),
                 const SizedBox(height: 16),
-                _buildSection('Notes', [
+                _buildSection(context, 'Notes', [
                   _buildField(_descriptionController, 'Description / Contexte', Icons.note_outlined, maxLines: 5),
                 ]),
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 54,
                   child: ElevatedButton(
                     onPressed: _handleSave,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[700]),
-                    child: const Text('Enregistrer les modifications', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary, 
+                      foregroundColor: colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Enregistrer les modifications', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -178,19 +184,15 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     );
   }
 
-  Widget _buildSection(String title, List<Widget> children) {
+  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey[200]!),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue)),
+            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colorScheme.primary)),
             const SizedBox(height: 16),
             ...children.expand((w) => [w, const SizedBox(height: 12)]).toList()..removeLast(),
           ],

@@ -36,22 +36,23 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   @override
   void initState() {
     super.initState();
-    _nomController = TextEditingController(text: widget.prospect?.nom ?? '');
-    _prenomController = TextEditingController(text: widget.prospect?.prenom ?? '');
-    _emailController = TextEditingController(text: widget.prospect?.email ?? '');
-    _telephoneController = TextEditingController(text: widget.prospect?.telephone ?? '');
-    _adresseController = TextEditingController(text: widget.prospect?.adresse ?? '');
-    _sourceController = TextEditingController(text: widget.prospect?.source ?? '');
-    _nomEntrepriseController = TextEditingController(text: widget.prospect?.nomEntreprise ?? '');
-    _posteController = TextEditingController(text: widget.prospect?.poste ?? '');
-    _linkedinController = TextEditingController(text: widget.prospect?.linkedinUrl ?? '');
-    _siteWebController = TextEditingController(text: widget.prospect?.siteWeb ?? '');
-    _descriptionController = TextEditingController(text: widget.prospect?.description ?? '');
+    final p = widget.prospect;
+    _nomController = TextEditingController(text: p?.nom ?? '');
+    _prenomController = TextEditingController(text: p?.prenom ?? '');
+    _emailController = TextEditingController(text: p?.email ?? '');
+    _telephoneController = TextEditingController(text: p?.telephone ?? '');
+    _adresseController = TextEditingController(text: p?.adresse ?? '');
+    _sourceController = TextEditingController(text: p?.source ?? '');
+    _nomEntrepriseController = TextEditingController(text: p?.nomEntreprise ?? '');
+    _posteController = TextEditingController(text: p?.poste ?? '');
+    _linkedinController = TextEditingController(text: p?.linkedinUrl ?? '');
+    _siteWebController = TextEditingController(text: p?.siteWeb ?? '');
+    _descriptionController = TextEditingController(text: p?.description ?? '');
     _interactionNoteController = TextEditingController();
 
-    _selectedType = widget.prospect?.type ?? 'particulier';
-    _selectedStatus = widget.prospect?.status ?? 'nouveau';
-    _selectedPriorite = widget.prospect?.priorite ?? 'moyenne';
+    _selectedType = p?.type ?? 'particulier';
+    _selectedStatus = p?.status ?? 'nouveau';
+    _selectedPriorite = p?.priorite ?? 'moyenne';
   }
 
   @override
@@ -81,13 +82,13 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(widget.prospect != null ? 'Confirmer la modification' : 'Créer le prospect'),
-        content: Text('Êtes-vous sûr de vouloir continuer ?'),
+        content: const Text('Êtes-vous sûr de vouloir continuer ?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 6, 206, 112)),
-            child: const Text('Confirmer', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06CE70), foregroundColor: Colors.white),
+            child: const Text('Confirmer'),
           ),
         ],
       ),
@@ -115,7 +116,6 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
 
     bool success;
     if (widget.prospect != null) {
-      // Pour l'update, le repository utilise des clés SQL
       final updateData = {
         'nomp': _nomController.text,
         'prenomp': _prenomController.text,
@@ -135,8 +135,6 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
       success = await prospectProvider.updateProspect(authProvider.currentUser!.id, widget.prospect!.id, updateData);
     } else {
       success = await prospectProvider.createProspect(data);
-      
-      // Interaction initiale
       if (success && _interactionNoteController.text.isNotEmpty) {
         final created = prospectProvider.prospects.firstWhere(
           (p) => p.nom == _nomController.text && p.prenom == _prenomController.text,
@@ -149,20 +147,22 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     }
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.prospect != null ? 'Mis à jour' : 'Créé')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.prospect != null ? 'Prospect mis à jour' : 'Prospect créé')));
       Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: Text(widget.prospect != null ? 'Éditer prospect' : 'Nouveau prospect')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildSection('Informations Personnelles', [
+            _buildSection(context, 'Informations Personnelles', [
               _buildField(_prenomController, 'Prénom', Icons.person_outline),
               _buildField(_nomController, 'Nom', Icons.person),
               _buildField(_emailController, 'Email', Icons.email_outlined, type: TextInputType.emailAddress),
@@ -170,7 +170,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
               _buildField(_adresseController, 'Adresse', Icons.location_on_outlined),
             ]),
             const SizedBox(height: 16),
-            _buildSection('Professionnel', [
+            _buildSection(context, 'Professionnel', [
               _buildDropdown('Type', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!), labelFormatter: TextFormatter.formatType),
               if (_selectedType != 'particulier') ...[
                 _buildField(_nomEntrepriseController, 'Entreprise', Icons.business),
@@ -180,18 +180,18 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
               _buildDropdown('Statut', _selectedStatus, ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'], (val) => setState(() => _selectedStatus = val!), labelFormatter: TextFormatter.formatStatus),
             ]),
             const SizedBox(height: 16),
-            _buildSection('Digital & Source', [
+            _buildSection(context, 'Digital & Source', [
               _buildField(_sourceController, 'Source (ex: LinkedIn, Salon...)', Icons.source),
               _buildField(_siteWebController, 'Site Web', Icons.language, type: TextInputType.url),
               _buildField(_linkedinController, 'URL LinkedIn', Icons.link, type: TextInputType.url),
             ]),
             const SizedBox(height: 16),
-            _buildSection('Notes', [
+            _buildSection(context, 'Notes', [
               _buildField(_descriptionController, 'Description / Contexte', Icons.note_outlined, maxLines: 3),
             ]),
             if (widget.prospect == null) ...[
               const SizedBox(height: 16),
-              _buildSection('Interaction Initiale', [
+              _buildSection(context, 'Interaction Initiale', [
                 _buildDropdown('Type d\'échange', _selectedInteractionType, ['appel', 'email', 'reunion', 'message', 'autre'], (val) => setState(() => _selectedInteractionType = val!), labelFormatter: TextFormatter.formatInteractionType),
                 _buildField(_interactionNoteController, 'Note de l\'échange', Icons.chat_bubble_outline, maxLines: 2),
               ]),
@@ -199,11 +199,15 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 54,
               child: ElevatedButton(
                 onPressed: _handleSave,
-                style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 6, 206, 112)),
-                child: Text(widget.prospect != null ? 'Enregistrer les modifications' : 'Créer le prospect', style: const TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.primary, 
+                  foregroundColor: colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(widget.prospect != null ? 'Enregistrer les modifications' : 'Créer le prospect', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
             const SizedBox(height: 40),
@@ -213,19 +217,15 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     );
   }
 
-  Widget _buildSection(String title, List<Widget> children) {
+  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey[200]!),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue)),
+            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colorScheme.primary)),
             const SizedBox(height: 16),
             ...children.expand((w) => [w, const SizedBox(height: 12)]).toList()..removeLast(),
           ],
