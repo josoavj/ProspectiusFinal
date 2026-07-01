@@ -118,7 +118,7 @@ class LoggingService {
     int prospectCount,
   ) async {
     final message =
-        '📤 EXPORT_START | Fichier: $fileName | Répertoire: ${directoryPath ?? "défaut"} | Prospects: $prospectCount';
+        '[EXPORT_START] Fichier: $fileName | Répertoire: ${directoryPath ?? "défaut"} | Prospects: $prospectCount';
     await log(message, level: 'INFO');
   }
 
@@ -129,11 +129,11 @@ class LoggingService {
     String? errorMessage,
   ) async {
     if (isSuccess) {
-      final message = '✅ DIR_SELECT_SUCCESS | Chemin: $selectedPath';
+      final message = '[SUCCESS] DIR_SELECT_SUCCESS | Chemin: $selectedPath';
       await log(message, level: 'INFO');
     } else {
       final message =
-          '❌ DIR_SELECT_FAILED | Erreur: ${errorMessage ?? "Aucun répertoire sélectionné"}';
+          '[FAILED] DIR_SELECT_FAILED | Erreur: ${errorMessage ?? "Aucun répertoire sélectionné"}';
       await log(message, level: 'WARN');
     }
   }
@@ -145,11 +145,11 @@ class LoggingService {
     String? errorMessage,
   ) async {
     if (isSuccess) {
-      final message = '✅ DIR_CREATE_SUCCESS | Chemin: $path';
+      final message = '[SUCCESS] DIR_CREATE_SUCCESS | Chemin: $path';
       await log(message, level: 'INFO');
     } else {
       final message =
-          '❌ DIR_CREATE_FAILED | Chemin: $path | Erreur: ${errorMessage ?? "Erreur inconnue"}';
+          '[FAILED] DIR_CREATE_FAILED | Chemin: $path | Erreur: ${errorMessage ?? "Erreur inconnue"}';
       await log(message, level: 'ERROR');
     }
   }
@@ -163,11 +163,11 @@ class LoggingService {
   ) async {
     if (isSuccess) {
       final message =
-          '✅ EXCEL_GEN_SUCCESS | Lignes: $rowCount | Feuilles: $sheetCount';
+          '[SUCCESS] EXCEL_GEN_SUCCESS | Lignes: $rowCount | Feuilles: $sheetCount';
       await log(message, level: 'INFO');
     } else {
       final message =
-          '❌ EXCEL_GEN_FAILED | Erreur: ${errorMessage ?? "Erreur inconnue"}';
+          '[FAILED] EXCEL_GEN_FAILED | Erreur: ${errorMessage ?? "Erreur inconnue"}';
       await log(message, level: 'ERROR');
     }
   }
@@ -182,11 +182,11 @@ class LoggingService {
     if (isSuccess) {
       final fileSizeKB = fileSizeBytes / 1024;
       final message =
-          '✅ FILE_SAVE_SUCCESS | Chemin: $filePath | Taille: ${fileSizeKB.toStringAsFixed(2)}KB';
+          '[SUCCESS] FILE_SAVE_SUCCESS | Chemin: $filePath | Taille: ${fileSizeKB.toStringAsFixed(2)}KB';
       await log(message, level: 'INFO');
     } else {
       final message =
-          '❌ FILE_SAVE_FAILED | Chemin: $filePath | Erreur: ${errorMessage ?? "Erreur inconnue"}';
+          '[FAILED] FILE_SAVE_FAILED | Chemin: $filePath | Erreur: ${errorMessage ?? "Erreur inconnue"}';
       await log(message, level: 'ERROR');
     }
   }
@@ -197,7 +197,7 @@ class LoggingService {
     String errorMessage,
     StackTrace? stackTrace,
   ) async {
-    final message = '🔴 EXPORT_ERROR | Stage: $stage | Message: $errorMessage';
+    final message = '[ERROR] EXPORT_ERROR | Stage: $stage | Message: $errorMessage';
     await log(message, level: 'ERROR');
     if (stackTrace != null) {
       await log('Stack trace:\n$stackTrace', level: 'ERROR');
@@ -211,7 +211,7 @@ class LoggingService {
     Duration duration,
   ) async {
     final message =
-        '🎉 EXPORT_SUCCESS | Fichier: $filePath | Prospects: $prospectCount | Durée: ${duration.inMilliseconds}ms';
+        '[SUCCESS] EXPORT_SUCCESS | Fichier: $filePath | Prospects: $prospectCount | Durée: ${duration.inMilliseconds}ms';
     await log(message, level: 'INFO');
   }
 
@@ -220,7 +220,7 @@ class LoggingService {
     final files = await getLogFiles();
     final summary = StringBuffer();
 
-    summary.writeln('📊 RÉSUMÉ DES EXPORTS');
+    summary.writeln('RESUME DES EXPORTS');
     summary.writeln('=' * 50);
 
     for (final logFile in files) {
@@ -234,7 +234,7 @@ class LoggingService {
         }).toList();
 
         if (exportLines.isNotEmpty) {
-          summary.writeln('\n📅 ${logFile.path.split('/').last}');
+          summary.writeln('\nDate: ${logFile.path.split('/').last}');
           summary.writeln('-' * 50);
           for (final line in exportLines) {
             summary.writeln(line);
@@ -242,7 +242,7 @@ class LoggingService {
         }
       } catch (e) {
         summary.writeln(
-            '\n⚠️ Erreur lors de la lecture du fichier ${logFile.path.split('/').last}: $e');
+            '\n[ERREUR] Lecture du fichier ${logFile.path.split('/').last}: $e');
       }
     }
 
@@ -261,13 +261,14 @@ class LoggingService {
           return line.contains('EXPORT_ERROR') ||
               line.contains('DIR_CREATE_FAILED') ||
               line.contains('FILE_SAVE_FAILED') ||
-              line.contains('❌');
+              line.contains('[FAILED]') ||
+              line.contains('[ERROR]');
         }).toList();
 
         errors.addAll(errorLines);
       } catch (e) {
         errors.add(
-            '⚠️ Erreur lors de la lecture du fichier ${logFile.path.split('/').last}: $e');
+            '[ERREUR] Lecture du fichier ${logFile.path.split('/').last}: $e');
       }
     }
 
