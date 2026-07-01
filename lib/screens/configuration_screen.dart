@@ -117,7 +117,6 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             ),
           ),
           actions: [
-          actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Annuler'),
