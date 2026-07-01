@@ -79,11 +79,6 @@ class _StatsScreenState extends State<StatsScreen> {
     if (statsProvider.conversionStats == null) return const SizedBox.shrink();
     final stats = statsProvider.conversionStats!;
     return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey[200]!),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -105,10 +100,11 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   Widget _buildStatItem(String label, String value, Color color) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+        Text(label, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
       ],
     );
   }
@@ -117,6 +113,7 @@ class _StatsScreenState extends State<StatsScreen> {
     if (statsProvider.prospectStats.isEmpty) return const SizedBox.shrink();
     
     final total = statsProvider.prospectStats.fold<int>(0, (sum, item) => sum + item.count);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,11 +121,6 @@ class _StatsScreenState extends State<StatsScreen> {
         const Text('Distribution par Statut', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
         Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.grey[200]!),
-          ),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -164,7 +156,7 @@ class _StatsScreenState extends State<StatsScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(total.toString(), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                            Text('TOTAL', style: TextStyle(fontSize: 12, color: Colors.grey[600], letterSpacing: 1)),
+                            Text('TOTAL', style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant, letterSpacing: 1)),
                           ],
                         ),
                       ),
@@ -213,6 +205,7 @@ class _StatsScreenState extends State<StatsScreen> {
       'converti': Colors.green,
       'perdu': Colors.red,
     };
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       children: statsProvider.prospectStats.map((stat) {
@@ -234,7 +227,7 @@ class _StatsScreenState extends State<StatsScreen> {
               Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
               const SizedBox(width: 12),
               Expanded(child: Text(TextFormatter.formatStatus(stat.status), style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
-              Text('$percent%', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+              Text('$percent%', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
               const SizedBox(width: 16),
               Text(stat.count.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
@@ -260,9 +253,14 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   Widget _buildPerformanceMetric(String label, double value, Color color) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey[100]!)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface, 
+        borderRadius: BorderRadius.circular(12), 
+        border: Border.all(color: colorScheme.outlineVariant)
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
