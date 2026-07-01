@@ -24,36 +24,23 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
   }
 
   Future<void> _loadLogs() async {
-    setState(() {
-      _isLoading = true;
-    });
-
+    setState(() => _isLoading = true);
     try {
       String logs = '';
-
       if (_selectedTab == 'all') {
         logs = await _loadAllLogs();
       } else if (_selectedTab == 'exports') {
         logs = await _loggingService.getExportLogsSummary();
       } else if (_selectedTab == 'errors') {
         final errors = await _loggingService.findExportErrors();
-        logs = errors.isEmpty
-            ? 'Aucune erreur d\'export trouvée'
-            : errors.join('\n\n');
+        logs = errors.isEmpty ? 'Aucune erreur d\'export trouvée' : errors.join('\n\n');
       }
-
-      setState(() {
-        _logs = logs;
-      });
+      if (mounted) setState(() => _logs = logs);
     } catch (e) {
-      setState(() {
-        _logs = 'Erreur lors du chargement des logs: $e';
-      });
+      if (mounted) setState(() => _logs = 'Erreur: $e');
       AppLogger.error('Erreur chargement logs', e);
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -61,185 +48,94 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
     try {
       final logFiles = await _loggingService.getLogFiles();
       final buffer = StringBuffer();
-
-      buffer.writeln('📋 TOUS LES LOGS');
-      buffer.writeln('=' * 60);
-      buffer.writeln('Fichiers de log trouvés: ${logFiles.length}\n');
-
+      buffer.writeln('RECAPITULATIF DES LOGS\n');
       for (final logFile in logFiles.reversed) {
         final fileName = logFile.path.split('/').last;
-        buffer.writeln('📅 $fileName');
-        buffer.writeln('-' * 60);
-
+        buffer.writeln('Date: $fileName\n${'-' * 40}');
         try {
-          // Utiliser la méthode robuste pour lire le fichier log
-          final content =
-              await _loggingService.readLogFileWithFallback(logFile);
+          final content = await _loggingService.readLogFileWithFallback(logFile);
           final lines = content.split('\n');
-
-          // Afficher les 50 dernières lignes
-          final recentLines =
-              lines.length > 50 ? lines.sublist(lines.length - 50) : lines;
-
+          final recentLines = lines.length > 50 ? lines.sublist(lines.length - 50) : lines;
           for (final line in recentLines) {
-            if (line.isNotEmpty) {
-              buffer.writeln(line);
-            }
+            if (line.isNotEmpty) buffer.writeln(line);
           }
         } catch (e) {
-          buffer.writeln('[ERREUR] Impossible de lire ce fichier: $e');
+          buffer.writeln('[ERREUR] Lecture impossible: $e');
         }
         buffer.writeln('');
       }
-
       return buffer.toString();
-    } catch (e) {
-      return 'Erreur lecture des logs: $e';
-    }
+    } catch (e) { return 'Erreur lecture: $e'; }
   }
 
   void _clearLogs() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Supprimer les logs'),
-          content: const Text(
-              'Êtes-vous sûr de vouloir supprimer tous les fichiers de log? Cette action ne peut pas être annulée.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: () async {
-                try {
-                  await _loggingService.cleanOldLogs(daysToKeep: 0);
-                  if (!mounted) return;
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  setState(() {
-                    _logs = 'Tous les logs ont été supprimés';
-                  });
-                } catch (e) {
-                  AppLogger.error('Erreur suppression logs', e);
-                }
-              },
-              child:
-                  const Text('Supprimer', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _exportLogsToFile() async {
-    try {
-      final logFiles = await _loggingService.getLogFiles();
-
-      if (!mounted) return;
-
-      if (logFiles.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Aucun log à exporter')),
-        );
-        return;
-      }
-
-      final exportPath = await _loggingService.exportLogs();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Logs exportés vers: $exportPath')),
-        );
-      }
-    } catch (e) {
-      AppLogger.error('Erreur export logs', e);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur lors de l\'export: $e'),
-            backgroundColor: Colors.red,
+      builder: (context) => AlertDialog(
+        title: const Text('Supprimer les logs'),
+        content: const Text('Cette action est irréversible.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          TextButton(
+            onPressed: () async {
+              await _loggingService.cleanOldLogs(daysToKeep: 0);
+              if (!mounted) return;
+              Navigator.pop(context);
+              _loadLogs();
+            },
+            child: Text('Supprimer', style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
-        );
-      }
-    }
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
+        title: const Text('Journaux système'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _isLoading ? null : _loadLogs,
-            tooltip: 'Actualiser',
-          ),
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: _exportLogsToFile,
-            tooltip: 'Exporter',
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: _clearLogs,
-            tooltip: 'Supprimer',
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _isLoading ? null : _loadLogs),
+          IconButton(icon: const Icon(Icons.delete_outline), onPressed: _clearLogs),
         ],
       ),
       body: Column(
         children: [
-          // Onglets de filtrage
-          Container(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SegmentedButton<String>(
-                    segments: const <ButtonSegment<String>>[
-                      ButtonSegment<String>(
-                        value: 'all',
-                        label: Text('Tous'),
-                      ),
-                      ButtonSegment<String>(
-                        value: 'exports',
-                        label: Text('Exports'),
-                      ),
-                      ButtonSegment<String>(
-                        value: 'errors',
-                        label: Text('Erreurs'),
-                      ),
-                    ],
-                    selected: <String>{_selectedTab},
-                    onSelectionChanged: (Set<String> newSelection) {
-                      setState(() {
-                        _selectedTab = newSelection.first;
-                      });
-                      _loadLogs();
-                    },
-                  ),
-                ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: 'all', label: Text('Tous'), icon: Icon(Icons.list)),
+                ButtonSegment(value: 'exports', label: Text('Exports'), icon: Icon(Icons.import_export)),
+                ButtonSegment(value: 'errors', label: Text('Erreurs'), icon: Icon(Icons.error_outline)),
               ],
+              selected: {_selectedTab},
+              onSelectionChanged: (val) { setState(() => _selectedTab = val.first); _loadLogs(); },
             ),
           ),
-          // Zone d'affichage des logs
           Expanded(
             child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : SingleChildScrollView(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      color: Colors.grey[900],
+                ? const Center(child: CircularProgressIndicator())
+                : Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.black : Colors.grey[900],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                    ),
+                    child: SingleChildScrollView(
                       child: SelectableText(
                         _logs,
-                        style: const TextStyle(
-                          fontFamily: 'Courier New',
-                          fontSize: 11,
-                          color: Colors.greenAccent,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 12,
+                          color: isDark ? Colors.greenAccent[100] : Colors.greenAccent,
                         ),
                       ),
                     ),
