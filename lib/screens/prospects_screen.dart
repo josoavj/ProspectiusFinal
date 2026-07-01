@@ -20,7 +20,6 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
   @override
   void initState() {
     super.initState();
-    // Utiliser addPostFrameCallback pour éviter setState() pendant le build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProspects();
     });
@@ -60,7 +59,7 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erreur lors de l\'import: $e'), backgroundColor: Colors.red),
+            SnackBar(content: Text('Erreur lors de l\'import: $e'), backgroundColor: Theme.of(context).colorScheme.error),
           );
         }
       }
@@ -69,12 +68,13 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: Consumer<ProspectProvider>(
         builder: (context, prospectProvider, _) {
           return Column(
             children: [
-              // Bouton d'actualisation en haut
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -87,23 +87,17 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
-                      onPressed:
-                          prospectProvider.isLoading ? null : _loadProspects,
+                      onPressed: prospectProvider.isLoading ? null : _loadProspects,
                       icon: const Icon(Icons.refresh),
                       label: const Text('Actualiser'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                       ),
                     ),
                   ],
                 ),
               ),
-              // Contenu principal
               Expanded(
                 child: SimpleStateBuilder(
                   isLoading: prospectProvider.isLoading,
@@ -113,21 +107,17 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.people_outline,
-                                  size: 64, color: Colors.grey[400]),
+                              Icon(Icons.people_outline, size: 64, color: colorScheme.outline),
                               const SizedBox(height: 16),
                               Text(
                                 'Aucun prospect',
-                                style: TextStyle(
-                                    fontSize: 18, color: Colors.grey[600]),
+                                style: TextStyle(fontSize: 18, color: colorScheme.onSurfaceVariant),
                               ),
                               const SizedBox(height: 24),
                               ElevatedButton.icon(
                                 onPressed: () {
                                   Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => const AddProspectScreen(),
-                                    ),
+                                    MaterialPageRoute(builder: (_) => const AddProspectScreen()),
                                   );
                                 },
                                 icon: const Icon(Icons.add),
@@ -137,12 +127,11 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
                           ),
                         )
                       : ListView.builder(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           itemCount: prospectProvider.prospects.length,
                           itemBuilder: (context, index) {
                             final prospect = prospectProvider.prospects[index];
-                            return _buildProspectListItem(
-                                context, prospect, prospectProvider);
+                            return _buildProspectListItem(context, prospect, prospectProvider);
                           },
                         ),
                 ),
@@ -154,86 +143,71 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.of(context)
-              .push(
-                MaterialPageRoute(builder: (_) => const AddProspectScreen()),
-              )
+              .push(MaterialPageRoute(builder: (_) => const AddProspectScreen()))
               .then((_) => _loadProspects());
         },
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         icon: const Icon(Icons.add),
         label: const Text('Nouveau prospect'),
       ),
     );
   }
 
-  Widget _buildProspectListItem(BuildContext context, Prospect prospect,
-      ProspectProvider prospectProvider) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Material(
-        color: Colors.transparent,
+  Widget _buildProspectListItem(BuildContext context, Prospect prospect, ProspectProvider prospectProvider) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Card(
+        margin: EdgeInsets.zero,
         child: InkWell(
           onTap: () {
             prospectProvider.selectProspect(prospect);
             Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ProspectDetailScreen(prospect: prospect),
-              ),
+              MaterialPageRoute(builder: (_) => ProspectDetailScreen(prospect: prospect)),
             );
           },
-          borderRadius: BorderRadius.circular(8),
-          child: ListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            leading: CircleAvatar(
-              radius: 22,
-              backgroundColor: Colors.blue[500],
-              child: Text(
-                prospect.prenom.isNotEmpty
-                    ? prospect.prenom[0].toUpperCase()
-                    : '?',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: colorScheme.primaryContainer,
+                  child: Text(
+                    prospect.prenom.isNotEmpty ? prospect.prenom[0].toUpperCase() : '?',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            title: Text(
-              TextFormatter.capitalize(prospect.fullName),
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            subtitle: Text(
-              prospect.email.isEmpty ? '-' : prospect.email,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: _getStatusColor(prospect.status),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                TextFormatter.formatStatus(prospect.status),
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        TextFormatter.capitalize(prospect.fullName),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        prospect.email.isEmpty ? 'Aucun email' : prospect.email,
+                        style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                _buildStatusChip(prospect.status, colorScheme),
+              ],
             ),
           ),
         ),
@@ -241,20 +215,32 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
     );
   }
 
-  Color _getStatusColor(String status) {
+  Widget _buildStatusChip(String status, ColorScheme colorScheme) {
+    Color chipColor;
     switch (status.toLowerCase()) {
-      case 'nouveau':
-        return Colors.blue[600]!;
-      case 'interesse':
-        return Colors.amber[600]!;
-      case 'negociation':
-        return Colors.orange[600]!;
-      case 'converti':
-        return const Color.fromARGB(255, 6, 206, 112);
-      case 'perdu':
-        return Colors.red[600]!;
-      default:
-        return Colors.grey[600]!;
+      case 'nouveau': chipColor = Colors.blue; break;
+      case 'interesse': chipColor = Colors.amber; break;
+      case 'negociation': chipColor = Colors.orange; break;
+      case 'converti': chipColor = const Color(0xFF06CE70); break;
+      case 'perdu': chipColor = Colors.red; break;
+      default: chipColor = colorScheme.outline;
     }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: chipColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: chipColor.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        TextFormatter.formatStatus(status),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: chipColor,
+        ),
+      ),
+    );
   }
 }
