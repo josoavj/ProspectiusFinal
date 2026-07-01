@@ -74,7 +74,7 @@ class SchemaInitializationService {
         CREATE TRIGGER IF NOT EXISTS validation_email_insert BEFORE INSERT ON Account FOR EACH ROW
         BEGIN
             IF NEW.email NOT LIKE '%@%.%' THEN
-                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Format d\'email invalide.';
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Format d'email invalide.';
             END IF;
         END
       ''');
