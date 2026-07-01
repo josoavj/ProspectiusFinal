@@ -175,7 +175,7 @@ class _PipelineScreenState extends State<PipelineScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                prospect.type,
+                TextFormatter.formatType(prospect.type),
                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
               const SizedBox(height: 8),
