@@ -50,11 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Inscription réussie! Vous pouvez maintenant vous connecter.',
-          ),
-        ),
+        const SnackBar(content: Text('Inscription réussie! Vous pouvez maintenant vous connecter.')),
       );
       Navigator.of(context).pop();
     }
@@ -62,8 +58,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('S\'inscrire'), elevation: 0),
+      appBar: AppBar(title: const Text('Créer un compte'), centerTitle: true),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -72,15 +70,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               constraints: const BoxConstraints(maxWidth: 400),
               child: Column(
                 children: [
-                  const SizedBox(height: 24),
                   TextField(
                     controller: _nomController,
                     decoration: InputDecoration(
                       labelText: 'Nom',
-                      prefixIcon: const Icon(Icons.person),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -88,10 +83,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _prenomController,
                     decoration: InputDecoration(
                       labelText: 'Prénom',
-                      prefixIcon: const Icon(Icons.person),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -99,10 +92,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: const Icon(Icons.email),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     keyboardType: TextInputType.emailAddress,
                   ),
@@ -111,10 +102,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _usernameController,
                     decoration: InputDecoration(
                       labelText: 'Nom d\'utilisateur',
-                      prefixIcon: const Icon(Icons.person_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      prefixIcon: const Icon(Icons.person_pin_outlined),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -123,22 +112,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Mot de passe',
-                      prefixIcon: const Icon(Icons.lock),
+                      prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
+                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -147,10 +126,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Confirmer le mot de passe',
-                      prefixIcon: const Icon(Icons.lock),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      prefixIcon: const Icon(Icons.lock_reset_outlined),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -158,50 +135,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     initialValue: _selectedRole,
                     decoration: InputDecoration(
                       labelText: 'Type de compte',
-                      prefixIcon: const Icon(Icons.badge),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      prefixIcon: const Icon(Icons.badge_outlined),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     items: ['Administrateur', 'Utilisateur', 'Commercial']
-                        .map((role) => DropdownMenuItem(
-                              value: role,
-                              child: Text(role),
-                            ))
+                        .map((role) => DropdownMenuItem(value: role, child: Text(role)))
                         .toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _selectedRole = val;
-                        });
-                      }
-                    },
+                    onChanged: (val) { if (val != null) setState(() => _selectedRole = val); },
                   ),
                   const SizedBox(height: 24),
                   Consumer<AuthProvider>(
                     builder: (context, authProvider, _) {
                       if (authProvider.error != null) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.red[100],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.error, color: Colors.red[700]),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    authProvider.error!,
-                                    style: TextStyle(color: Colors.red[700]),
-                                  ),
-                                ),
-                              ],
-                            ),
+                        return Container(
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.only(bottom: 24),
+                          decoration: BoxDecoration(
+                            color: colorScheme.errorContainer,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: colorScheme.error),
+                          ),
+                          child: Text(
+                            authProvider.error!,
+                            style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13),
                           ),
                         );
                       }
@@ -209,39 +165,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   SizedBox(
-                    width: 180,
-                    height: 44,
-                    child: Consumer<AuthProvider>(
-                      builder: (context, authProvider, _) {
-                        return ElevatedButton(
-                          onPressed:
-                              authProvider.isLoading ? null : _handleRegister,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[700],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: authProvider.isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Text(
-                                  'S\'inscrire',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                        );
-                      },
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: context.watch<AuthProvider>().isLoading ? null : _handleRegister,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: context.watch<AuthProvider>().isLoading
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Text('S\'inscrire', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
