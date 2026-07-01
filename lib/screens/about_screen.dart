@@ -8,13 +8,10 @@ class AboutScreen extends StatelessWidget {
   Future<void> _launchURL(String url) async {
     try {
       if (Platform.isLinux) {
-        // Use xdg-open on Linux
         await Process.run('xdg-open', [url]);
       } else if (Platform.isMacOS) {
-        // Use open on macOS
         await Process.run('open', [url]);
       } else if (Platform.isWindows) {
-        // Use start on Windows
         await Process.run('start', [url], runInShell: true);
       }
     } catch (e) {
@@ -24,6 +21,9 @@ class AboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Center(
@@ -38,14 +38,14 @@ class AboutScreen extends StatelessWidget {
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(20),
+                    color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(24),
                   ),
                   child: Center(
                     child: Icon(
-                      Icons.people,
+                      Icons.people_alt_rounded,
                       size: 60,
-                      color: Colors.blue[600],
+                      color: colorScheme.primary,
                     ),
                   ),
                 ),
@@ -54,9 +54,10 @@ class AboutScreen extends StatelessWidget {
                 // Title
                 Text(
                   'Prospectius',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         fontSize: 28,
+                        color: colorScheme.onSurface,
                       ),
                   textAlign: TextAlign.center,
                 ),
@@ -65,8 +66,8 @@ class AboutScreen extends StatelessWidget {
                 // Subtitle
                 Text(
                   'Application CRM - Gestion de Prospects',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                   textAlign: TextAlign.center,
                 ),
@@ -74,167 +75,173 @@ class AboutScreen extends StatelessWidget {
 
                 // Version
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.blue[50],
+                    color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     'Version 1.0.0',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSecondaryContainer,
                         ),
                   ),
                 ),
                 const SizedBox(height: 48),
 
                 // Organization Card
-                SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Géré par',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildOrganizationCard(
-                            context,
-                            name: 'APEXNova Labs',
-                            description:
-                                'Developer team operating on software and mobile application development',
-                            avatarUrl:
-                                'https://avatars.githubusercontent.com/u/153268131?v=4',
-                            organizationUrl: 'https://github.com/APEXNovaLabs',
-                          ),
-                        ],
-                      ),
-                    ),
+                _buildSectionCard(
+                  context,
+                  title: 'Géré par',
+                  child: _buildOrganizationCard(
+                    context,
+                    name: 'APEXNova Labs',
+                    description: 'Developer team operating on software and mobile application development',
+                    avatarUrl: 'https://avatars.githubusercontent.com/u/153268131?v=4',
+                    organizationUrl: 'https://github.com/APEXNovaLabs',
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
-                // Description
-                SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'À propos',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Prospectius est une application CRM moderne conçue pour faciliter la gestion efficace de vos prospects. '
-                            'Elle vous permet de suivre, organiser et analyser vos prospects avec une interface intuitive et des outils puissants.\n\n'
-                            'Avec Prospectius, vous pouvez:\n'
-                            '• Gérer vos prospects et interactions\n'
-                            '• Suivre le statut de chaque prospect\n'
-                            '• Analyser vos statistiques de conversion\n'
-                            '• Exporter vos données en Excel\n'
-                            '• Synchroniser avec une base de données MySQL',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
+                // Features Card
+                _buildSectionCard(
+                  context,
+                  title: 'Fonctionnalités Clés',
+                  child: Column(
+                    children: [
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.assignment_ind_outlined,
+                        title: 'Gestion Centralisée',
+                        description: 'Regroupez toutes les données de vos prospects (coordonnées, entreprise, réseaux) dans un espace unique.',
                       ),
-                    ),
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.view_kanban_outlined,
+                        title: 'Pipeline de Vente',
+                        description: 'Visualisez et gérez votre tunnel de vente par simple glisser-déposer grâce à la vue Kanban intuitive.',
+                      ),
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.forum_outlined,
+                        title: 'Suivi des Échanges',
+                        description: 'Historisez chaque interaction, assignez des responsables et planifiez vos prochaines actions de suivi.',
+                      ),
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.notification_add_outlined,
+                        title: 'Gestion des Rappels',
+                        description: 'Ne manquez aucune relance. Créez des tâches et rappels personnalisés directement liés à vos fiches.',
+                      ),
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.analytics_outlined,
+                        title: 'Analyses & Statistiques',
+                        description: 'Suivez vos taux de conversion et la performance de votre prospection en temps réel.',
+                      ),
+                      _buildFeatureItem(
+                        context,
+                        icon: Icons.sync_lock_outlined,
+                        title: 'Synchronisation MySQL',
+                        description: 'Assurez la sécurité et la pérennité de vos données grâce à une synchronisation base de données robuste.',
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
-                // Developers
-                SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Développé par',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildDeveloperCard(
-                            context,
-                            name: 'Josoa VONJINIAINA',
-                            role: 'Développeur Principal',
-                            avatarUrl:
-                                'https://avatars.githubusercontent.com/u/josoavj?v=4',
-                            profileUrl: 'https://github.com/josoavj',
-                          ),
-                          const SizedBox(height: 12),
-                          _buildDeveloperCard(
-                            context,
-                            name: 'Maminirina ANDRIAMASINORO',
-                            role: 'Développeur Frontend',
-                            avatarUrl:
-                                'https://avatars.githubusercontent.com/u/AinaMaminirina18?v=4',
-                            profileUrl: 'https://github.com/AinaMaminirina18',
-                          ),
-                          const SizedBox(height: 12),
-                          _buildDeveloperCard(
-                            context,
-                            name: 'Collaborateurs',
-                            role: 'Conception et Feedback',
-                            profileUrl: null,
-                          ),
-                        ],
+                // Developers Card
+                _buildSectionCard(
+                  context,
+                  title: 'Développé par',
+                  child: Column(
+                    children: [
+                      _buildDeveloperCard(
+                        context,
+                        name: 'Josoa VONJINIAINA',
+                        role: 'Développeur Principal',
+                        avatarUrl: 'https://avatars.githubusercontent.com/u/josoavj?v=4',
+                        profileUrl: 'https://github.com/josoavj',
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      _buildDeveloperCard(
+                        context,
+                        name: 'Maminirina ANDRIAMASINORO',
+                        role: 'Développeur Frontend',
+                        avatarUrl: 'https://avatars.githubusercontent.com/u/AinaMaminirina18?v=4',
+                        profileUrl: 'https://github.com/AinaMaminirina18',
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 48),
 
                 // Footer
-                Column(
-                  children: [
-                    Text(
-                      'Tous droits réservés © 2025 - APEXNova Labs',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Made with Flutter & MySQL',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                Text(
+                  'Tous droits réservés © 2025 - APEXNova Labs',
+                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.outline),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Made with Flutter & MySQL',
+                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.outline),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard(BuildContext context, {required String title, required Widget child}) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(BuildContext context, {required IconData icon, required String title, required String description}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 20, color: colorScheme.primary),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(description, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13, height: 1.4)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -246,62 +253,38 @@ class AboutScreen extends StatelessWidget {
     required String avatarUrl,
     required String organizationUrl,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue[200]!),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Avatar
           CircleAvatar(
             radius: 28,
-            backgroundColor: Colors.blue[100],
+            backgroundColor: colorScheme.primaryContainer,
             backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
-            onBackgroundImageError: avatarUrl.isNotEmpty 
-                ? (exception, stackTrace) => AppLogger.warning('Erreur chargement avatar organisation: $exception')
-                : null,
-            child: avatarUrl.isEmpty
-                ? Icon(Icons.business, size: 24, color: Colors.blue[600])
-                : null,
+            onBackgroundImageError: (_, __) => AppLogger.warning('Erreur chargement avatar'),
+            child: avatarUrl.isEmpty ? Icon(Icons.business, color: colorScheme.onPrimaryContainer) : null,
           ),
           const SizedBox(width: 16),
-          // Organization Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                ),
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Text(description, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          // Action Button
-          TextButton.icon(
+          IconButton(
             onPressed: () => _launchURL(organizationUrl),
-            icon: const Icon(Icons.open_in_new, size: 18),
-            label: const Text('GitHub'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.blue,
-            ),
+            icon: Icon(Icons.open_in_new, size: 20, color: colorScheme.primary),
+            tooltip: 'GitHub',
           ),
         ],
       ),
@@ -315,72 +298,39 @@ class AboutScreen extends StatelessWidget {
     String? avatarUrl,
     String? profileUrl,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: avatarUrl != null ? Colors.blue[50] : Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: avatarUrl != null ? Colors.blue[200]! : Colors.grey[300]!,
-        ),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar
-          if (avatarUrl != null && avatarUrl.isNotEmpty)
-            CircleAvatar(
-              radius: 32,
-              backgroundColor: Colors.blue[100],
-              backgroundImage: NetworkImage(avatarUrl),
-              onBackgroundImageError: (exception, stackTrace) => AppLogger.warning('Erreur chargement avatar développeur: $exception'),
-              child: Icon(Icons.person, color: Colors.blue[600], size: 32),
-            )
-          else
-            CircleAvatar(
-              radius: 32,
-              backgroundColor: Colors.grey[200],
-              child: Icon(Icons.people, color: Colors.grey[600], size: 32),
-            ),
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: colorScheme.secondaryContainer,
+            backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty) ? NetworkImage(avatarUrl) : null,
+            onBackgroundImageError: (_, __) => AppLogger.warning('Erreur chargement avatar'),
+            child: (avatarUrl == null || avatarUrl.isEmpty) ? Icon(Icons.person, color: colorScheme.onSecondaryContainer) : null,
+          ),
           const SizedBox(width: 16),
-          // Developer Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  role,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
-                if (profileUrl != null) ...[
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    child: TextButton.icon(
-                      onPressed: () => _launchURL(profileUrl),
-                      icon: const Icon(Icons.open_in_new, size: 16),
-                      label: const Text('Voir le profil'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.blue,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        textStyle: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ),
-                ],
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(role, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
               ],
             ),
           ),
+          if (profileUrl != null)
+            IconButton(
+              onPressed: () => _launchURL(profileUrl),
+              icon: Icon(Icons.link, size: 20, color: colorScheme.primary),
+              tooltip: 'Voir le profil',
+            ),
         ],
       ),
     );
