@@ -125,63 +125,67 @@ class _ClientsScreenState extends State<ClientsScreen> {
   }
 
   Widget _buildClientListItem(BuildContext context, Prospect client) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => ProspectDetailScreen(prospect: client),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ProspectDetailScreen(prospect: client),
+              ),
+            );
+          },
           borderRadius: BorderRadius.circular(8),
-        ),
-        child: ListTile(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          leading: CircleAvatar(
-            radius: 22,
-            backgroundColor: const Color.fromARGB(255, 6, 206, 112),
-            child: Text(
-              client.prenom.isNotEmpty ? client.prenom[0].toUpperCase() : '?',
+          child: ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            leading: CircleAvatar(
+              radius: 22,
+              backgroundColor: const Color.fromARGB(255, 6, 206, 112),
+              child: Text(
+                client.prenom.isNotEmpty ? client.prenom[0].toUpperCase() : '?',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            title: Text(
+              TextFormatter.capitalize(client.fullName),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
               ),
             ),
-          ),
-          title: Text(
-            TextFormatter.capitalize(client.fullName),
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          subtitle: Text(
-            client.email.isEmpty ? '-' : client.email,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 6, 206, 112),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: const Text(
-              'Converti',
+            subtitle: Text(
+              client.email.isEmpty ? '-' : client.email,
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 6, 206, 112),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                'Converti',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
