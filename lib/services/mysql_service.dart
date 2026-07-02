@@ -261,10 +261,16 @@ class MySQLService {
     try {
       if (_usePool && _pool.isInitialized) {
         return await _pool.execute(
-          (connection) async => connection.query(sql, values),
+          (connection) async {
+            final results = await connection.query(sql, values);
+            AppLogger.debug('SQL Execute: $sql | Rows: ${results.length}');
+            return results;
+          },
         );
       }
-      return await _connection!.query(sql, values);
+      final results = await _connection!.query(sql, values);
+      AppLogger.debug('SQL Execute: $sql | Rows: ${results.length}');
+      return results;
     } catch (e, stackTrace) {
       AppLogger.error(
           'Erreur lors de l\'exécution de la requête', e, stackTrace);
