@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/app_logger.dart';
 import '../utils/exception_handler.dart';
+import '../utils/validators.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -216,14 +217,100 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       );
     }
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton.icon(
-        onPressed: () => setState(() => _isEditing = true),
-        icon: const Icon(Icons.edit_outlined, size: 18),
-        label: const Text('Modifier le profil'),
-        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06CE70), foregroundColor: Colors.white),
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton.icon(
+            onPressed: () => setState(() => _isEditing = true),
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            label: const Text('Modifier le profil'),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06CE70), foregroundColor: Colors.white),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: OutlinedButton.icon(
+            onPressed: _showChangePasswordDialog,
+            icon: const Icon(Icons.lock_outline, size: 18),
+            label: const Text('Modifier le mot de passe'),
+            style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    final passwordController = TextEditingController();
+    final confirmController = TextEditingController();
+    bool obscure = true;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Modifier le mot de passe'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: passwordController,
+                obscureText: obscure,
+                decoration: InputDecoration(
+                  labelText: 'Nouveau mot de passe',
+                  helperText: 'Au moins 8 caractères (A-z, 0-9)',
+                  helperStyle: const TextStyle(fontSize: 11),
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    icon: Icon(obscure ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setDialogState(() => obscure = !obscure),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: confirmController,
+                obscureText: obscure,
+                decoration: InputDecoration(
+                  labelText: 'Confirmer le mot de passe',
+                  prefixIcon: const Icon(Icons.lock_reset_outlined),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+            ElevatedButton(
+              onPressed: () async {
+                final password = passwordController.text;
+                final confirm = confirmController.text;
+
+                final validation = Validators.validatePassword(password);
+                if (!validation.isValid) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(validation.error!)));
+                  return;
+                }
+
+                if (password != confirm) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Les mots de passe ne correspondent pas')));
+                  return;
+                }
+
+                final auth = context.read<AuthProvider>();
+                final success = await auth.changePassword(auth.currentUser!.id, password);
+                if (success && context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mot de passe mis à jour')));
+                }
+              },
+              child: const Text('Mettre à jour'),
+            ),
+          ],
+        ),
       ),
     );
   }
