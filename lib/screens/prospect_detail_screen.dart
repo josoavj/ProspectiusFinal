@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/prospect.dart';
 import '../models/task.dart';
+import '../models/document.dart' as doc_model;
 import '../models/custom_field.dart';
 import '../models/account.dart';
 import '../providers/auth_provider.dart';
@@ -11,6 +15,7 @@ import '../providers/document_provider.dart';
 import '../providers/custom_field_provider.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
+import '../utils/app_logger.dart';
 import 'edit_prospect_screen.dart';
 
 class ProspectDetailScreen extends StatefulWidget {
@@ -25,13 +30,17 @@ class ProspectDetailScreen extends StatefulWidget {
 class _ProspectDetailScreenState extends State<ProspectDetailScreen> with SingleTickerProviderStateMixin {
   late Prospect _currentProspect;
   late TabController _tabController;
-  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _currentProspect = widget.prospect;
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {}); // Pour mettre à jour le FAB selon l'onglet
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
@@ -40,7 +49,6 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   @override
   void dispose() {
     _tabController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -59,89 +67,92 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
 
     return Scaffold(
       body: NestedScrollView(
-        controller: _scrollController,
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
-            SliverAppBar(
-              expandedHeight: 180.0,
-              floating: false,
-              pinned: true,
-              stretch: true,
-              backgroundColor: colorScheme.surface,
-              elevation: 0,
-              flexibleSpace: FlexibleSpaceBar(
-                stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
-                titlePadding: const EdgeInsets.only(left: 48, bottom: 16),
-                title: Text(
-                  _currentProspect.fullName,
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+            SliverOverlapAbsorber(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              sliver: SliverAppBar(
+                expandedHeight: 280.0, // Plus d'espace pour éviter les coupures
+                floating: false,
+                pinned: true,
+                stretch: true,
+                backgroundColor: colorScheme.surface,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
                 ),
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            colorScheme.primaryContainer.withValues(alpha: 0.4),
-                            colorScheme.surface,
-                          ],
-                        ),
-                      ),
+                flexibleSpace: FlexibleSpaceBar(
+                  stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
+                  centerTitle: false,
+                  titlePadding: const EdgeInsets.only(left: 56, bottom: 82), // Remonté pour ne plus être coupé
+                  title: Text(
+                    _currentProspect.fullName,
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26, // Imposant mais équilibré
+                      letterSpacing: -1.0,
                     ),
-                    Positioned(
-                      top: 60,
-                      right: 20,
-                      child: Hero(
-                        tag: 'prospect_avatar_${_currentProspect.id}',
-                        child: CircleAvatar(
-                          radius: 35,
-                          backgroundColor: colorScheme.primary,
-                          child: Text(
-                            _currentProspect.prenom.isNotEmpty ? _currentProspect.prenom[0].toUpperCase() : '?',
-                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colorScheme.onPrimary),
+                  ),
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              colorScheme.primaryContainer.withValues(alpha: 0.4),
+                              colorScheme.surface,
+                            ],
                           ),
                         ),
                       ),
+                      Positioned(
+                        bottom: 80, // Aligné visuellement avec le centre du texte
+                        right: 24,
+                        child: Hero(
+                          tag: 'prospect_avatar_${_currentProspect.id}',
+                          child: CircleAvatar(
+                            radius: 46, // Plus grand pour plus de prestance
+                            backgroundColor: colorScheme.primary,
+                            child: Text(
+                              _currentProspect.prenom.isNotEmpty ? _currentProspect.prenom[0].toUpperCase() : '?',
+                              style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: colorScheme.onPrimary),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  IconButton(icon: const Icon(Icons.edit_outlined), onPressed: _handleUpdate, tooltip: 'Modifier'),
+                  IconButton(icon: Icon(Icons.delete_outline, color: colorScheme.error), onPressed: _handleDelete, tooltip: 'Supprimer'),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(48),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      border: Border(bottom: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
                     ),
-                  ],
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: _handleUpdate,
-                  tooltip: 'Modifier',
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete_outline, color: colorScheme.error),
-                  onPressed: _handleDelete,
-                  tooltip: 'Supprimer',
-                ),
-              ],
-            ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverAppBarDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: colorScheme.primary,
-                  unselectedLabelColor: colorScheme.onSurfaceVariant,
-                  indicatorColor: colorScheme.primary,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  dividerColor: Colors.transparent,
-                  tabs: const [
-                    Tab(icon: Icon(Icons.info_outline), text: 'Infos'),
-                    Tab(icon: Icon(Icons.task_alt), text: 'Tâches'),
-                    Tab(icon: Icon(Icons.description_outlined), text: 'Docs'),
-                    Tab(icon: Icon(Icons.history), text: 'Suivi'),
-                  ],
+                    child: TabBar(
+                      controller: _tabController,
+                      labelColor: colorScheme.primary,
+                      unselectedLabelColor: colorScheme.onSurfaceVariant,
+                      indicatorColor: colorScheme.primary,
+                      indicatorWeight: 3,
+                      tabs: const [
+                        Tab(icon: Icon(Icons.info_outline, size: 20), text: 'Infos'),
+                        Tab(icon: Icon(Icons.task_alt, size: 20), text: 'Tâches'),
+                        Tab(icon: Icon(Icons.description_outlined, size: 20), text: 'Docs'),
+                        Tab(icon: Icon(Icons.history, size: 20), text: 'Suivi'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -150,10 +161,10 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
         body: TabBarView(
           controller: _tabController,
           children: [
-            _buildInfoTab(),
-            _buildTasksTab(),
-            _buildDocumentsTab(),
-            _buildHistoryTab(),
+            _buildTabContent(_buildInfoTab(), 'info'),
+            _buildTabContent(_buildTasksTab(), 'tasks'),
+            _buildTabContent(_buildDocumentsTab(), 'docs'),
+            _buildTabContent(_buildHistoryTab(), 'history'),
           ],
         ),
       ),
@@ -161,38 +172,38 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
     );
   }
 
+  Widget _buildTabContent(Widget child, String key) {
+    return Builder(
+      builder: (context) => CustomScrollView(
+        key: PageStorageKey(key),
+        slivers: [
+          SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+          SliverPadding(
+            padding: const EdgeInsets.only(bottom: 100),
+            sliver: SliverToBoxAdapter(child: child),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget? _buildFab() {
-    return ListenableBuilder(
-      listenable: _tabController,
-      builder: (context, child) {
-        if (_tabController.index == 1) {
-          return FloatingActionButton.extended(
-            onPressed: _showAddTaskDialog,
-            icon: const Icon(Icons.add_task),
-            label: const Text('Tâche'),
-          );
-        }
-        if (_tabController.index == 2) {
-          return FloatingActionButton.extended(
-            onPressed: _handleAddDocument,
-            icon: const Icon(Icons.upload_file),
-            label: const Text('Fichier'),
-          );
-        }
-        if (_tabController.index == 3) {
-          return FloatingActionButton.extended(
-            onPressed: _showAddInteractionDialog,
-            icon: const Icon(Icons.add_comment_outlined),
-            label: const Text('Interaction'),
-          );
-        }
-        return const SizedBox.shrink();
+    if (_tabController.index == 0) return null;
+    return FloatingActionButton.extended(
+      onPressed: () {
+        if (_tabController.index == 1) _showAddTaskDialog();
+        if (_tabController.index == 2) _handleAddDocument();
+        if (_tabController.index == 3) _showAddInteractionDialog();
       },
+      icon: Icon(_tabController.index == 1 ? Icons.add_task : 
+                 _tabController.index == 2 ? Icons.upload_file : Icons.add_comment_outlined),
+      label: Text(_tabController.index == 1 ? 'Tâche' : 
+                  _tabController.index == 2 ? 'Fichier' : 'Interaction'),
     );
   }
 
   Widget _buildInfoTab() {
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,14 +216,13 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           _buildSectionTitle('Entreprise & Digital'),
           _buildDigitalCard(),
           const SizedBox(height: 24),
-          if (_currentProspect.description != null && _currentProspect.description!.isNotEmpty) ...[
+          if (_currentProspect.description?.isNotEmpty ?? false) ...[
             _buildSectionTitle('Description'),
             _buildDescriptionCard(),
+            const SizedBox(height: 24),
           ],
-          const SizedBox(height: 24),
           _buildSectionTitle('Champs Personnalisés'),
           _buildCustomFieldsList(),
-          const SizedBox(height: 80),
         ],
       ),
     );
@@ -255,12 +265,14 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
         children: [
           Icon(icon, size: 18, color: color),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant)),
-              Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant)),
+                Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color), overflow: TextOverflow.ellipsis),
+              ],
+            ),
           ),
         ],
       ),
@@ -306,15 +318,11 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildDescriptionCard() {
-    final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      color: colorScheme.surfaceContainerLow,
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Text(
-          _currentProspect.description ?? '',
-          style: const TextStyle(height: 1.6, fontSize: 14),
-        ),
+        child: Text(_currentProspect.description ?? '', style: const TextStyle(height: 1.6, fontSize: 14)),
       ),
     );
   }
@@ -324,12 +332,10 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       builder: (context, provider, _) {
         final values = provider.getValues(_currentProspect.id);
         if (provider.fields.isEmpty) return const Center(child: Text('Aucun champ défini', style: TextStyle(fontSize: 12)));
-
         return Column(
           children: provider.fields.map((field) {
             final value = values.firstWhere((v) => v.idField == field.id, 
               orElse: () => CustomFieldValue(idProspect: _currentProspect.id, idField: field.id, value: '')).value;
-            
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Card(
@@ -360,46 +366,38 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           child: provider.tasks.isEmpty
               ? _buildEmptyState(Icons.task_alt, 'Aucune tâche prévue')
               : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   itemCount: provider.tasks.length,
                   itemBuilder: (context, index) {
                     final task = provider.tasks[index];
-                    return AnimatedOpacity(
-                      duration: Duration(milliseconds: 300 + (index * 100)),
-                      opacity: 1,
-                      child: Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: CheckboxListTile(
-                          value: task.isCompleted,
-                          onChanged: (val) => provider.toggleTaskStatus(task),
-                          title: Text(task.title, style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                            color: task.isCompleted ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
-                          )),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (task.description.isNotEmpty) Text(task.description, style: const TextStyle(fontSize: 12)),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(Icons.calendar_today_outlined, size: 12, color: colorScheme.primary),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Échéance: ${task.dueDate.day}/${task.dueDate.month}',
-                                    style: TextStyle(fontSize: 11, color: colorScheme.primary, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          secondary: IconButton(
-                            icon: Icon(Icons.delete_outline, color: colorScheme.error), 
-                            onPressed: () => provider.deleteTask(task.id, _currentProspect.id)
-                          ),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: CheckboxListTile(
+                        value: task.isCompleted,
+                        onChanged: (val) => provider.toggleTaskStatus(task),
+                        title: Text(task.title, style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                          color: task.isCompleted ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
+                        )),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (task.description.isNotEmpty) Text(task.description, style: const TextStyle(fontSize: 12)),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.calendar_today_outlined, size: 12, color: colorScheme.primary),
+                                const SizedBox(width: 4),
+                                Text('Échéance: ${task.dueDate.day}/${task.dueDate.month}', style: TextStyle(fontSize: 11, color: colorScheme.primary, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ],
                         ),
+                        secondary: IconButton(icon: Icon(Icons.delete_outline, color: colorScheme.error), onPressed: () => provider.deleteTask(task.id, _currentProspect.id)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                     );
                   },
@@ -419,31 +417,28 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           child: provider.documents.isEmpty
               ? _buildEmptyState(Icons.description_outlined, 'Aucun document')
               : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   itemCount: provider.documents.length,
                   itemBuilder: (context, index) {
                     final doc = provider.documents[index];
+                    final isImage = ['png', 'jpg', 'jpeg'].contains(doc.mimeType.toLowerCase());
                     return Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
                         leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primaryContainer.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(Icons.insert_drive_file_outlined, color: colorScheme.primary),
+                          width: 48, height: 48,
+                          decoration: BoxDecoration(color: colorScheme.primaryContainer.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(10)),
+                          child: isImage 
+                            ? ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.file(File(doc.filePath), fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(_getFileIcon(doc.mimeType), color: colorScheme.primary)))
+                            : Icon(_getFileIcon(doc.mimeType), color: colorScheme.primary),
                         ),
                         title: Text(doc.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        subtitle: Text('${(doc.size / 1024).toStringAsFixed(1)} KB • Ajouté le ${doc.creation.day}/${doc.creation.month}'),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline), 
-                          onPressed: () => provider.deleteDocument(doc.id, _currentProspect.id)
-                        ),
+                        subtitle: Text('${(doc.size / 1024).toStringAsFixed(1)} KB • Ajouté le ${doc.createdAt.day}/${doc.createdAt.month}'),
+                        trailing: IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => provider.deleteDocument(doc.id, _currentProspect.id)),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        onTap: () {
-                          // Action pour ouvrir le document
-                        },
+                        onTap: () => isImage ? _showImagePreview(doc) : _openDocument(doc),
                       ),
                     );
                   },
@@ -463,6 +458,8 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           child: provider.interactions.isEmpty
               ? _buildEmptyState(Icons.forum_outlined, 'Aucun historique d\'échanges')
               : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(20),
                   itemCount: provider.interactions.length,
                   itemBuilder: (context, index) {
@@ -472,17 +469,8 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                         children: [
                           Column(
                             children: [
-                              Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
-                              ),
-                              Expanded(
-                                child: Container(
-                                  width: 2,
-                                  color: index == provider.interactions.length - 1 ? Colors.transparent : colorScheme.outlineVariant,
-                                ),
-                              ),
+                              Container(width: 12, height: 12, decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle)),
+                              Expanded(child: Container(width: 2, color: index == provider.interactions.length - 1 ? Colors.transparent : colorScheme.outlineVariant)),
                             ],
                           ),
                           const SizedBox(width: 16),
@@ -491,6 +479,11 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                               padding: const EdgeInsets.only(bottom: 24),
                               child: Card(
                                 margin: EdgeInsets.zero,
+                                elevation: 0.5,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
+                                ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16),
                                   child: Column(
@@ -501,40 +494,26 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                                         children: [
                                           Row(
                                             children: [
-                                              Icon(_getInteractionIcon(interaction.type), size: 16, color: colorScheme.primary),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                TextFormatter.formatInteractionType(interaction.type),
-                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                              ),
+                                              Icon(_getInteractionIcon(interaction.type), size: 18, color: colorScheme.primary),
+                                              const SizedBox(width: 10),
+                                              Text(TextFormatter.formatInteractionType(interaction.type), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                                             ],
                                           ),
-                                          Text(
-                                            '${interaction.dateInteraction.day}/${interaction.dateInteraction.month} à ${interaction.dateInteraction.hour}:${interaction.dateInteraction.minute.toString().padLeft(2, '0')}',
-                                            style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
-                                          ),
+                                          Text('${interaction.dateInteraction.day}/${interaction.dateInteraction.month} à ${interaction.dateInteraction.hour}:${interaction.dateInteraction.minute.toString().padLeft(2, '0')}', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
                                         ],
                                       ),
                                       const SizedBox(height: 12),
-                                      Text(interaction.note, style: const TextStyle(fontSize: 14, height: 1.4)),
-                                      if (interaction.suivi != null && interaction.suivi!.isNotEmpty) ...[
+                                      Text(interaction.note, style: const TextStyle(fontSize: 14, height: 1.5)),
+                                      if (interaction.suivi?.isNotEmpty ?? false) ...[
                                         const SizedBox(height: 12),
                                         Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: Colors.green.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                          decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
                                           child: Row(
                                             children: [
                                               const Icon(Icons.assignment_turned_in_outlined, size: 14, color: Colors.green),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(
-                                                  'À faire: ${interaction.suivi}',
-                                                  style: const TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.bold),
-                                                ),
-                                              ),
+                                              const SizedBox(width: 10),
+                                              Expanded(child: Text('Suivi: ${interaction.suivi}', style: const TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.w600))),
                                             ],
                                           ),
                                         ),
@@ -649,18 +628,9 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                     }
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: noteController, 
-                    decoration: const InputDecoration(labelText: 'Note de l\'échange', border: OutlineInputBorder(), hintText: 'Que s\'est-il passé ?'), 
-                    minLines: 4, maxLines: 6,
-                    onChanged: (val) => setDialogState(() {}),
-                  ),
+                  TextField(controller: noteController, decoration: const InputDecoration(labelText: 'Note de l\'échange', border: OutlineInputBorder(), hintText: 'Que s\'est-il passé ?'), minLines: 4, maxLines: 6, onChanged: (val) => setDialogState(() {})),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: suiviController, 
-                    decoration: const InputDecoration(labelText: 'Action de suivi (optionnel)', border: OutlineInputBorder(), hintText: 'Ex: Rappeler vendredi'), 
-                    minLines: 2, maxLines: 3,
-                  ),
+                  TextField(controller: suiviController, decoration: const InputDecoration(labelText: 'Action de suivi (optionnel)', border: OutlineInputBorder(), hintText: 'Ex: Rappeler vendredi'), minLines: 2, maxLines: 3),
                 ],
               ),
             ),
@@ -670,15 +640,8 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
             ElevatedButton(
               onPressed: noteController.text.isEmpty ? null : () async {
                 await prospectProvider.createInteractionComplex(
-                  prospectId: _currentProspect.id,
-                  userId: authProvider.currentUser!.id,
-                  userRole: authProvider.currentUser!.typeCompte,
-                  type: type,
-                  note: noteController.text,
-                  date: DateTime.now(),
-                  idAssigne: selectedAssigneId,
-                  suivi: suiviController.text,
-                  newStatus: newStatus,
+                  prospectId: _currentProspect.id, userId: authProvider.currentUser!.id, userRole: authProvider.currentUser!.typeCompte,
+                  type: type, note: noteController.text, date: DateTime.now(), idAssigne: selectedAssigneId, suivi: suiviController.text, newStatus: newStatus,
                 );
                 if (!context.mounted) return;
                 Navigator.pop(context);
@@ -725,7 +688,29 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
     );
   }
 
-  void _handleAddDocument() { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sélection de fichier non implémentée'))); }
+  void _handleAddDocument() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(allowMultiple: false, type: FileType.any);
+      if (result == null || result.files.isEmpty) return;
+      final pickedFile = result.files.first;
+      if (pickedFile.path == null) return;
+      final originalFile = File(pickedFile.path!);
+      final appDocDir = await getApplicationDocumentsDirectory();
+      final prospectDocsDir = Directory('${appDocDir.path}/prospect_documents/${_currentProspect.id}');
+      if (!prospectDocsDir.existsSync()) prospectDocsDir.createSync(recursive: true);
+      final String fileName = pickedFile.name;
+      final String newPath = '${prospectDocsDir.path}/$fileName';
+      await originalFile.copy(newPath);
+      final document = doc_model.Document(id: 0, idProspect: _currentProspect.id, name: fileName, filePath: newPath, mimeType: pickedFile.extension ?? 'unknown', size: pickedFile.size, createdAt: DateTime.now());
+      if (mounted) {
+        final success = await context.read<DocumentProvider>().addDocument(document);
+        if (success && mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Document ajouté avec succès')));
+      }
+    } catch (e) {
+      AppLogger.error('Erreur lors de l\'ajout du document: $e');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red));
+    }
+  }
 
   void _showEditCustomFieldDialog(CustomField field, String currentValue) {
     final controller = TextEditingController(text: currentValue);
@@ -733,26 +718,16 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Modifier ${field.name}'),
-        content: SizedBox(
-          width: 400,
-          child: TextField(controller: controller, decoration: InputDecoration(labelText: field.name, border: const OutlineInputBorder()), autofocus: true),
-        ),
+        content: SizedBox(width: 400, child: TextField(controller: controller, decoration: InputDecoration(labelText: field.name, border: const OutlineInputBorder()), autofocus: true)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
-          ElevatedButton(
-            onPressed: () {
-              context.read<CustomFieldProvider>().saveValue(_currentProspect.id, field.id, controller.text);
-              Navigator.pop(context);
-            },
-            child: const Text('Enregistrer'),
-          ),
+          ElevatedButton(onPressed: () { context.read<CustomFieldProvider>().saveValue(_currentProspect.id, field.id, controller.text); Navigator.pop(context); }, child: const Text('Enregistrer')),
         ],
       ),
     );
   }
 
   void _handleDelete() async {
-    final colorScheme = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -760,21 +735,13 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
         content: const Text('Êtes-vous sûr ? Cette action est irréversible.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true), 
-            style: ElevatedButton.styleFrom(backgroundColor: colorScheme.error, foregroundColor: colorScheme.onError),
-            child: const Text('Supprimer'),
-          ),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error, foregroundColor: Theme.of(context).colorScheme.onError), child: const Text('Supprimer')),
         ],
       ),
     );
     if (confirmed == true && mounted) {
       final auth = context.read<AuthProvider>();
-      final success = await context.read<ProspectProvider>().deleteProspect(
-        auth.currentUser!.id,
-        auth.currentUser!.typeCompte,
-        _currentProspect.id,
-      );
+      final success = await context.read<ProspectProvider>().deleteProspect(auth.currentUser!.id, auth.currentUser!.typeCompte, _currentProspect.id);
       if (success && mounted) Navigator.pop(context);
     }
   }
@@ -784,6 +751,34 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       if (updated != null && updated is Prospect) setState(() => _currentProspect = updated);
       _loadData();
     });
+  }
+
+  IconData _getFileIcon(String extension) {
+    switch (extension.toLowerCase()) {
+      case 'pdf': return Icons.picture_as_pdf_outlined;
+      case 'doc': case 'docx': return Icons.description_outlined;
+      case 'xls': case 'xlsx': return Icons.table_chart_outlined;
+      case 'png': case 'jpg': case 'jpeg': return Icons.image_outlined;
+      case 'txt': return Icons.article_outlined;
+      default: return Icons.insert_drive_file_outlined;
+    }
+  }
+
+  void _showImagePreview(doc_model.Document doc) {
+    showDialog(context: context, builder: (context) => Dialog(backgroundColor: Colors.transparent, child: Stack(alignment: Alignment.topRight, children: [ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.file(File(doc.filePath))), IconButton.filled(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close), style: IconButton.styleFrom(backgroundColor: Colors.black54))])));
+  }
+
+  Future<void> _openDocument(doc_model.Document doc) async {
+    final file = File(doc.filePath);
+    if (!file.existsSync()) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fichier introuvable'), backgroundColor: Colors.red));
+      return;
+    }
+    try {
+      if (Platform.isLinux) await Process.run('xdg-open', [doc.filePath]);
+      else if (Platform.isMacOS) await Process.run('open', [doc.filePath]);
+      else if (Platform.isWindows) await Process.run('start', ['', doc.filePath], runInShell: true);
+    } catch (e) { AppLogger.error('Erreur d\'ouverture: $e'); }
   }
 
   IconData _getInteractionIcon(String type) {
@@ -817,24 +812,20 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate(this._tabBar);
-
   final TabBar _tabBar;
+  @override double get minExtent => _tabBar.preferredSize.height;
+  @override double get maxExtent => _tabBar.preferredSize.height;
+  @override Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => Container(color: Theme.of(context).scaffoldBackgroundColor, child: _tabBar);
+  @override bool shouldRebuild(_SliverAppBarDelegate oldDelegate) => false;
+}
 
-  @override
-  double get minExtent => _tabBar.preferredSize.height;
-  @override
-  double get maxExtent => _tabBar.preferredSize.height;
+class _TabKeepAlive extends StatefulWidget {
+  final Widget child;
+  const _TabKeepAlive({required this.child});
+  @override State<_TabKeepAlive> createState() => _TabKeepAliveState();
+}
 
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: _tabBar,
-    );
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
-  }
+class _TabKeepAliveState extends State<_TabKeepAlive> with AutomaticKeepAliveClientMixin {
+  @override bool get wantKeepAlive => true;
+  @override Widget build(BuildContext context) { super.build(context); return widget.child; }
 }
