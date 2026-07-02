@@ -142,6 +142,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final warningColor = Colors.orange;
+    final userRole = context.watch<AuthProvider>().currentUser?.typeCompte;
 
     return SingleChildScrollView(
       child: Padding(
@@ -149,70 +150,72 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section Base de données
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: warningColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: warningColor.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.storage_rounded, color: warningColor),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Base de données',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: warningColor, fontSize: 16),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(color: warningColor, borderRadius: BorderRadius.circular(20)),
-                        child: const Text('Risqué', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Modifier la configuration réseau de la base de données. Attention, une erreur de saisie bloquera l\'accès aux prospects.',
-                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.8), fontSize: 13),
-                  ),
-                  const SizedBox(height: 20),
-                  if (!_showEditMode)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            // Section Base de données (Uniquement pour Admin)
+            if (userRole == 'Administrateur') ...[
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: warningColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: warningColor.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        _buildConfigInfo('Hôte', _hostController.text, colorScheme),
-                        _buildConfigInfo('Port', _portController.text, colorScheme),
-                        _buildConfigInfo('Base', _databaseController.text, colorScheme),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton.icon(
-                            onPressed: _showChangeConfigDialog,
-                            icon: const Icon(Icons.settings_input_component_outlined, size: 18),
-                            label: const Text('Modifier la configuration'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: warningColor,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
+                        Icon(Icons.storage_rounded, color: warningColor),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Base de données',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: warningColor, fontSize: 16),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(color: warningColor, borderRadius: BorderRadius.circular(20)),
+                          child: const Text('Risqué', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                         ),
                       ],
-                    )
-                  else
-                    _buildEditFields(colorScheme),
-                ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Modifier la configuration réseau de la base de données. Attention, une erreur de saisie bloquera l\'accès aux prospects.',
+                      style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.8), fontSize: 13),
+                    ),
+                    const SizedBox(height: 20),
+                    if (!_showEditMode)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildConfigInfo('Hôte', _hostController.text, colorScheme),
+                          _buildConfigInfo('Port', _portController.text, colorScheme),
+                          _buildConfigInfo('Base', _databaseController.text, colorScheme),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton.icon(
+                              onPressed: _showChangeConfigDialog,
+                              icon: const Icon(Icons.settings_input_component_outlined, size: 18),
+                              label: const Text('Modifier la configuration'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: warningColor,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      _buildEditFields(colorScheme),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
+            ],
 
             // Section Apparence
             Consumer<SettingsProvider>(
