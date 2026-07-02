@@ -96,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildAvatarSection(user, ColorScheme colorScheme) {
+  Widget _buildAvatarSection(dynamic user, ColorScheme colorScheme) {
     return Column(
       children: [
         CircleAvatar(
@@ -129,7 +129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileCard(user, ColorScheme colorScheme) {
+  Widget _buildProfileCard(dynamic user, ColorScheme colorScheme) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -202,9 +202,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_isEditing) {
       return Row(
         children: [
-          Expanded(child: OutlinedButton(onPressed: () { _initializeControllers(); setState(() => _isEditing = false); }, child: const Text('Annuler'))),
+          Expanded(child: OutlinedButton(onPressed: _isLoading ? null : () { _initializeControllers(); setState(() => _isEditing = false); }, child: const Text('Annuler'))),
           const SizedBox(width: 12),
-          Expanded(child: ElevatedButton(onPressed: _handleSaveChanges, style: ElevatedButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary), child: const Text('Enregistrer'))),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _handleSaveChanges, 
+              style: ElevatedButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary), 
+              child: _isLoading 
+                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Enregistrer')
+            )
+          ),
         ],
       );
     }

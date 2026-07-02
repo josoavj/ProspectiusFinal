@@ -81,7 +81,7 @@ class AboutScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    'Version 1.0.0',
+                    'Version 1.1.0',
                     style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: colorScheme.onSecondaryContainer,
@@ -97,8 +97,8 @@ class AboutScreen extends StatelessWidget {
                   child: _buildOrganizationCard(
                     context,
                     name: 'APEXNova Labs',
-                    description: 'Developer team operating on software and mobile application development',
-                    avatarUrl: 'https://avatars.githubusercontent.com/u/153268131?v=4',
+                    description: 'Équipe de développement spécialisée dans les solutions logicielles et mobiles',
+                    avatarUrl: 'https://github.com/APEXNovaLabs.png',
                     organizationUrl: 'https://github.com/APEXNovaLabs',
                   ),
                 ),
@@ -114,37 +114,31 @@ class AboutScreen extends StatelessWidget {
                         context,
                         icon: Icons.assignment_ind_outlined,
                         title: 'Gestion Centralisée',
-                        description: 'Regroupez toutes les données de vos prospects (coordonnées, entreprise, réseaux) dans un espace unique.',
+                        description: 'Regroupez toutes les données de vos prospects dans un espace unique et sécurisé.',
                       ),
                       _buildFeatureItem(
                         context,
                         icon: Icons.view_kanban_outlined,
                         title: 'Pipeline de Vente',
-                        description: 'Visualisez et gérez votre tunnel de vente par simple glisser-déposer grâce à la vue Kanban intuitive.',
+                        description: 'Gérez votre tunnel de vente par simple glisser-déposer grâce à la vue Kanban.',
                       ),
                       _buildFeatureItem(
                         context,
                         icon: Icons.forum_outlined,
                         title: 'Suivi des Échanges',
-                        description: 'Historisez chaque interaction, assignez des responsables et planifiez vos prochaines actions de suivi.',
+                        description: 'Historisez chaque interaction, assignez des responsables et planifiez les suites.',
                       ),
                       _buildFeatureItem(
                         context,
                         icon: Icons.notification_add_outlined,
                         title: 'Gestion des Rappels',
-                        description: 'Ne manquez aucune relance. Créez des tâches et rappels personnalisés directement liés à vos fiches.',
+                        description: 'Créez des tâches et rappels personnalisés directement liés à vos fiches prospects.',
                       ),
                       _buildFeatureItem(
                         context,
                         icon: Icons.analytics_outlined,
                         title: 'Analyses & Statistiques',
-                        description: 'Suivez vos taux de conversion et la performance de votre prospection en temps réel.',
-                      ),
-                      _buildFeatureItem(
-                        context,
-                        icon: Icons.sync_lock_outlined,
-                        title: 'Synchronisation MySQL',
-                        description: 'Assurez la sécurité et la pérennité de vos données grâce à une synchronisation base de données robuste.',
+                        description: 'Suivez vos taux de conversion et la performance de votre équipe en temps réel.',
                       ),
                     ],
                   ),
@@ -161,7 +155,7 @@ class AboutScreen extends StatelessWidget {
                         context,
                         name: 'Josoa VONJINIAINA',
                         role: 'Développeur Principal',
-                        avatarUrl: 'https://avatars.githubusercontent.com/u/josoavj?v=4',
+                        avatarUrl: 'https://github.com/josoavj.png',
                         profileUrl: 'https://github.com/josoavj',
                       ),
                       const SizedBox(height: 12),
@@ -169,7 +163,7 @@ class AboutScreen extends StatelessWidget {
                         context,
                         name: 'Maminirina ANDRIAMASINORO',
                         role: 'Développeur Frontend',
-                        avatarUrl: 'https://avatars.githubusercontent.com/u/AinaMaminirina18?v=4',
+                        avatarUrl: 'https://github.com/AinaMaminirina18.png',
                         profileUrl: 'https://github.com/AinaMaminirina18',
                       ),
                     ],
@@ -263,12 +257,12 @@ class AboutScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
+          _buildAvatarWithFallback(
+            url: avatarUrl,
+            fallbackIcon: Icons.business,
             radius: 28,
             backgroundColor: colorScheme.primaryContainer,
-            backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
-            onBackgroundImageError: (_, __) => AppLogger.warning('Erreur chargement avatar'),
-            child: avatarUrl.isEmpty ? Icon(Icons.business, color: colorScheme.onPrimaryContainer) : null,
+            iconColor: colorScheme.onPrimaryContainer,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -308,12 +302,12 @@ class AboutScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
+          _buildAvatarWithFallback(
+            url: avatarUrl ?? '',
+            fallbackIcon: Icons.person,
             radius: 24,
             backgroundColor: colorScheme.secondaryContainer,
-            backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty) ? NetworkImage(avatarUrl) : null,
-            onBackgroundImageError: (_, __) => AppLogger.warning('Erreur chargement avatar'),
-            child: (avatarUrl == null || avatarUrl.isEmpty) ? Icon(Icons.person, color: colorScheme.onSecondaryContainer) : null,
+            iconColor: colorScheme.onSecondaryContainer,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -332,6 +326,39 @@ class AboutScreen extends StatelessWidget {
               tooltip: 'Voir le profil',
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAvatarWithFallback({
+    required String url,
+    required IconData fallbackIcon,
+    required double radius,
+    required Color backgroundColor,
+    required Color iconColor,
+  }) {
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: backgroundColor,
+      child: ClipOval(
+        child: url.isNotEmpty
+            ? Image.network(
+                url,
+                width: radius * 2,
+                height: radius * 2,
+                fit: BoxFit.cover,
+                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                  if (wasSynchronouslyLoaded || frame != null) {
+                    return child;
+                  }
+                  return Icon(fallbackIcon, color: iconColor, size: radius * 0.8);
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  AppLogger.debug('Avatar indisponible: $url');
+                  return Icon(fallbackIcon, color: iconColor, size: radius * 0.8);
+                },
+              )
+            : Icon(fallbackIcon, color: iconColor, size: radius * 0.8),
       ),
     );
   }
