@@ -86,7 +86,14 @@ class SidebarNavigation extends StatelessWidget {
                 _buildNavItem(context, Icons.person, 'Profil', 7),
                 _buildNavItem(context, Icons.info, 'À propos', 6),
                 _buildNavItem(context, Icons.settings, 'Paramètres', 8),
-                _buildNavItem(context, Icons.description, 'Logs', 9),
+                Consumer<AuthProvider>(
+                  builder: (context, auth, _) {
+                    if (auth.currentUser?.typeCompte == 'Administrateur') {
+                      return _buildNavItem(context, Icons.description, 'Logs', 9);
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
               ],
             ),
           ),
