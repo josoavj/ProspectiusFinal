@@ -25,7 +25,7 @@ void main() {
     when(() => mockProspectProvider.isLoading).thenReturn(false);
     when(() => mockProspectProvider.error).thenReturn(null);
     when(() => mockProspectProvider.prospects).thenReturn([]);
-    when(() => mockProspectProvider.loadProspects(any())).thenAnswer((_) async {});
+    when(() => mockProspectProvider.loadProspects(any(), any())).thenAnswer((_) async {});
   });
 
   testWidgets('PipelineScreen should show empty columns initially', (WidgetTester tester) async {
