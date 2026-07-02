@@ -245,24 +245,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showChangePasswordDialog() {
+    final currentPasswordController = TextEditingController();
     final passwordController = TextEditingController();
     final confirmController = TextEditingController();
     
     showDialog(
       context: context,
       builder: (context) => _PasswordChangeDialog(
+        currentPasswordController: currentPasswordController,
         passwordController: passwordController,
         confirmController: confirmController,
       ),
-    );
+    ).then((_) {
+      currentPasswordController.dispose();
+      passwordController.dispose();
+      confirmController.dispose();
+    });
   }
 }
 
 class _PasswordChangeDialog extends StatefulWidget {
+  final TextEditingController currentPasswordController;
   final TextEditingController passwordController;
   final TextEditingController confirmController;
 
   const _PasswordChangeDialog({
+    required this.currentPasswordController,
     required this.passwordController,
     required this.confirmController,
   });
@@ -272,7 +280,8 @@ class _PasswordChangeDialog extends StatefulWidget {
 }
 
 class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
-  bool _obscure = true;
+  bool _obscureCurrent = true;
+  bool _obscureNew = true;
   bool _hasMinLength = false;
   bool _hasUppercase = false;
   bool _hasLowercase = false;
@@ -327,17 +336,33 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
                 ),
               ),
             ],
+            TextField(
+              controller: widget.currentPasswordController,
+              obscureText: _obscureCurrent,
+              decoration: InputDecoration(
+                labelText: 'Mot de passe actuel',
+                prefixIcon: const Icon(Icons.lock_person_outlined),
+                suffixIcon: IconButton(
+                  icon: Icon(_obscureCurrent ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 16),
             Focus(
               onFocusChange: (hasFocus) => setState(() => _showCriteria = hasFocus),
               child: TextField(
                 controller: widget.passwordController,
-                obscureText: _obscure,
+                obscureText: _obscureNew,
                 decoration: InputDecoration(
                   labelText: 'Nouveau mot de passe',
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscure = !_obscure),
+                    icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => _obscureNew = !_obscureNew),
                   ),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -353,9 +378,9 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
             const SizedBox(height: 16),
             TextField(
               controller: widget.confirmController,
-              obscureText: _obscure,
+              obscureText: _obscureNew,
               decoration: InputDecoration(
-                labelText: 'Confirmer le mot de passe',
+                labelText: 'Confirmer le nouveau mot de passe',
                 prefixIcon: const Icon(Icons.lock_reset_outlined),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -368,22 +393,28 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
         ElevatedButton(
           onPressed: () async {
+            final current = widget.currentPasswordController.text;
             final password = widget.passwordController.text;
             final confirm = widget.confirmController.text;
 
+            if (current.isEmpty) {
+              setState(() => _error = 'Veuillez saisir votre mot de passe actuel');
+              return;
+            }
+
             final validation = Validators.validatePassword(password);
             if (!validation.isValid) {
-              setState(() => _error = validation.error);
+              setState(() => _error = validation.error!);
               return;
             }
 
             if (password != confirm) {
-              setState(() => _error = 'Les mots de passe ne correspondent pas');
+              setState(() => _error = 'Les nouveaux mots de passe sont différents');
               return;
             }
 
             final auth = context.read<AuthProvider>();
-            final success = await auth.changePassword(auth.currentUser!.id, password);
+            final success = await auth.changePassword(auth.currentUser!.id, current, password);
             if (success && context.mounted) {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mot de passe mis à jour')));
