@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 import '../services/mysql_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -27,7 +28,6 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   @override
   void initState() {
     super.initState();
-    // Utiliser addPostFrameCallback pour éviter setState() pendant le build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSavedConfig();
     });
@@ -83,10 +83,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             _showEditMode = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Configuration mise à jour avec succès'),
-              duration: Duration(seconds: 2),
-            ),
+            const SnackBar(content: Text('Configuration mise à jour avec succès')),
           );
         }
       } else if (mounted) {
@@ -117,21 +114,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                setState(() {
-                  _showEditMode = true;
-                });
+                setState(() => _showEditMode = true);
               },
-              child: const Text(
-                'Continuer',
-                style: TextStyle(color: Colors.orange),
-              ),
+              child: const Text('Continuer', style: TextStyle(color: Colors.orange)),
             ),
           ],
         );
@@ -151,368 +140,308 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final warningColor = Colors.orange;
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section Base de données (Risquée)
+            // Section Base de données
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.orange[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange[300]!),
+                color: warningColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: warningColor.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.warning, color: Colors.orange[700]),
-                      const SizedBox(width: 8),
+                      Icon(Icons.storage_rounded, color: warningColor),
+                      const SizedBox(width: 12),
                       Text(
                         'Base de données',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange[700],
-                        ),
+                        style: TextStyle(fontWeight: FontWeight.bold, color: warningColor, fontSize: 16),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.orange[700],
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'Risqué',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(color: warningColor, borderRadius: BorderRadius.circular(20)),
+                        child: const Text('Risqué', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Modifier la configuration de la base de données peut déconnecter l\'application.',
+                  const SizedBox(height: 16),
+                  Text(
+                    'Modifier la configuration réseau de la base de données. Attention, une erreur de saisie bloquera l\'accès aux prospects.',
+                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.8), fontSize: 13),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 20),
                   if (!_showEditMode)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Configuration actuelle:',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                        const SizedBox(height: 8),
-                        _buildConfigInfo('Hôte', _hostController.text),
-                        _buildConfigInfo('Port', _portController.text),
-                        _buildConfigInfo('Utilisateur', _userController.text),
-                        _buildConfigInfo(
-                            'Base de données', _databaseController.text),
-                        const SizedBox(height: 12),
+                        _buildConfigInfo('Hôte', _hostController.text, colorScheme),
+                        _buildConfigInfo('Port', _portController.text, colorScheme),
+                        _buildConfigInfo('Base', _databaseController.text, colorScheme),
+                        const SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,
-                          height: 44,
+                          height: 48,
                           child: ElevatedButton.icon(
                             onPressed: _showChangeConfigDialog,
-                            icon: const Icon(Icons.edit, color: Colors.white),
-                            label: const Text(
-                              'Modifier la configuration',
-                              style: TextStyle(color: Colors.white),
-                            ),
+                            icon: const Icon(Icons.settings_input_component_outlined, size: 18),
+                            label: const Text('Modifier la configuration'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange[700],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
+                              backgroundColor: warningColor,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
                           ),
                         ),
                       ],
                     )
                   else
-                    Column(
-                      children: [
-                        TextField(
-                          controller: _hostController,
-                          decoration: InputDecoration(
-                            labelText: 'Hôte',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _portController,
-                          decoration: InputDecoration(
-                            labelText: 'Port',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          keyboardType: TextInputType.number,
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _userController,
-                          decoration: InputDecoration(
-                            labelText: 'Utilisateur',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            labelText: 'Mot de passe',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _databaseController,
-                          decoration: InputDecoration(
-                            labelText: 'Base de données',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        if (_error != null)
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.red[100],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.warning, color: Colors.red[700]),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    _error!,
-                                    style: TextStyle(color: Colors.red[700]),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: SizedBox(
-                                height: 44,
-                                child: ElevatedButton(
-                                  onPressed: _isConnecting
-                                      ? null
-                                      : _handleChangeConfig,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        const Color.fromARGB(255, 6, 206, 112),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: _isConnecting
-                                      ? const SizedBox(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
-                                            ),
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : const Text(
-                                          'Enregistrer',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: SizedBox(
-                                height: 44,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    _loadSavedConfig();
-                                    setState(() {
-                                      _showEditMode = false;
-                                      _error = null;
-                                    });
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.grey[400],
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Annuler',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                    _buildEditFields(colorScheme),
                 ],
               ),
             ),
             const SizedBox(height: 24),
+
             // Section Apparence
             Consumer<SettingsProvider>(
               builder: (context, settings, _) {
                 return _buildSettingSection(
                   icon: Icons.palette_outlined,
                   title: 'Apparence',
-                  subtitle: 'Personnalisez votre expérience visuelle',
+                  subtitle: 'Personnalisez votre interface visuelle',
+                  colorScheme: colorScheme,
                   children: [
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Mode de thème',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                    ),
+                    const Text('Mode de thème', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: SegmentedButton<ThemeMode>(
                         segments: const [
-                          ButtonSegment(
-                            value: ThemeMode.light,
-                            icon: Icon(Icons.light_mode_outlined),
-                            label: Text('Clair'),
-                          ),
-                          ButtonSegment(
-                            value: ThemeMode.dark,
-                            icon: Icon(Icons.dark_mode_outlined),
-                            label: Text('Sombre'),
-                          ),
-                          ButtonSegment(
-                            value: ThemeMode.system,
-                            icon: Icon(Icons.settings_suggest_outlined),
-                            label: Text('Auto'),
-                          ),
+                          ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_outlined), label: Text('Clair')),
+                          ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_outlined), label: Text('Sombre')),
+                          ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.settings_suggest_outlined), label: Text('Auto')),
                         ],
                         selected: {settings.themeMode},
-                        onSelectionChanged: (Set<ThemeMode> newSelection) {
-                          settings.setThemeMode(newSelection.first);
-                        },
+                        onSelectionChanged: (Set<ThemeMode> newSelection) => settings.setThemeMode(newSelection.first),
                       ),
                     ),
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Taille du texte',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                        ),
-                        Text(
-                          '${(settings.fontSizeFactor * 100).toInt()}%',
-                          style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        const Text('Taille du texte', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text('${(settings.fontSizeFactor * 100).toInt()}%', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     Slider(
                       value: settings.fontSizeFactor,
-                      min: 0.8,
-                      max: 1.4,
-                      divisions: 6,
-                      onChanged: (double value) {
-                        settings.setFontSizeFactor(value);
-                      },
+                      min: 0.8, max: 1.4, divisions: 6,
+                      activeColor: colorScheme.primary,
+                      onChanged: (double value) => settings.setFontSizeFactor(value),
                     ),
                   ],
                 );
               },
             ),
             const SizedBox(height: 16),
-            // Section Notifications
-            Consumer<SettingsProvider>(
-              builder: (context, settings, _) {
-                return _buildSettingSection(
-                  icon: Icons.notifications,
-                  title: 'Notifications',
-                  subtitle: 'Gérez vos préférences',
-                  children: [
-                    _buildSettingItem(
-                      icon: Icons.notifications_active,
-                      label: 'Notifications activées',
-                      trailing: Switch(
-                        value: settings.notificationsEnabled,
-                        onChanged: settings.toggleNotifications,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            // Section À propos
+
+            // Section Système
             _buildSettingSection(
-              icon: Icons.info,
-              title: 'À propos',
-              subtitle: 'Informations de l\'application',
+              icon: Icons.terminal_outlined,
+              title: 'Environnement & Système',
+              subtitle: 'Détails techniques de l\'instance',
+              colorScheme: colorScheme,
               children: [
-                _buildSettingItem(
-                  icon: Icons.info_outlined,
-                  label: 'Version',
-                  trailing: const Text('1.0.0'),
+                _buildSystemInfoItem('Version Application', '1.1.0 Stable (Build 2025.01)', colorScheme),
+                _buildSystemInfoItem('Plateforme Exécution', Platform.operatingSystem.toUpperCase(), colorScheme),
+                _buildSystemInfoItem('Moteur de Rendu', 'Flutter 3.x (Skia/Impeller)', colorScheme),
+                _buildSystemInfoItem('Protocole Database', 'MySQL driver 0.20.0', colorScheme),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Section Aide & Documentation (Le nouveau "A propos" complet)
+            _buildSettingSection(
+              icon: Icons.menu_book_outlined,
+              title: 'Ressources & Documentation',
+              subtitle: 'Guides et informations utiles',
+              colorScheme: colorScheme,
+              children: [
+                _buildDocumentationItem(
+                  context,
+                  icon: Icons.description_outlined,
+                  title: 'Manuel d\'utilisation',
+                  desc: 'Apprenez à maîtriser le pipeline Kanban et les automatisations.',
+                  onTap: () {},
+                ),
+                _buildDocumentationItem(
+                  context,
+                  icon: Icons.keyboard_command_key_outlined,
+                  title: 'Raccourcis Clavier',
+                  desc: 'Optimisez votre saisie avec les combinaisons de touches (Ctrl+N, Ctrl+F).',
+                  onTap: () {},
+                ),
+                _buildDocumentationItem(
+                  context,
+                  icon: Icons.security_outlined,
+                  title: 'Politique de Confidentialité',
+                  desc: 'Consultez comment vos données MySQL sont sécurisées localement.',
+                  onTap: () {},
+                ),
+                _buildDocumentationItem(
+                  context,
+                  icon: Icons.support_agent_outlined,
+                  title: 'Support Technique',
+                  desc: 'Un problème ? Contactez l\'équipe APEXNova Labs via GitHub.',
+                  onTap: () {},
                 ),
               ],
             ),
+            const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildConfigInfo(String label, String value) {
+  Widget _buildConfigInfo(String label, String value, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-          Text(
-            value,
-            style: TextStyle(color: Colors.grey[700]),
-          ),
+          Text('$label: ', style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurfaceVariant, fontSize: 13)),
+          Text(value, style: TextStyle(color: colorScheme.onSurface, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSystemInfoItem(String label, String value, ColorScheme colorScheme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDocumentationItem(BuildContext context, {required IconData icon, required String title, required String desc, required VoidCallback onTap}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, size: 20, color: colorScheme.primary),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 2),
+                  Text(desc, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, size: 16, color: colorScheme.outline),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditFields(ColorScheme colorScheme) {
+    return Column(
+      children: [
+        _buildTextField(_hostController, 'Hôte'),
+        const SizedBox(height: 12),
+        _buildTextField(_portController, 'Port', type: TextInputType.number),
+        const SizedBox(height: 12),
+        _buildTextField(_userController, 'Utilisateur'),
+        const SizedBox(height: 12),
+        _buildTextField(_passwordController, 'Mot de passe', obscure: true),
+        const SizedBox(height: 12),
+        _buildTextField(_databaseController, 'Base de données'),
+        const SizedBox(height: 16),
+        if (_error != null) _buildErrorMessage(colorScheme),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _isConnecting ? null : _handleChangeConfig,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF06CE70),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _isConnecting
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Text('Enregistrer'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () { _loadSavedConfig(); setState(() { _showEditMode = false; _error = null; }); },
+                child: const Text('Annuler'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, {TextInputType type = TextInputType.text, bool obscure = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: type,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+    );
+  }
+
+  Widget _buildErrorMessage(ColorScheme colorScheme) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.error),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: colorScheme.onErrorContainer),
+          const SizedBox(width: 12),
+          Expanded(child: Text(_error!, style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13))),
         ],
       ),
     );
@@ -522,57 +451,32 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     required IconData icon,
     required String title,
     required String subtitle,
+    required ColorScheme colorScheme,
     required List<Widget> children,
   }) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon),
-                const SizedBox(width: 12),
+                Icon(icon, color: colorScheme.primary),
+                const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    Text(
-                      subtitle,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                    ),
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(subtitle, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             ...children,
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSettingItem({
-    required IconData icon,
-    required String label,
-    required Widget trailing,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(label),
-          ),
-          trailing,
-        ],
       ),
     );
   }
