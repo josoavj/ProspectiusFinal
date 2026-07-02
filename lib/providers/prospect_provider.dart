@@ -65,8 +65,11 @@ class ProspectProvider extends ChangeNotifier {
     _setLoading(true);
     try {
       await _repository.createProspect(data);
-      if (data.containsKey('userId')) {
-        await loadProspects(data['userId'] as int, userRole);
+      final userIdStr = data['userId']?.toString();
+      final userId = userIdStr != null ? num.tryParse(userIdStr)?.toInt() : null;
+      
+      if (userId != null) {
+        await loadProspects(userId, userRole);
       }
       return true;
     } catch (e) {

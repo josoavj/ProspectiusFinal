@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/prospect.dart';
 import '../models/task.dart';
+import '../models/document.dart' as doc_model;
 import '../models/custom_field.dart';
 import '../models/account.dart';
 import '../providers/auth_provider.dart';
@@ -11,6 +15,7 @@ import '../providers/document_provider.dart';
 import '../providers/custom_field_provider.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
+import '../utils/app_logger.dart';
 import 'edit_prospect_screen.dart';
 
 class ProspectDetailScreen extends StatefulWidget {
@@ -31,9 +36,20 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
     super.initState();
     _currentProspect = widget.prospect;
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {}); // Pour mettre à jour le FAB selon l'onglet
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   void _loadData() {
@@ -50,106 +66,230 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_currentProspect.fullName),
-        actions: [
-          IconButton(icon: const Icon(Icons.edit), onPressed: _handleUpdate),
-          IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: _handleDelete),
-        ],
-        bottom: TabBar(
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverOverlapAbsorber(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              sliver: SliverAppBar(
+                expandedHeight: 280.0, // Plus d'espace pour éviter les coupures
+                floating: false,
+                pinned: true,
+                stretch: true,
+                backgroundColor: colorScheme.surface,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                flexibleSpace: FlexibleSpaceBar(
+                  stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
+                  centerTitle: false,
+                  titlePadding: const EdgeInsets.only(left: 56, bottom: 82), // Remonté pour ne plus être coupé
+                  title: Text(
+                    _currentProspect.fullName,
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26, // Imposant mais équilibré
+                      letterSpacing: -1.0,
+                    ),
+                  ),
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              colorScheme.primaryContainer.withValues(alpha: 0.4),
+                              colorScheme.surface,
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 80, // Aligné visuellement avec le centre du texte
+                        right: 24,
+                        child: Hero(
+                          tag: 'prospect_avatar_${_currentProspect.id}',
+                          child: CircleAvatar(
+                            radius: 46, // Plus grand pour plus de prestance
+                            backgroundColor: colorScheme.primary,
+                            child: Text(
+                              _currentProspect.prenom.isNotEmpty ? _currentProspect.prenom[0].toUpperCase() : '?',
+                              style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: colorScheme.onPrimary),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  IconButton(icon: const Icon(Icons.edit_outlined), onPressed: _handleUpdate, tooltip: 'Modifier'),
+                  IconButton(icon: Icon(Icons.delete_outline, color: colorScheme.error), onPressed: _handleDelete, tooltip: 'Supprimer'),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(48),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      border: Border(bottom: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      labelColor: colorScheme.primary,
+                      unselectedLabelColor: colorScheme.onSurfaceVariant,
+                      indicatorColor: colorScheme.primary,
+                      indicatorWeight: 3,
+                      tabs: const [
+                        Tab(icon: Icon(Icons.info_outline, size: 20), text: 'Infos'),
+                        Tab(icon: Icon(Icons.task_alt, size: 20), text: 'Tâches'),
+                        Tab(icon: Icon(Icons.description_outlined, size: 20), text: 'Docs'),
+                        Tab(icon: Icon(Icons.history, size: 20), text: 'Suivi'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ];
+        },
+        body: TabBarView(
           controller: _tabController,
-          labelColor: colorScheme.primary,
-          unselectedLabelColor: colorScheme.onSurfaceVariant,
-          indicatorColor: colorScheme.primary,
-          tabs: const [
-            Tab(text: 'Infos', icon: Icon(Icons.info_outline)),
-            Tab(text: 'Tâches', icon: Icon(Icons.task_alt)),
-            Tab(text: 'Documents', icon: Icon(Icons.description_outlined)),
-            Tab(text: 'Champs Perso', icon: Icon(Icons.add_box_outlined)),
+          children: [
+            _buildTabContent(_buildInfoTab(), 'info'),
+            _buildTabContent(_buildTasksTab(), 'tasks'),
+            _buildTabContent(_buildDocumentsTab(), 'docs'),
+            _buildTabContent(_buildHistoryTab(), 'history'),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildInfoTab(),
-          _buildTasksTab(),
-          _buildDocumentsTab(),
-          _buildCustomFieldsTab(),
-        ],
       ),
       floatingActionButton: _buildFab(),
     );
   }
 
-  Widget? _buildFab() {
-    return ListenableBuilder(
-      listenable: _tabController,
-      builder: (context, child) {
-        if (_tabController.index == 1) return FloatingActionButton(onPressed: _showAddTaskDialog, child: const Icon(Icons.add_task));
-        if (_tabController.index == 2) return FloatingActionButton(onPressed: _handleAddDocument, child: const Icon(Icons.upload_file));
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Widget _buildInfoTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildInfoCard(),
-          const SizedBox(height: 24),
-          _buildSectionTitle('Digital & Réseaux'),
-          _buildDigitalCard(),
-          const SizedBox(height: 24),
-          if (_currentProspect.description != null && _currentProspect.description!.isNotEmpty) ...[
-            _buildSectionTitle('Description'),
-            _buildDescriptionCard(),
-            const SizedBox(height: 24),
-          ],
-          _buildSectionTitle('Historique des Interactions'),
-          const SizedBox(height: 8),
-          _buildInteractionsList(),
+  Widget _buildTabContent(Widget child, String key) {
+    return Builder(
+      builder: (context) => CustomScrollView(
+        key: PageStorageKey(key),
+        slivers: [
+          SliverOverlapInjector(handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context)),
+          SliverPadding(
+            padding: const EdgeInsets.only(bottom: 100),
+            sliver: SliverToBoxAdapter(child: child),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12, left: 4),
-      child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+  Widget? _buildFab() {
+    if (_tabController.index == 0) return null;
+    return FloatingActionButton.extended(
+      onPressed: () {
+        if (_tabController.index == 1) _showAddTaskDialog();
+        if (_tabController.index == 2) _handleAddDocument();
+        if (_tabController.index == 3) _showAddInteractionDialog();
+      },
+      icon: Icon(_tabController.index == 1 ? Icons.add_task : 
+                 _tabController.index == 2 ? Icons.upload_file : Icons.add_comment_outlined),
+      label: Text(_tabController.index == 1 ? 'Tâche' : 
+                  _tabController.index == 2 ? 'Fichier' : 'Interaction'),
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildInfoTab() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildStatusAndPriorityRow(),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Coordonnées'),
+          _buildContactCard(),
+          const SizedBox(height: 24),
+          _buildSectionTitle('Entreprise & Digital'),
+          _buildDigitalCard(),
+          const SizedBox(height: 24),
+          if (_currentProspect.description?.isNotEmpty ?? false) ...[
+            _buildSectionTitle('Description'),
+            _buildDescriptionCard(),
+            const SizedBox(height: 24),
+          ],
+          _buildSectionTitle('Champs Personnalisés'),
+          _buildCustomFieldsList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusAndPriorityRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildInfoBadge(
+            label: 'Statut',
+            value: TextFormatter.formatStatus(_currentProspect.status),
+            color: _getStatusColor(_currentProspect.status),
+            icon: Icons.sync,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildInfoBadge(
+            label: 'Priorité',
+            value: _currentProspect.priorite.toUpperCase(),
+            color: _getPriorityColor(_currentProspect.priorite),
+            icon: Icons.priority_high,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoBadge({required String label, required String value, required Color color, required IconData icon}) {
     final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant)),
+                Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color), overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactCard() {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(TextFormatter.formatType(_currentProspect.type), style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
-                    if (_currentProspect.nomEntreprise != null) 
-                      Text(_currentProspect.nomEntreprise!, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                  ],
-                ),
-                _buildPriorityBadge(_currentProspect.priorite),
-              ],
-            ),
+            _buildDetailRow('Email', _currentProspect.email, Icons.email_outlined),
             const Divider(height: 24),
-            _buildInfoRow('Email', _currentProspect.email, Icons.email_outlined),
-            _buildInfoRow('Téléphone', _currentProspect.telephone, Icons.phone_outlined),
-            _buildInfoRow('Adresse', _currentProspect.adresse, Icons.location_on_outlined),
-            _buildInfoRow('Statut', TextFormatter.formatStatus(_currentProspect.status), Icons.sync),
+            _buildDetailRow('Téléphone', _currentProspect.telephone, Icons.phone_outlined),
+            const Divider(height: 24),
+            _buildDetailRow('Adresse', _currentProspect.adresse, Icons.location_on_outlined),
           ],
         ),
       ),
@@ -162,9 +302,15 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildInfoRow('Source', _currentProspect.source ?? 'Non définie', Icons.source_outlined),
-            _buildInfoRow('Site Web', _currentProspect.siteWeb ?? '-', Icons.language_outlined),
-            _buildInfoRow('LinkedIn', _currentProspect.linkedinUrl ?? '-', Icons.link_outlined),
+            _buildDetailRow('Entreprise', _currentProspect.nomEntreprise ?? '-', Icons.business_outlined),
+            const Divider(height: 24),
+            _buildDetailRow('Poste', _currentProspect.poste ?? '-', Icons.work_outline),
+            const Divider(height: 24),
+            _buildDetailRow('Source', _currentProspect.source ?? '-', Icons.source_outlined),
+            const Divider(height: 24),
+            _buildDetailRow('Site Web', _currentProspect.siteWeb ?? '-', Icons.language_outlined),
+            const Divider(height: 24),
+            _buildDetailRow('LinkedIn', _currentProspect.linkedinUrl ?? '-', Icons.link_outlined),
           ],
         ),
       ),
@@ -172,136 +318,39 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildDescriptionCard() {
-    final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      color: colorScheme.surfaceContainerLow,
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Text(_currentProspect.description ?? '', style: const TextStyle(height: 1.5)),
+        child: Text(_currentProspect.description ?? '', style: const TextStyle(height: 1.6, fontSize: 14)),
       ),
     );
   }
 
-  Widget _buildPriorityBadge(String priority) {
-    Color color;
-    switch (priority.toLowerCase()) {
-      case 'haute': color = Colors.red; break;
-      case 'moyenne': color = Colors.orange; break;
-      default: color = Colors.green;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1), 
-        borderRadius: BorderRadius.circular(20), 
-        border: Border.all(color: color.withValues(alpha: 0.5))
-      ),
-      child: Text(priority.toUpperCase(), style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, IconData icon) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: colorScheme.primary),
-          const SizedBox(width: 12),
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Expanded(child: Text(value.isEmpty ? '-' : value, overflow: TextOverflow.ellipsis)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInteractionsList() {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Consumer<ProspectProvider>(
+  Widget _buildCustomFieldsList() {
+    return Consumer<CustomFieldProvider>(
       builder: (context, provider, _) {
-        return SimpleStateBuilder(
-          isLoading: provider.isLoading,
-          error: provider.error,
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: _showAddInteractionDialog,
-                  icon: const Icon(Icons.add_comment_outlined),
-                  label: const Text('Ajouter un échange'),
+        final values = provider.getValues(_currentProspect.id);
+        if (provider.fields.isEmpty) return const Center(child: Text('Aucun champ défini', style: TextStyle(fontSize: 12)));
+        return Column(
+          children: provider.fields.map((field) {
+            final value = values.firstWhere((v) => v.idField == field.id, 
+              orElse: () => CustomFieldValue(idProspect: _currentProspect.id, idField: field.id, value: '')).value;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Card(
+                elevation: 0,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                child: ListTile(
+                  dense: true,
+                  title: Text(field.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  subtitle: Text(value.isEmpty ? 'Non renseigné' : value),
+                  trailing: const Icon(Icons.edit_outlined, size: 16),
+                  onTap: () => _showEditCustomFieldDialog(field, value),
                 ),
               ),
-              provider.interactions.isEmpty
-                  ? const Center(child: Text('Aucune interaction'))
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: provider.interactions.length,
-                      itemBuilder: (context, index) {
-                        final interaction = provider.interactions[index];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 16,
-                                          backgroundColor: colorScheme.primaryContainer,
-                                          child: Icon(_getInteractionIcon(interaction.type), size: 14, color: colorScheme.onPrimaryContainer),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          TextFormatter.formatInteractionType(interaction.type),
-                                          style: const TextStyle(fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      '${interaction.dateInteraction.day}/${interaction.dateInteraction.month} à ${interaction.dateInteraction.hour}:${interaction.dateInteraction.minute.toString().padLeft(2, '0')}',
-                                      style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  interaction.note,
-                                  style: const TextStyle(fontSize: 14, height: 1.4),
-                                ),
-                                if (interaction.suivi != null && interaction.suivi!.isNotEmpty) ...[
-                                  const Divider(height: 20),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.assignment_turned_in_outlined, size: 14, color: Colors.green),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'À faire: ${interaction.suivi}',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: colorScheme.primary,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ],
-          ),
+            );
+          }).toList(),
         );
       },
     );
@@ -315,27 +364,40 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           isLoading: provider.isLoading,
           error: provider.error,
           child: provider.tasks.isEmpty
-              ? const Center(child: Text('Aucune tâche prévue'))
+              ? _buildEmptyState(Icons.task_alt, 'Aucune tâche prévue')
               : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   itemCount: provider.tasks.length,
                   itemBuilder: (context, index) {
                     final task = provider.tasks[index];
                     return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
+                      margin: const EdgeInsets.only(bottom: 12),
                       child: CheckboxListTile(
+                        value: task.isCompleted,
+                        onChanged: (val) => provider.toggleTaskStatus(task),
                         title: Text(task.title, style: TextStyle(
+                          fontWeight: FontWeight.bold,
                           decoration: task.isCompleted ? TextDecoration.lineThrough : null,
                           color: task.isCompleted ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
                         )),
-                        subtitle: Text('${task.description}\nÉchéance: ${task.dueDate.day}/${task.dueDate.month}'),
-                        value: task.isCompleted,
-                        onChanged: (val) => provider.toggleTaskStatus(task),
-                        secondary: IconButton(
-                          icon: Icon(Icons.delete_outline, color: colorScheme.error), 
-                          onPressed: () => provider.deleteTask(task.id, _currentProspect.id)
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (task.description.isNotEmpty) Text(task.description, style: const TextStyle(fontSize: 12)),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.calendar_today_outlined, size: 12, color: colorScheme.primary),
+                                const SizedBox(width: 4),
+                                Text('Échéance: ${task.dueDate.day}/${task.dueDate.month}', style: TextStyle(fontSize: 11, color: colorScheme.primary, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ],
                         ),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        secondary: IconButton(icon: Icon(Icons.delete_outline, color: colorScheme.error), onPressed: () => provider.deleteTask(task.id, _currentProspect.id)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                     );
                   },
@@ -346,29 +408,37 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildDocumentsTab() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Consumer<DocumentProvider>(
       builder: (context, provider, _) {
         return SimpleStateBuilder(
           isLoading: provider.isLoading,
           error: provider.error,
           child: provider.documents.isEmpty
-              ? const Center(child: Text('Aucun document'))
+              ? _buildEmptyState(Icons.description_outlined, 'Aucun document')
               : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   itemCount: provider.documents.length,
                   itemBuilder: (context, index) {
                     final doc = provider.documents[index];
+                    final isImage = ['png', 'jpg', 'jpeg'].contains(doc.mimeType.toLowerCase());
                     return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
+                      margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
-                        leading: const Icon(Icons.insert_drive_file_outlined),
-                        title: Text(doc.name),
-                        subtitle: Text('${(doc.size / 1024).toStringAsFixed(1)} KB'),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline), 
-                          onPressed: () => provider.deleteDocument(doc.id, _currentProspect.id)
+                        leading: Container(
+                          width: 48, height: 48,
+                          decoration: BoxDecoration(color: colorScheme.primaryContainer.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(10)),
+                          child: isImage 
+                            ? ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.file(File(doc.filePath), fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(_getFileIcon(doc.mimeType), color: colorScheme.primary)))
+                            : Icon(_getFileIcon(doc.mimeType), color: colorScheme.primary),
                         ),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        title: Text(doc.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        subtitle: Text('${(doc.size / 1024).toStringAsFixed(1)} KB • Ajouté le ${doc.createdAt.day}/${doc.createdAt.month}'),
+                        trailing: IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => provider.deleteDocument(doc.id, _currentProspect.id)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        onTap: () => isImage ? _showImagePreview(doc) : _openDocument(doc),
                       ),
                     );
                   },
@@ -378,35 +448,133 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
     );
   }
 
-  Widget _buildCustomFieldsTab() {
-    return Consumer<CustomFieldProvider>(
+  Widget _buildHistoryTab() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Consumer<ProspectProvider>(
       builder: (context, provider, _) {
-        final values = provider.getValues(_currentProspect.id);
         return SimpleStateBuilder(
           isLoading: provider.isLoading,
           error: provider.error,
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: provider.fields.length,
-            itemBuilder: (context, index) {
-              final field = provider.fields[index];
-              final value = values.firstWhere((v) => v.idField == field.id, 
-                orElse: () => CustomFieldValue(idProspect: _currentProspect.id, idField: field.id, value: '')).value;
-              
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  title: Text(field.name),
-                  subtitle: Text(value.isEmpty ? 'Non renseigné' : value),
-                  trailing: const Icon(Icons.edit_outlined, size: 18),
-                  onTap: () => _showEditCustomFieldDialog(field, value),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: provider.interactions.isEmpty
+              ? _buildEmptyState(Icons.forum_outlined, 'Aucun historique d\'échanges')
+              : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(20),
+                  itemCount: provider.interactions.length,
+                  itemBuilder: (context, index) {
+                    final interaction = provider.interactions[index];
+                    return IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          Column(
+                            children: [
+                              Container(width: 12, height: 12, decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle)),
+                              Expanded(child: Container(width: 2, color: index == provider.interactions.length - 1 ? Colors.transparent : colorScheme.outlineVariant)),
+                            ],
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: Card(
+                                margin: EdgeInsets.zero,
+                                elevation: 0.5,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.2)),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(_getInteractionIcon(interaction.type), size: 18, color: colorScheme.primary),
+                                              const SizedBox(width: 10),
+                                              Text(TextFormatter.formatInteractionType(interaction.type), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                            ],
+                                          ),
+                                          Text('${interaction.dateInteraction.day}/${interaction.dateInteraction.month} à ${interaction.dateInteraction.hour}:${interaction.dateInteraction.minute.toString().padLeft(2, '0')}', style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(interaction.note, style: const TextStyle(fontSize: 14, height: 1.5)),
+                                      if (interaction.suivi?.isNotEmpty ?? false) ...[
+                                        const SizedBox(height: 12),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                          decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.assignment_turned_in_outlined, size: 14, color: Colors.green),
+                                              const SizedBox(width: 10),
+                                              Expanded(child: Text('Suivi: ${interaction.suivi}', style: const TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.w600))),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState(IconData icon, String message) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 64, color: colorScheme.outline.withValues(alpha: 0.3)),
+          const SizedBox(height: 16),
+          Text(message, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, left: 4),
+      child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, IconData icon) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, size: 18, color: colorScheme.primary),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+              Text(value.isEmpty ? '-' : value, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14), overflow: TextOverflow.ellipsis),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -423,7 +591,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Nouvelle Interaction'),
+          title: const Text('Nouvel Échange'),
           content: SizedBox(
             width: 500,
             child: SingleChildScrollView(
@@ -432,14 +600,14 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                 children: [
                   DropdownButtonFormField<String>(
                     initialValue: type,
-                    decoration: const InputDecoration(labelText: 'Type', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'Type d\'interaction', border: OutlineInputBorder()),
                     items: ['appel', 'email', 'reunion', 'message', 'autre'].map((t) => DropdownMenuItem(value: t, child: Text(TextFormatter.formatInteractionType(t)))).toList(),
                     onChanged: (val) => setDialogState(() => type = val!),
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: newStatus,
-                    decoration: const InputDecoration(labelText: 'Nouveau Statut', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'Modifier le Statut', border: OutlineInputBorder()),
                     items: ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'].map((s) => DropdownMenuItem(value: s, child: Text(TextFormatter.formatStatus(s)))).toList(),
                     onChanged: (val) => setDialogState(() => newStatus = val!),
                   ),
@@ -450,7 +618,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                       final users = snapshot.data ?? [];
                       return DropdownButtonFormField<int?>(
                         initialValue: selectedAssigneId,
-                        decoration: const InputDecoration(labelText: 'Assigné à (optionnel)', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'Assigné à', border: OutlineInputBorder()),
                         items: [
                           const DropdownMenuItem(value: null, child: Text('Personne')),
                           ...users.map((acc) => DropdownMenuItem(value: acc.id, child: Text(acc.fullName)))
@@ -460,18 +628,9 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                     }
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: noteController, 
-                    decoration: const InputDecoration(labelText: 'Note de l\'échange', border: OutlineInputBorder()), 
-                    minLines: 4, maxLines: 6,
-                    onChanged: (val) => setDialogState(() {}),
-                  ),
+                  TextField(controller: noteController, decoration: const InputDecoration(labelText: 'Note de l\'échange', border: OutlineInputBorder(), hintText: 'Que s\'est-il passé ?'), minLines: 4, maxLines: 6, onChanged: (val) => setDialogState(() {})),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: suiviController, 
-                    decoration: const InputDecoration(labelText: 'Suivi / Action à faire', border: OutlineInputBorder()), 
-                    minLines: 2, maxLines: 3,
-                  ),
+                  TextField(controller: suiviController, decoration: const InputDecoration(labelText: 'Action de suivi (optionnel)', border: OutlineInputBorder(), hintText: 'Ex: Rappeler vendredi'), minLines: 2, maxLines: 3),
                 ],
               ),
             ),
@@ -481,15 +640,8 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
             ElevatedButton(
               onPressed: noteController.text.isEmpty ? null : () async {
                 await prospectProvider.createInteractionComplex(
-                  prospectId: _currentProspect.id,
-                  userId: authProvider.currentUser!.id,
-                  userRole: authProvider.currentUser!.typeCompte,
-                  type: type,
-                  note: noteController.text,
-                  date: DateTime.now(),
-                  idAssigne: selectedAssigneId,
-                  suivi: suiviController.text,
-                  newStatus: newStatus,
+                  prospectId: _currentProspect.id, userId: authProvider.currentUser!.id, userRole: authProvider.currentUser!.typeCompte,
+                  type: type, note: noteController.text, date: DateTime.now(), idAssigne: selectedAssigneId, suivi: suiviController.text, newStatus: newStatus,
                 );
                 if (!context.mounted) return;
                 Navigator.pop(context);
@@ -536,7 +688,29 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
     );
   }
 
-  void _handleAddDocument() { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sélection de fichier non implémentée'))); }
+  void _handleAddDocument() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(allowMultiple: false, type: FileType.any);
+      if (result == null || result.files.isEmpty) return;
+      final pickedFile = result.files.first;
+      if (pickedFile.path == null) return;
+      final originalFile = File(pickedFile.path!);
+      final appDocDir = await getApplicationDocumentsDirectory();
+      final prospectDocsDir = Directory('${appDocDir.path}/prospect_documents/${_currentProspect.id}');
+      if (!prospectDocsDir.existsSync()) prospectDocsDir.createSync(recursive: true);
+      final String fileName = pickedFile.name;
+      final String newPath = '${prospectDocsDir.path}/$fileName';
+      await originalFile.copy(newPath);
+      final document = doc_model.Document(id: 0, idProspect: _currentProspect.id, name: fileName, filePath: newPath, mimeType: pickedFile.extension ?? 'unknown', size: pickedFile.size, createdAt: DateTime.now());
+      if (mounted) {
+        final success = await context.read<DocumentProvider>().addDocument(document);
+        if (success && mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Document ajouté avec succès')));
+      }
+    } catch (e) {
+      AppLogger.error('Erreur lors de l\'ajout du document: $e');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red));
+    }
+  }
 
   void _showEditCustomFieldDialog(CustomField field, String currentValue) {
     final controller = TextEditingController(text: currentValue);
@@ -544,48 +718,30 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Modifier ${field.name}'),
-        content: SizedBox(
-          width: 400,
-          child: TextField(controller: controller, decoration: InputDecoration(labelText: field.name, border: const OutlineInputBorder()), autofocus: true),
-        ),
+        content: SizedBox(width: 400, child: TextField(controller: controller, decoration: InputDecoration(labelText: field.name, border: const OutlineInputBorder()), autofocus: true)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
-          ElevatedButton(
-            onPressed: () {
-              context.read<CustomFieldProvider>().saveValue(_currentProspect.id, field.id, controller.text);
-              Navigator.pop(context);
-            },
-            child: const Text('Enregistrer'),
-          ),
+          ElevatedButton(onPressed: () { context.read<CustomFieldProvider>().saveValue(_currentProspect.id, field.id, controller.text); Navigator.pop(context); }, child: const Text('Enregistrer')),
         ],
       ),
     );
   }
 
   void _handleDelete() async {
-    final colorScheme = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirmer la suppression'),
-        content: const Text('Êtes-vous sûr ?'),
+        content: const Text('Êtes-vous sûr ? Cette action est irréversible.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true), 
-            style: ElevatedButton.styleFrom(backgroundColor: colorScheme.error, foregroundColor: colorScheme.onError),
-            child: const Text('Supprimer'),
-          ),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error, foregroundColor: Theme.of(context).colorScheme.onError), child: const Text('Supprimer')),
         ],
       ),
     );
     if (confirmed == true && mounted) {
       final auth = context.read<AuthProvider>();
-      final success = await context.read<ProspectProvider>().deleteProspect(
-        auth.currentUser!.id,
-        auth.currentUser!.typeCompte,
-        _currentProspect.id,
-      );
+      final success = await context.read<ProspectProvider>().deleteProspect(auth.currentUser!.id, auth.currentUser!.typeCompte, _currentProspect.id);
       if (success && mounted) Navigator.pop(context);
     }
   }
@@ -597,12 +753,79 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
     });
   }
 
-  IconData _getInteractionIcon(String type) {
-    switch (type.toLowerCase()) {
-      case 'appel': return Icons.call;
-      case 'email': return Icons.email;
-      case 'réunion': return Icons.people;
-      default: return Icons.message;
+  IconData _getFileIcon(String extension) {
+    switch (extension.toLowerCase()) {
+      case 'pdf': return Icons.picture_as_pdf_outlined;
+      case 'doc': case 'docx': return Icons.description_outlined;
+      case 'xls': case 'xlsx': return Icons.table_chart_outlined;
+      case 'png': case 'jpg': case 'jpeg': return Icons.image_outlined;
+      case 'txt': return Icons.article_outlined;
+      default: return Icons.insert_drive_file_outlined;
     }
   }
+
+  void _showImagePreview(doc_model.Document doc) {
+    showDialog(context: context, builder: (context) => Dialog(backgroundColor: Colors.transparent, child: Stack(alignment: Alignment.topRight, children: [ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.file(File(doc.filePath))), IconButton.filled(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close), style: IconButton.styleFrom(backgroundColor: Colors.black54))])));
+  }
+
+  Future<void> _openDocument(doc_model.Document doc) async {
+    final file = File(doc.filePath);
+    if (!file.existsSync()) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fichier introuvable'), backgroundColor: Colors.red));
+      return;
+    }
+    try {
+      if (Platform.isLinux) await Process.run('xdg-open', [doc.filePath]);
+      else if (Platform.isMacOS) await Process.run('open', [doc.filePath]);
+      else if (Platform.isWindows) await Process.run('start', ['', doc.filePath], runInShell: true);
+    } catch (e) { AppLogger.error('Erreur d\'ouverture: $e'); }
+  }
+
+  IconData _getInteractionIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'appel': return Icons.call_outlined;
+      case 'email': return Icons.email_outlined;
+      case 'réunion': return Icons.people_outline;
+      default: return Icons.chat_bubble_outline;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'nouveau': return Colors.blue;
+      case 'interesse': return Colors.amber;
+      case 'negociation': return Colors.orange;
+      case 'converti': return const Color(0xFF06CE70);
+      case 'perdu': return Colors.red;
+      default: return Colors.grey;
+    }
+  }
+
+  Color _getPriorityColor(String priority) {
+    switch (priority.toLowerCase()) {
+      case 'haute': return Colors.red;
+      case 'moyenne': return Colors.orange;
+      default: return Colors.blue;
+    }
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate(this._tabBar);
+  final TabBar _tabBar;
+  @override double get minExtent => _tabBar.preferredSize.height;
+  @override double get maxExtent => _tabBar.preferredSize.height;
+  @override Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => Container(color: Theme.of(context).scaffoldBackgroundColor, child: _tabBar);
+  @override bool shouldRebuild(_SliverAppBarDelegate oldDelegate) => false;
+}
+
+class _TabKeepAlive extends StatefulWidget {
+  final Widget child;
+  const _TabKeepAlive({required this.child});
+  @override State<_TabKeepAlive> createState() => _TabKeepAliveState();
+}
+
+class _TabKeepAliveState extends State<_TabKeepAlive> with AutomaticKeepAliveClientMixin {
+  @override bool get wantKeepAlive => true;
+  @override Widget build(BuildContext context) { super.build(context); return widget.child; }
 }

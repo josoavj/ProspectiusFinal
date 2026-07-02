@@ -105,10 +105,20 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> changePassword(int userId, String newPassword) async {
+  Future<bool> changePassword(int userId, String currentPassword, String newPassword) async {
     _setLoading(true);
     _error = null;
     try {
+      // 1. Vérifier le mot de passe actuel
+      if (_currentUser == null) throw AuthException(message: 'Non authentifié', code: 'UNAUTHORIZED');
+      
+      try {
+        await _authRepository.authenticate(_currentUser!.username, currentPassword);
+      } catch (e) {
+        throw AuthException(message: 'Le mot de passe actuel est incorrect', code: 'INVALID_CURRENT_PASSWORD');
+      }
+
+      // 2. Mettre à jour avec le nouveau
       await _authRepository.updatePassword(userId, newPassword);
       AppLogger.success('Mot de passe mis à jour avec succès');
       return true;
