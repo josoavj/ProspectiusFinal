@@ -41,15 +41,28 @@ class _PipelineScreenState extends State<PipelineScreen> {
           return SimpleStateBuilder(
             isLoading: provider.isLoading && provider.prospects.isEmpty,
             error: provider.error,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: _statuses.map((status) {
-                  final prospects = provider.prospects.where((p) => p.status == status).toList();
-                  return _buildPipelineColumn(status, prospects);
-                }).toList(),
-              ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Adaptation dynamique : sur très grand écran, on occupe tout l'espace
+                final isWideScreen = constraints.maxWidth > 1600;
+                
+                final content = Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _statuses.map((status) {
+                    final prospects = provider.prospects.where((p) => p.status == status).toList();
+                    final column = _buildPipelineColumn(status, prospects);
+                    return isWideScreen ? Expanded(child: column) : column;
+                  }).toList(),
+                );
+
+                return isWideScreen 
+                  ? Padding(padding: const EdgeInsets.all(12.0), child: content)
+                  : SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.all(12.0),
+                      child: content,
+                    );
+              },
             ),
           );
         },
@@ -74,40 +87,41 @@ class _PipelineScreenState extends State<PipelineScreen> {
       },
       builder: (context, candidateData, rejectedData) {
         return Container(
-          width: 300,
-          margin: const EdgeInsets.all(12),
+          width: 320, // Largeur par défaut en mode scroll
+          margin: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: candidateData.isNotEmpty 
                 ? colorScheme.primary.withValues(alpha: 0.1) 
-                : colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(16),
+                : colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: candidateData.isNotEmpty ? colorScheme.primary : colorScheme.outlineVariant,
-              width: 1,
+              color: candidateData.isNotEmpty ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.3),
+              width: 1.5,
             ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       TextFormatter.formatStatus(status).toUpperCase(),
                       style: TextStyle(
-                        fontWeight: FontWeight.bold, 
-                        fontSize: 13,
+                        fontWeight: FontWeight.w900, 
+                        fontSize: 11,
                         color: colorScheme.onSurfaceVariant,
-                        letterSpacing: 1.2,
+                        letterSpacing: 1.5,
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: statusColor.withValues(alpha: 0.1),
+                        color: statusColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: statusColor.withValues(alpha: 0.2)),
                       ),
                       child: Text(
                         '${prospects.length}',
@@ -121,34 +135,33 @@ class _PipelineScreenState extends State<PipelineScreen> {
                   ],
                 ),
               ),
-              Divider(height: 1, color: colorScheme.outlineVariant),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
                   itemCount: prospects.length,
                   itemBuilder: (context, index) {
                     final prospect = prospects[index];
                     return Draggable<Prospect>(
                       data: prospect,
                       feedback: Material(
-                        elevation: 8,
-                        borderRadius: BorderRadius.circular(12),
+                        elevation: 12,
+                        borderRadius: BorderRadius.circular(16),
                         child: Container(
-                          width: 276,
+                          width: 290,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: colorScheme.surface,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: colorScheme.primary, width: 2),
                           ),
                           child: Text(
                             prospect.fullName,
-                            style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
                       childWhenDragging: Opacity(
-                        opacity: 0.3,
+                        opacity: 0.2,
                         child: _buildProspectCard(prospect),
                       ),
                       child: _buildProspectCard(prospect),
@@ -165,44 +178,90 @@ class _PipelineScreenState extends State<PipelineScreen> {
 
   Widget _buildProspectCard(Prospect prospect) {
     final colorScheme = Theme.of(context).colorScheme;
+    final priorityColor = _getPriorityColor(prospect.priorite);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Card(
         margin: EdgeInsets.zero,
         elevation: 0,
         color: colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        ),
         child: InkWell(
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => ProspectDetailScreen(prospect: prospect)),
             );
           },
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          borderRadius: BorderRadius.circular(16),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  prospect.fullName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  TextFormatter.formatType(prospect.type),
-                  style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(Icons.calendar_today_outlined, size: 12, color: colorScheme.outline),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Créé le ${prospect.creation.day}/${prospect.creation.month}',
-                      style: TextStyle(fontSize: 11, color: colorScheme.outline),
+                // Indicateur de priorité latéral
+                Container(
+                  width: 4,
+                  decoration: BoxDecoration(
+                    color: priorityColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
                     ),
-                  ],
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 12,
+                              backgroundColor: colorScheme.primaryContainer,
+                              child: Text(
+                                prospect.nom.isNotEmpty ? prospect.nom[0].toUpperCase() : '?',
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: colorScheme.onPrimaryContainer),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                prospect.fullName,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              TextFormatter.formatType(prospect.type),
+                              style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+                            ),
+                            Row(
+                              children: [
+                                Icon(Icons.calendar_today_outlined, size: 10, color: colorScheme.outline),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${prospect.creation.day}/${prospect.creation.month}',
+                                  style: TextStyle(fontSize: 10, color: colorScheme.outline),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -210,6 +269,14 @@ class _PipelineScreenState extends State<PipelineScreen> {
         ),
       ),
     );
+  }
+
+  Color _getPriorityColor(String priority) {
+    switch (priority.toLowerCase()) {
+      case 'haute': return Colors.redAccent;
+      case 'moyenne': return Colors.orangeAccent;
+      default: return Colors.blueAccent;
+    }
   }
 
   Color _getStatusColor(String status) {
