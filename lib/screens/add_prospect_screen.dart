@@ -132,9 +132,17 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
         'site_web': _siteWebController.text,
         'description': _descriptionController.text,
       };
-      success = await prospectProvider.updateProspect(authProvider.currentUser!.id, widget.prospect!.id, updateData);
+      success = await prospectProvider.updateProspect(
+        authProvider.currentUser!.id,
+        authProvider.currentUser!.typeCompte,
+        widget.prospect!.id,
+        updateData,
+      );
     } else {
-      success = await prospectProvider.createProspect(data);
+      success = await prospectProvider.createProspect(
+        data,
+        authProvider.currentUser!.typeCompte,
+      );
       if (success && _interactionNoteController.text.isNotEmpty) {
         final created = prospectProvider.prospects.firstWhere(
           (p) => p.nom == _nomController.text && p.prenom == _prenomController.text,
