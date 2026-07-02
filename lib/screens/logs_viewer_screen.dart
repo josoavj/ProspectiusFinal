@@ -79,7 +79,7 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
           TextButton(
             onPressed: () async {
               await _loggingService.cleanOldLogs(daysToKeep: 0);
-              if (!mounted) return;
+              if (!context.mounted) return;
               Navigator.pop(context);
               _loadLogs();
             },
