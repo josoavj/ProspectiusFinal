@@ -111,18 +111,17 @@ class DatabaseService {
       // Hacher le mot de passe avec bcrypt
       final passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
 
+      const sql = '''INSERT INTO Account (nom, prenom, email, username, password, type_compte, date_creation)
+           VALUES (?, ?, ?, ?, ?, ?, NOW())''';
+
       AppLogger.logRequest(
         'REGISTER',
-        'INSERT INTO Account',
+        sql,
         [nom, prenom, email, username, '***', 'Utilisateur'],
       );
 
       // Insérer le nouvel utilisateur
-      await _mysqlService.query(
-        '''INSERT INTO Account (nom, prenom, email, username, password, type_compte, date_creation)
-           VALUES (?, ?, ?, ?, ?, ?, NOW())''',
-        [nom, prenom, email, username, passwordHash, 'Utilisateur'],
-      );
+      await _mysqlService.query(sql, [nom, prenom, email, username, passwordHash, 'Utilisateur']);
 
       AppLogger.success('Compte créé avec succès pour $username');
     } on AppException {
@@ -139,17 +138,15 @@ class DatabaseService {
 
   // === PROSPECTS ===
 
-  Future<List<Prospect>> getProspects(int userId) async {
+  Future<List<Prospect>> getProspects(int userId, String userRole) async {
     try {
-      AppLogger.logRequest('PROSPECTS',
-          'SELECT * FROM Prospect WHERE assignation = ?', [userId]);
+      const sql = '''SELECT * FROM Prospect
+           WHERE (assignation = ? OR ? = 'Administrateur') AND deleted_at IS NULL
+           ORDER BY creation DESC''';
 
-      final results = await _mysqlService.query(
-        '''SELECT * FROM Prospect
-           WHERE assignation = ? AND deleted_at IS NULL
-           ORDER BY creation DESC''',
-        [userId],
-      );
+      AppLogger.logRequest('PROSPECTS', sql, [userId, userRole]);
+
+      final results = await _mysqlService.query(sql, [userId, userRole]);
 
       AppLogger.logResponse('PROSPECTS', results.length);
 
@@ -200,7 +197,11 @@ class DatabaseService {
         );
       }
 
-      AppLogger.logRequest('CREATE_PROSPECT', 'INSERT INTO Prospect', [
+      const sql = '''INSERT INTO Prospect 
+           (nomp, prenomp, email, telephone, adresse, type, assignation, status, creation, date_update)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'nouveau', NOW(), NOW())''';
+
+      AppLogger.logRequest('CREATE_PROSPECT', sql, [
         nom,
         prenom,
         email,
@@ -210,11 +211,7 @@ class DatabaseService {
         userId,
       ]);
 
-      await _mysqlService.query(
-        '''INSERT INTO Prospect 
-           (nomp, prenomp, email, telephone, adresse, type, assignation, status, creation, date_update)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 'nouveau', NOW(), NOW())''',
-        [
+      await _mysqlService.query(sql, [
           nom,
           prenom,
           email,
@@ -295,23 +292,15 @@ class DatabaseService {
 
   Future<void> deleteProspect(int prospectId) async {
     try {
-      AppLogger.logRequest('DELETE_PROSPECT',
-          'DELETE FROM Interaction WHERE id_prospect = ?', [prospectId]);
-
       // Soft delete d'abord les interactions liées au prospect
-      await _mysqlService.query(
-        'UPDATE Interaction SET deleted_at = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
-        [prospectId],
-      );
-
-      AppLogger.logRequest('DELETE_PROSPECT',
-          'DELETE FROM Prospect WHERE id_prospect = ?', [prospectId]);
+      const sqlInteractions = 'UPDATE Interaction SET deleted_at = NOW() WHERE id_prospect = ? AND deleted_at IS NULL';
+      AppLogger.logRequest('DELETE_PROSPECT', sqlInteractions, [prospectId]);
+      await _mysqlService.query(sqlInteractions, [prospectId]);
 
       // Puis soft delete le prospect
-      await _mysqlService.query(
-        'UPDATE Prospect SET deleted_at = NOW(), date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
-        [prospectId],
-      );
+      const sqlProspect = 'UPDATE Prospect SET deleted_at = NOW(), date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL';
+      AppLogger.logRequest('DELETE_PROSPECT', sqlProspect, [prospectId]);
+      await _mysqlService.query(sqlProspect, [prospectId]);
 
       AppLogger.success('Prospect #$prospectId supprimé');
     } on AppException {
@@ -331,15 +320,13 @@ class DatabaseService {
 
   Future<List<Interaction>> getInteractions(int prospectId) async {
     try {
-      AppLogger.logRequest('INTERACTIONS',
-          'SELECT * FROM Interaction WHERE id_prospect = ?', [prospectId]);
-
-      final results = await _mysqlService.query(
-        '''SELECT * FROM Interaction 
+      const sql = '''SELECT * FROM Interaction 
            WHERE id_prospect = ? AND deleted_at IS NULL
-           ORDER BY date_interaction DESC''',
-        [prospectId],
-      );
+           ORDER BY date_interaction DESC''';
+
+      AppLogger.logRequest('INTERACTIONS', sql, [prospectId]);
+
+      final results = await _mysqlService.query(sql, [prospectId]);
 
       AppLogger.logResponse('INTERACTIONS', results.length);
 
@@ -383,7 +370,11 @@ class DatabaseService {
         );
       }
 
-      AppLogger.logRequest('CREATE_INTERACTION', 'INSERT INTO Interaction', [
+      const sql = '''INSERT INTO Interaction 
+           (id_prospect, id_compte, type, note, date_interaction)
+           VALUES (?, ?, ?, ?, ?)''';
+
+      AppLogger.logRequest('CREATE_INTERACTION', sql, [
         prospectId,
         userId,
         type,
@@ -391,12 +382,7 @@ class DatabaseService {
         dateInteraction,
       ]);
 
-      await _mysqlService.query(
-        '''INSERT INTO Interaction 
-           (id_prospect, id_compte, type, note, date_interaction)
-           VALUES (?, ?, ?, ?, ?)''',
-        [prospectId, userId, type, note, dateInteraction],
-      );
+      await _mysqlService.query(sql, [prospectId, userId, type, note, dateInteraction]);
 
       AppLogger.success('Interaction créée pour le prospect #$prospectId');
     } on AppException {
@@ -416,18 +402,14 @@ class DatabaseService {
 
   Future<List<ProspectStats>> getProspectStats(int userId, String userRole) async {
     try {
-      AppLogger.logRequest(
-          'STATS',
-          'SELECT status, COUNT(*) FROM Prospect WHERE assignation = ? OR role = ?',
-          [userId, userRole]);
-
-      final results = await _mysqlService.query(
-        '''SELECT status, COUNT(*) as count 
+      const sql = '''SELECT status, COUNT(*) as count 
            FROM Prospect 
            WHERE (assignation = ? OR ? = 'Administrateur') AND deleted_at IS NULL
-           GROUP BY status''',
-        [userId, userRole],
-      );
+           GROUP BY status''';
+      
+      AppLogger.logRequest('STATS', sql, [userId, userRole]);
+
+      final results = await _mysqlService.query(sql, [userId, userRole]);
 
       AppLogger.logResponse('STATS', results.length);
 
@@ -452,17 +434,15 @@ class DatabaseService {
 
   Future<ConversionStats> getConversionStats(int userId, String userRole) async {
     try {
-      AppLogger.logRequest('CONVERSION_STATS',
-          'SELECT COUNT(*), SUM(...) FROM Prospect', [userId, userRole]);
-
-      final results = await _mysqlService.query(
-        '''SELECT 
+      const sql = '''SELECT 
              COUNT(*) as total,
              SUM(CASE WHEN status = 'converti' THEN 1 ELSE 0 END) as converted
            FROM Prospect 
-           WHERE (assignation = ? OR ? = 'Administrateur') AND deleted_at IS NULL''',
-        [userId, userRole],
-      );
+           WHERE (assignation = ? OR ? = 'Administrateur') AND deleted_at IS NULL''';
+
+      AppLogger.logRequest('CONVERSION_STATS', sql, [userId, userRole]);
+
+      final results = await _mysqlService.query(sql, [userId, userRole]);
 
       final row = results.first;
       final total = (row['total'] as num).toInt();
