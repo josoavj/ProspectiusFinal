@@ -27,7 +27,10 @@ class _ClientsScreenState extends State<ClientsScreen> {
     final prospectProvider = context.read<ProspectProvider>();
 
     if (authProvider.currentUser != null) {
-      prospectProvider.loadProspects(authProvider.currentUser!.id);
+      prospectProvider.loadProspects(
+        authProvider.currentUser!.id,
+        authProvider.currentUser!.typeCompte,
+      );
     }
   }
 
