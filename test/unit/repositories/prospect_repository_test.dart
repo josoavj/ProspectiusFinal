@@ -48,7 +48,7 @@ void main() {
 
       when(() => mockMySQL.query(any(), any())).thenAnswer((_) async => mockResults);
 
-      final result = await repository.getProspects(1);
+      final result = await repository.getProspects(1, 'Utilisateur');
 
       expect(result.length, 1);
       expect(result.first.nom, 'Doe');
