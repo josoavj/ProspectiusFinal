@@ -483,6 +483,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                 await prospectProvider.createInteractionComplex(
                   prospectId: _currentProspect.id,
                   userId: authProvider.currentUser!.id,
+                  userRole: authProvider.currentUser!.typeCompte,
                   type: type,
                   note: noteController.text,
                   date: DateTime.now(),
@@ -579,7 +580,12 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       ),
     );
     if (confirmed == true && mounted) {
-      final success = await context.read<ProspectProvider>().deleteProspect(context.read<AuthProvider>().currentUser!.id, _currentProspect.id);
+      final auth = context.read<AuthProvider>();
+      final success = await context.read<ProspectProvider>().deleteProspect(
+        auth.currentUser!.id,
+        auth.currentUser!.typeCompte,
+        _currentProspect.id,
+      );
       if (success && mounted) Navigator.pop(context);
     }
   }

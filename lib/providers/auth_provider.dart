@@ -104,4 +104,19 @@ class AuthProvider extends ChangeNotifier {
       return [];
     }
   }
+
+  Future<bool> changePassword(int userId, String newPassword) async {
+    _setLoading(true);
+    _error = null;
+    try {
+      await _authRepository.updatePassword(userId, newPassword);
+      AppLogger.success('Mot de passe mis à jour avec succès');
+      return true;
+    } catch (e) {
+      _error = ExceptionHandler.getErrorMessage(e as Exception);
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
 }

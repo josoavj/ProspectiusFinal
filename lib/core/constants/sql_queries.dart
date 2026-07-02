@@ -9,7 +9,7 @@ class SqlQueries {
   // Prospects
   static const String selectProspectsByUserId = '''
     SELECT * FROM Prospect
-    WHERE assignation = ? AND deleted_at IS NULL
+    WHERE (assignation = ? OR ? = 'Administrateur') AND deleted_at IS NULL
     ORDER BY creation DESC
     LIMIT ? OFFSET ?
   ''';
@@ -42,7 +42,7 @@ class SqlQueries {
   static const String prospectStatsByStatus = '''
     SELECT status, COUNT(*) as count 
     FROM Prospect 
-    WHERE assignation = ? AND deleted_at IS NULL
+    WHERE (assignation = ? OR ? = 'Administrateur') AND deleted_at IS NULL
     GROUP BY status
   ''';
 
@@ -51,7 +51,7 @@ class SqlQueries {
       COUNT(*) as total,
       SUM(CASE WHEN status = 'converti' THEN 1 ELSE 0 END) as converted
     FROM Prospect 
-    WHERE assignation = ? AND deleted_at IS NULL
+    WHERE (assignation = ? OR ? = 'Administrateur') AND deleted_at IS NULL
   ''';
 
   // Tasks

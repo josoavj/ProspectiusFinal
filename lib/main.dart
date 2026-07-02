@@ -246,6 +246,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _getScreen(int index) {
+    final userRole = context.read<AuthProvider>().currentUser?.typeCompte;
+
     switch (index) {
       case 0:
         return const ProspectsScreen();
@@ -266,7 +268,10 @@ class _MainScreenState extends State<MainScreen> {
       case 8:
         return const ConfigurationScreen();
       case 9:
-        return const LogsViewerScreen();
+        if (userRole == 'Administrateur') {
+          return const LogsViewerScreen();
+        }
+        return const ProspectsScreen();
       default:
         return const ProspectsScreen();
     }

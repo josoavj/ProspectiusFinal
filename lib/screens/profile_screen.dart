@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/app_logger.dart';
 import '../utils/exception_handler.dart';
+import '../utils/validators.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -216,14 +217,250 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       );
     }
-    return SizedBox(
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton.icon(
+            onPressed: () => setState(() => _isEditing = true),
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            label: const Text('Modifier le profil'),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06CE70), foregroundColor: Colors.white),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: OutlinedButton.icon(
+            onPressed: _showChangePasswordDialog,
+            icon: const Icon(Icons.lock_outline, size: 18),
+            label: const Text('Modifier le mot de passe'),
+            style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    final passwordController = TextEditingController();
+    final confirmController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => _PasswordChangeDialog(
+        passwordController: passwordController,
+        confirmController: confirmController,
+      ),
+    );
+  }
+}
+
+class _PasswordChangeDialog extends StatefulWidget {
+  final TextEditingController passwordController;
+  final TextEditingController confirmController;
+
+  const _PasswordChangeDialog({
+    required this.passwordController,
+    required this.confirmController,
+  });
+
+  @override
+  State<_PasswordChangeDialog> createState() => _PasswordChangeDialogState();
+}
+
+class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
+  bool _obscure = true;
+  bool _hasMinLength = false;
+  bool _hasUppercase = false;
+  bool _hasLowercase = false;
+  bool _hasDigits = false;
+  bool _showCriteria = false;
+  bool _passwordsMatch = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.passwordController.addListener(_updateCriteria);
+    widget.confirmController.addListener(_updateCriteria);
+  }
+
+  void _updateCriteria() {
+    final password = widget.passwordController.text;
+    final confirm = widget.confirmController.text;
+    setState(() {
+      _hasMinLength = password.length >= 8;
+      _hasUppercase = password.contains(RegExp(r'[A-Z]'));
+      _hasLowercase = password.contains(RegExp(r'[a-z]'));
+      _hasDigits = password.contains(RegExp(r'[0-9]'));
+      _passwordsMatch = password.isNotEmpty && password == confirm;
+      _error = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AlertDialog(
+      title: const Text('Modifier le mot de passe'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_error != null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: colorScheme.error),
+                ),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13),
+                ),
+              ),
+            ],
+            Focus(
+              onFocusChange: (hasFocus) => setState(() => _showCriteria = hasFocus),
+              child: TextField(
+                controller: widget.passwordController,
+                obscureText: _obscure,
+                decoration: InputDecoration(
+                  labelText: 'Nouveau mot de passe',
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _showCriteria ? Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: _buildLiveCriteria(colorScheme),
+              ) : const SizedBox.shrink(),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: widget.confirmController,
+              obscureText: _obscure,
+              decoration: InputDecoration(
+                labelText: 'Confirmer le mot de passe',
+                prefixIcon: const Icon(Icons.lock_reset_outlined),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            _buildMatchIndicator(colorScheme),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+        ElevatedButton(
+          onPressed: () async {
+            final password = widget.passwordController.text;
+            final confirm = widget.confirmController.text;
+
+            final validation = Validators.validatePassword(password);
+            if (!validation.isValid) {
+              setState(() => _error = validation.error);
+              return;
+            }
+
+            if (password != confirm) {
+              setState(() => _error = 'Les mots de passe ne correspondent pas');
+              return;
+            }
+
+            final auth = context.read<AuthProvider>();
+            final success = await auth.changePassword(auth.currentUser!.id, password);
+            if (success && context.mounted) {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mot de passe mis à jour')));
+            } else if (context.mounted) {
+              setState(() => _error = auth.error ?? 'Erreur lors du changement');
+            }
+          },
+          child: const Text('Mettre à jour'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLiveCriteria(ColorScheme colorScheme) {
+    return Container(
       width: double.infinity,
-      height: 48,
-      child: ElevatedButton.icon(
-        onPressed: () => setState(() => _isEditing = true),
-        icon: const Icon(Icons.edit_outlined, size: 18),
-        label: const Text('Modifier le profil'),
-        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06CE70), foregroundColor: Colors.white),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          _buildCriteriaItem('8 caractères minimum', _hasMinLength, colorScheme),
+          _buildCriteriaItem('Une majuscule (A-Z)', _hasUppercase, colorScheme),
+          _buildCriteriaItem('Une minuscule (a-z)', _hasLowercase, colorScheme),
+          _buildCriteriaItem('Un chiffre (0-9)', _hasDigits, colorScheme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMatchIndicator(ColorScheme colorScheme) {
+    if (widget.confirmController.text.isEmpty) return const SizedBox.shrink();
+    
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, left: 4),
+      child: Row(
+        children: [
+          Icon(
+            _passwordsMatch ? Icons.check_circle_outline : Icons.error_outline,
+            size: 14,
+            color: _passwordsMatch ? const Color(0xFF06CE70) : Colors.orange,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _passwordsMatch ? 'Les mots de passe correspondent' : 'Les mots de passe sont différents',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: _passwordsMatch ? const Color(0xFF06CE70) : Colors.orange,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCriteriaItem(String label, bool isMet, ColorScheme colorScheme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Icon(
+            isMet ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            size: 14,
+            color: isMet ? const Color(0xFF06CE70) : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: isMet ? colorScheme.onSurface : colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
       ),
     );
   }

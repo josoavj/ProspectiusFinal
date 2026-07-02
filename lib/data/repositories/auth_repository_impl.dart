@@ -53,4 +53,13 @@ class AuthRepositoryImpl implements IAuthRepository {
     final results = await _mysqlService.query('SELECT * FROM Account ORDER BY nom, prenom');
     return results.map((row) => Account.fromJson(row.fields)).toList();
   }
+
+  @override
+  Future<void> updatePassword(int userId, String newPassword) async {
+    final passwordHash = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+    await _mysqlService.query(
+      'UPDATE Account SET password = ? WHERE id_compte = ?',
+      [passwordHash, userId],
+    );
+  }
 }

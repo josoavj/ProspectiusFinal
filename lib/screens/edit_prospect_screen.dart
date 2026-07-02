@@ -94,7 +94,12 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
       'description': _descriptionController.text,
     };
 
-    final success = await prospectProvider.updateProspect(authProvider.currentUser!.id, widget.prospect.id, updateData);
+    final success = await prospectProvider.updateProspect(
+      authProvider.currentUser!.id,
+      authProvider.currentUser!.typeCompte,
+      widget.prospect.id,
+      updateData,
+    );
 
     setState(() => _isLoading = false);
 

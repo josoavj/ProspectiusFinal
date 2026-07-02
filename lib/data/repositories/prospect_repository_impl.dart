@@ -13,22 +13,24 @@ class ProspectRepositoryImpl implements IProspectRepository {
   ProspectRepositoryImpl(this._mysqlService);
 
   @override
-  Future<List<Prospect>> getProspects(int userId, {int limit = 20, int offset = 0}) async {
+  Future<List<Prospect>> getProspects(int userId, String userRole, {int limit = 20, int offset = 0}) async {
     // Tentative de récupération depuis le cache si on est sur la première page
     if (offset == 0) {
       final cached = _cache.getProspects(userId);
-      if (cached != null) return cached;
+      // On n'utilise le cache que pour les non-admins car le cache est par userId
+      // Pour les admins qui voient tout, le cache pourrait être incohérent si partagé
+      if (userRole != 'Administrateur' && cached != null) return cached;
     }
 
     final results = await _mysqlService.query(
       SqlQueries.selectProspectsByUserId,
-      [userId, limit, offset],
+      [userId, userRole, limit, offset],
     );
 
     final prospects = results.map((row) => Prospect.fromJson(row.fields)).toList();
 
-    // Mise en cache si c'est la première page
-    if (offset == 0) {
+    // Mise en cache si c'est la première page et pas admin
+    if (offset == 0 && userRole != 'Administrateur') {
       _cache.setProspects(userId, prospects);
     }
 
@@ -162,10 +164,10 @@ class ProspectRepositoryImpl implements IProspectRepository {
   }
 
   @override
-  Future<List<ProspectStats>> getStats(int userId) async {
+  Future<List<ProspectStats>> getStats(int userId, String userRole) async {
     final results = await _mysqlService.query(
       SqlQueries.prospectStatsByStatus,
-      [userId],
+      [userId, userRole],
     );
 
     return results.map((row) => ProspectStats(
@@ -175,10 +177,10 @@ class ProspectRepositoryImpl implements IProspectRepository {
   }
 
   @override
-  Future<ConversionStats> getConversionStats(int userId) async {
+  Future<ConversionStats> getConversionStats(int userId, String userRole) async {
     final results = await _mysqlService.query(
       SqlQueries.conversionStats,
-      [userId],
+      [userId, userRole],
     );
 
     final row = results.first;

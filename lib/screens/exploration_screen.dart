@@ -34,7 +34,10 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
     final authProvider = context.read<AuthProvider>();
     final prospectProvider = context.read<ProspectProvider>();
     if (authProvider.currentUser != null) {
-      await prospectProvider.loadProspects(authProvider.currentUser!.id);
+      await prospectProvider.loadProspects(
+        authProvider.currentUser!.id,
+        authProvider.currentUser!.typeCompte,
+      );
       _filterProspects();
     }
   }

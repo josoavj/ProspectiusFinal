@@ -30,7 +30,10 @@ class _StatsScreenState extends State<StatsScreen> {
     final authProvider = context.read<AuthProvider>();
     final statsProvider = context.read<StatsProvider>();
     if (authProvider.currentUser != null) {
-      statsProvider.loadAllStats(authProvider.currentUser!.id);
+      statsProvider.loadAllStats(
+        authProvider.currentUser!.id,
+        authProvider.currentUser!.typeCompte,
+      );
     }
   }
 

@@ -414,19 +414,19 @@ class DatabaseService {
 
   // === STATISTIQUES ===
 
-  Future<List<ProspectStats>> getProspectStats(int userId) async {
+  Future<List<ProspectStats>> getProspectStats(int userId, String userRole) async {
     try {
       AppLogger.logRequest(
           'STATS',
-          'SELECT status, COUNT(*) FROM Prospect WHERE assignation = ?',
-          [userId]);
+          'SELECT status, COUNT(*) FROM Prospect WHERE assignation = ? OR role = ?',
+          [userId, userRole]);
 
       final results = await _mysqlService.query(
         '''SELECT status, COUNT(*) as count 
            FROM Prospect 
-           WHERE assignation = ? AND deleted_at IS NULL
+           WHERE (assignation = ? OR ? = 'Administrateur') AND deleted_at IS NULL
            GROUP BY status''',
-        [userId],
+        [userId, userRole],
       );
 
       AppLogger.logResponse('STATS', results.length);
@@ -450,18 +450,18 @@ class DatabaseService {
     }
   }
 
-  Future<ConversionStats> getConversionStats(int userId) async {
+  Future<ConversionStats> getConversionStats(int userId, String userRole) async {
     try {
       AppLogger.logRequest('CONVERSION_STATS',
-          'SELECT COUNT(*), SUM(...) FROM Prospect', [userId]);
+          'SELECT COUNT(*), SUM(...) FROM Prospect', [userId, userRole]);
 
       final results = await _mysqlService.query(
         '''SELECT 
              COUNT(*) as total,
              SUM(CASE WHEN status = 'converti' THEN 1 ELSE 0 END) as converted
            FROM Prospect 
-           WHERE assignation = ? AND deleted_at IS NULL''',
-        [userId],
+           WHERE (assignation = ? OR ? = 'Administrateur') AND deleted_at IS NULL''',
+        [userId, userRole],
       );
 
       final row = results.first;

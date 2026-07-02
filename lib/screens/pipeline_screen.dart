@@ -35,7 +35,10 @@ class _PipelineScreenState extends State<PipelineScreen> {
     final authProvider = context.read<AuthProvider>();
     final prospectProvider = context.read<ProspectProvider>();
     if (authProvider.currentUser != null) {
-      prospectProvider.loadProspects(authProvider.currentUser!.id);
+      prospectProvider.loadProspects(
+        authProvider.currentUser!.id,
+        authProvider.currentUser!.typeCompte,
+      );
     }
   }
 
@@ -93,8 +96,10 @@ class _PipelineScreenState extends State<PipelineScreen> {
       onWillAcceptWithDetails: (details) => details.data.status != status,
       onAcceptWithDetails: (details) {
         final prospect = details.data;
+        final auth = context.read<AuthProvider>();
         context.read<ProspectProvider>().updateProspectStatus(
-          context.read<AuthProvider>().currentUser!.id,
+          auth.currentUser!.id,
+          auth.currentUser!.typeCompte,
           prospect.id,
           status,
         );

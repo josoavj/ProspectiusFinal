@@ -29,7 +29,10 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
     final authProvider = context.read<AuthProvider>();
     final prospectProvider = context.read<ProspectProvider>();
     if (authProvider.currentUser != null) {
-      prospectProvider.loadProspects(authProvider.currentUser!.id);
+      prospectProvider.loadProspects(
+        authProvider.currentUser!.id,
+        authProvider.currentUser!.typeCompte,
+      );
     }
   }
 
@@ -46,7 +49,10 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
         int count = 0;
         for (var data in prospects) {
           data['userId'] = authProvider.currentUser?.id;
-          final success = await prospectProvider.createProspect(data);
+          final success = await prospectProvider.createProspect(
+            data,
+            authProvider.currentUser?.typeCompte ?? 'Utilisateur',
+          );
           if (success) count++;
         }
         
