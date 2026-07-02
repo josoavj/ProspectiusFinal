@@ -28,22 +28,22 @@ class StatsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadAllStats(int userId) async {
+  Future<void> loadAllStats(int userId, String userRole) async {
     _error = null;
     _setLoading(true);
 
     try {
-      AppLogger.info('Démarrage du chargement des stats pour user: $userId');
+      AppLogger.info('Démarrage du chargement des stats pour user: $userId (Role: $userRole)');
       final results = await Future.wait([
         ErrorHandlingService.executeWithTimeout(
-          () => _databaseService.getProspectStats(userId),
+          () => _databaseService.getProspectStats(userId, userRole),
           operationName: 'Chargement des statistiques',
-          timeout: const Duration(seconds: 30), // Augmenté de 15 à 30 secondes
+          timeout: const Duration(seconds: 30),
         ),
         ErrorHandlingService.executeWithTimeout(
-          () => _databaseService.getConversionStats(userId),
+          () => _databaseService.getConversionStats(userId, userRole),
           operationName: 'Chargement des statistiques de conversion',
-          timeout: const Duration(seconds: 30), // Augmenté de 15 à 30 secondes
+          timeout: const Duration(seconds: 30),
         ),
       ]);
 
@@ -65,15 +65,15 @@ class StatsProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadProspectStats(int userId) async {
+  Future<void> loadProspectStats(int userId, String userRole) async {
     _error = null;
     _setLoading(true);
 
     try {
       _prospectStats = await ErrorHandlingService.executeWithTimeout(
-        () => _databaseService.getProspectStats(userId),
+        () => _databaseService.getProspectStats(userId, userRole),
         operationName: 'Chargement des statistiques',
-        timeout: const Duration(seconds: 30), // Augmenté de 15 à 30 secondes
+        timeout: const Duration(seconds: 30),
       );
       AppLogger.success('Stats prospects chargées: ${_prospectStats.length}');
     } on TimeoutException catch (e) {
@@ -89,15 +89,15 @@ class StatsProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadConversionStats(int userId) async {
+  Future<void> loadConversionStats(int userId, String userRole) async {
     _error = null;
     _setLoading(true);
 
     try {
       _conversionStats = await ErrorHandlingService.executeWithTimeout(
-        () => _databaseService.getConversionStats(userId),
+        () => _databaseService.getConversionStats(userId, userRole),
         operationName: 'Chargement des statistiques de conversion',
-        timeout: const Duration(seconds: 30), // Augmenté de 15 à 30 secondes
+        timeout: const Duration(seconds: 30),
       );
       AppLogger.success(
           'Stats conversion chargées: ${_conversionStats?.conversionRate}');
