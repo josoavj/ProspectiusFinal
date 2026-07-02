@@ -279,6 +279,7 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
   bool _hasDigits = false;
   bool _showCriteria = false;
   bool _passwordsMatch = false;
+  String? _error;
 
   @override
   void initState() {
@@ -296,6 +297,7 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
       _hasLowercase = password.contains(RegExp(r'[a-z]'));
       _hasDigits = password.contains(RegExp(r'[0-9]'));
       _passwordsMatch = password.isNotEmpty && password == confirm;
+      _error = null;
     });
   }
 
@@ -309,6 +311,22 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (_error != null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: colorScheme.error),
+                ),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13),
+                ),
+              ),
+            ],
             Focus(
               onFocusChange: (hasFocus) => setState(() => _showCriteria = hasFocus),
               child: TextField(
@@ -355,12 +373,12 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
 
             final validation = Validators.validatePassword(password);
             if (!validation.isValid) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(validation.error!), backgroundColor: colorScheme.error));
+              setState(() => _error = validation.error);
               return;
             }
 
             if (password != confirm) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Les mots de passe ne correspondent pas'), backgroundColor: Colors.orange));
+              setState(() => _error = 'Les mots de passe ne correspondent pas');
               return;
             }
 
@@ -369,6 +387,8 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
             if (success && context.mounted) {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mot de passe mis à jour')));
+            } else if (context.mounted) {
+              setState(() => _error = auth.error ?? 'Erreur lors du changement');
             }
           },
           child: const Text('Mettre à jour'),
