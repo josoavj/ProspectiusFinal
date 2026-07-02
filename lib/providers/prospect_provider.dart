@@ -29,7 +29,7 @@ class ProspectProvider extends ChangeNotifier {
 
   bool get hasMore => _hasMore;
 
-  Future<void> loadProspects(int userId, {bool refresh = true}) async {
+  Future<void> loadProspects(int userId, String userRole, {bool refresh = true}) async {
     if (refresh) {
       _currentPage = 0;
       _prospects = [];
@@ -42,6 +42,7 @@ class ProspectProvider extends ChangeNotifier {
     try {
       final newProspects = await _repository.getProspects(
         userId, 
+        userRole,
         limit: _pageSize, 
         offset: _currentPage * _pageSize
       );
@@ -60,12 +61,12 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> createProspect(Map<String, dynamic> data) async {
+  Future<bool> createProspect(Map<String, dynamic> data, String userRole) async {
     _setLoading(true);
     try {
       await _repository.createProspect(data);
       if (data.containsKey('userId')) {
-        await loadProspects(data['userId']);
+        await loadProspects(data['userId'] as int, userRole);
       }
       return true;
     } catch (e) {
@@ -76,11 +77,11 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateProspect(int userId, int prospectId, Map<String, dynamic> data) async {
+  Future<bool> updateProspect(int userId, String userRole, int prospectId, Map<String, dynamic> data) async {
     _setLoading(true);
     try {
       await _repository.updateProspect(prospectId, data);
-      await loadProspects(userId);
+      await loadProspects(userId, userRole);
       return true;
     } catch (e) {
       _error = _formatError(e);
@@ -90,10 +91,10 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> deleteProspect(int userId, int prospectId) async {
+  Future<bool> deleteProspect(int userId, String userRole, int prospectId) async {
     try {
       await _repository.deleteProspect(prospectId);
-      await loadProspects(userId);
+      await loadProspects(userId, userRole);
       return true;
     } catch (e) {
       _error = _formatError(e);
@@ -101,10 +102,10 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateProspectStatus(int userId, int prospectId, String newStatus) async {
+  Future<bool> updateProspectStatus(int userId, String userRole, int prospectId, String newStatus) async {
     try {
       await _repository.updateProspect(prospectId, {'status': newStatus});
-      await loadProspects(userId);
+      await loadProspects(userId, userRole);
       return true;
     } catch (e) {
       _error = _formatError(e);
@@ -146,6 +147,7 @@ class ProspectProvider extends ChangeNotifier {
   Future<bool> createInteractionComplex({
     required int prospectId,
     required int userId,
+    required String userRole,
     required String type,
     required String note,
     required DateTime date,
@@ -165,7 +167,7 @@ class ProspectProvider extends ChangeNotifier {
         'newStatus': newStatus,
       });
       await loadInteractions(prospectId);
-      await loadProspects(userId); // Rafraîchir pour voir le nouveau statut
+      await loadProspects(userId, userRole); // Rafraîchir pour voir le nouveau statut
       return true;
     } catch (e) {
       _error = _formatError(e);
