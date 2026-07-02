@@ -13,7 +13,7 @@ class ExcelService {
     String? directoryPath,
   }) async {
     try {
-      AppLogger.info('Démarrage de l\'export Excel');
+      AppLogger.info('Démarrage de l\'export Excel: ${prospects.length} prospects');
 
       // Créer un nouveau classeur
       final excel = Excel.createExcel();
