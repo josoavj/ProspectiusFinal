@@ -29,6 +29,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _showCriteria = false;
   bool _passwordsMatch = false;
 
+  String? _localError;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _hasLowercase = password.contains(RegExp(r'[a-z]'));
       _hasDigits = password.contains(RegExp(r'[0-9]'));
       _passwordsMatch = password.isNotEmpty && password == confirm;
+      _localError = null; // Clear error on type
     });
   }
 
@@ -60,18 +63,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _handleRegister() async {
+    setState(() => _localError = null);
+    
     final passwordVal = Validators.validatePassword(_passwordController.text);
     if (!passwordVal.isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(passwordVal.error!), backgroundColor: Theme.of(context).colorScheme.error),
-      );
+      setState(() => _localError = passwordVal.error);
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Les mots de passe ne correspondent pas'), backgroundColor: Colors.orange),
-      );
+      setState(() => _localError = 'Les mots de passe ne correspondent pas');
       return;
     }
 
@@ -194,7 +195,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 24),
                   Consumer<AuthProvider>(
                     builder: (context, authProvider, _) {
-                      if (authProvider.error != null) {
+                      final displayError = _localError ?? authProvider.error;
+                      if (displayError != null) {
                         return Container(
                           padding: const EdgeInsets.all(12),
                           margin: const EdgeInsets.only(bottom: 24),
@@ -204,7 +206,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             border: Border.all(color: colorScheme.error),
                           ),
                           child: Text(
-                            authProvider.error!,
+                            displayError,
                             style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13),
                           ),
                         );
