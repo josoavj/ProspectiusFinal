@@ -37,13 +37,6 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const SplashScreen()),
         );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authProvider.error ?? 'Erreur de connexion'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
       }
     } catch (e) {
       AppLogger.error('Erreur lors de la connexion', e);
