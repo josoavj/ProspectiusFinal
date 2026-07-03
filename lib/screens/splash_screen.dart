@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/theme/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -76,8 +77,8 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.blue[700]!,
-              Colors.blue[500]!,
+              HSLColor.fromColor(AppColors.azure).withLightness(0.4).toColor(),
+              AppColors.azure,
             ],
           ),
         ),
