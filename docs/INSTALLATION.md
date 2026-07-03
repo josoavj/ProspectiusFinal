@@ -1,309 +1,83 @@
-# Guide d'Installation - Prospectius
+# Préparer votre environnement Prospectius
 
-Ce guide vous aidera à configurer et lancer Prospectius sur votre système.
-
----
-
-## 🎯 Choisissez votre installation:
-
-### 👤 Utilisateurs Finaux
-
-Vous voulez simplement utiliser l'application sans modifications.
-
-### 👨‍💻 Développeurs
-
-Vous voulez modifier le code et compiler votre propre version.
+Ce guide vous explique comment installer Prospectius sur votre ordinateur. Nous avons conçu ce processus pour qu'il soit le plus simple possible, que vous soyez un professionnel ou un passionné d'informatique.
 
 ---
 
-## Installation Rapide (Utilisateurs Finaux)
+## 🏗️ Étape 1 : Choisir votre moteur de stockage
 
-### Option 1: Exécutables Préconfigurés (Recommandé)
+Prospectius a besoin d'un espace sécurisé pour conserver vos données commerciales sur votre propre machine. Nous utilisons pour cela **MariaDB**, un moteur de base de données reconnu pour sa fiabilité.
 
-**1. Téléchargez les fichiers:**
+### Pour Windows 🪟
+1. Téléchargez l'installateur sur [mariadb.org](https://mariadb.org/download/).
+2. Lancez l'installation et suivez les étapes par défaut.
+3. Notez bien le mot de passe "root" que vous allez définir.
 
-- Rendez-vous sur la [page des releases](https://github.com/josoavj/ProspectiusFinal/releases/latest)
-- Téléchargez:
-  - `prospectius.exe` (Windows) ou `prospectius` (Linux)
-  - `Prospectius.sql`
-
-**2. Installez MariaDB:**
-
-**Linux (Debian/Ubuntu):**
-
+### Pour Linux 🐧
+Ouvrez votre terminal et installez le moteur avec ces commandes :
 ```bash
 sudo apt update
 sudo apt install mariadb-server
 sudo systemctl start mariadb
 ```
 
-**Linux (Fedora/RHEL):**
+---
 
-```bash
-sudo dnf install mariadb-server
-sudo systemctl start mariadb
-```
+## 📊 Étape 2 : Préparer vos données
 
-**Windows:**
-
-- Téléchargez depuis https://mariadb.org/download/
-- Installez avec les paramètres par défaut
-
-**3. Importez la base de données:**
-
-```bash
-mysql -u root -proot < Prospectius.sql
-```
-
-**4. Lancez l'application:**
-
-- **Windows:** Double-cliquez sur `prospectius.exe`
-- **Linux:** `./prospectius`
-
-### Option 2: Scripts d'Installation Automatiques
-
-Les scripts téléchargeront automatiquement l'exécutable et configureront la base de données.
-
-**Linux:**
-
-```bash
-git clone https://github.com/josoavj/ProspectiusFinal.git
-cd ProspectiusFinal
-bash scripts/install-linux.sh
-```
-
-**Windows (PowerShell):**
-
-```powershell
-git clone https://github.com/josoavj/ProspectiusFinal.git
-cd ProspectiusFinal
-powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
-```
-
-**Windows (CMD):**
-
-```cmd
-git clone https://github.com/josoavj/ProspectiusFinal.git
-cd ProspectiusFinal
-scripts\install-windows.bat
-```
+Une fois le moteur installé, il faut lui donner la structure nécessaire pour accueillir Prospectius.
+1. Téléchargez le fichier `Prospectius.sql` fourni avec l'application.
+2. Dans votre terminal ou invite de commande, lancez l'importation :
+   ```bash
+   mysql -u root -p < Prospectius.sql
+   ```
+   *(On vous demandera le mot de passe que vous avez choisi à l'étape 1)*.
 
 ---
 
-## Installation pour Développeurs
+## 🚀 Étape 3 : Lancer Prospectius
 
-### Installation Complète (Toutes Plateformes)
+### Première utilisation
+Lors du tout premier lancement, Prospectius vous demandera de "brancher" votre base de données. 
+- **Hôte** : Saisissez `localhost` (votre ordinateur).
+- **Port** : Laissez `3306` (le port standard).
+- **Utilisateur** : `root`.
+- **Mot de passe** : Celui que vous avez choisi à l'étape 1.
 
-```bash
-bash scripts/setup.sh
-```
-
-Ce script détecte votre OS et lance l'installation appropriée.
-
-### Ou Manuellement
-
-**Linux:**
-
-```bash
-bash scripts/install-linux.sh
-```
-
-**macOS:**
-
-```bash
-bash scripts/install-macos.sh
-```
-
-**Windows (PowerShell):**
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
-```
-
-**Windows (CMD):**
-
-```cmd
-scripts\install-windows.bat
-```
+### Créer votre espace de travail
+Une fois connecté, cliquez sur **"S'inscrire"**. Cela créera votre profil de gestionnaire local. Vos données ne quittent jamais votre ordinateur.
 
 ---
 
-## Configuration Initiale (Pour Développeurs)
+## 👨‍💻 Pour les Développeurs (Installation avancée)
 
-### 1. Cloner le projet
+Si vous souhaitez modifier Prospectius, voici la marche à suivre :
 
-```bash
-git clone https://github.com/josoavj/ProspectiusFinal.git
-cd ProspectiusFinal
-flutter pub get
-```
-
-### 2. Démarrer MariaDB
-
-**Linux (Debian/Ubuntu):**
-
-```bash
-sudo systemctl start mariadb
-```
-
-**Linux (Fedora/RHEL):**
-
-```bash
-sudo systemctl start mariadb
-```
-
-**macOS:**
-
-```bash
-brew services start mariadb
-```
-
-**Windows:**
-
-- Via Services: Services.msc → Chercher "MariaDB" → Démarrer
-- Via PowerShell (admin): `Start-Service MariaDB`
-- Via Homebrew: `brew services start mariadb`
-
-### 3. Importer la Base de Données
-
-Téléchargez le script SQL:
-
-```bash
-bash scripts/download-sql.sh
-```
-
-Puis importez-le:
-
-```bash
-mysql -u root -proot < scripts/Prospectius.sql
-```
-
-### 4. Lancer l'Application en Développement
-
-```bash
-flutter run -d windows     # Windows
-flutter run -d linux       # Linux
-flutter run                # macOS
-```
-
-### 5. Première Connexion
-
-À la première exécution, configurez la connexion:
-
-**Paramètres par défaut:**
-
-- **Host:** localhost
-- **Port:** 3306
-- **User:** root
-- **Password:** root
-- **Database:** Prospectius
-
-**Créer un compte:**
-
-- Cliquez sur "S'inscrire"
-- Remplissez le formulaire
-- Vous pourrez alors vous connecter
+1. **Préparez vos outils** : Installez le kit de développement **Flutter (3.16+)**.
+2. **Récupérez le code** :
+   ```bash
+   git clone https://github.com/josoavj/ProspectiusFinal.git
+   cd ProspectiusFinal
+   flutter pub get
+   ```
+3. **Lancez la compilation** :
+   ```bash
+   # Pour Windows
+   flutter run -d windows
+   # Pour Linux
+   flutter run -d linux
+   ```
 
 ---
 
-## Dépannage
+## 🛠️ Un problème d'installation ?
 
-### MariaDB non détecté
+### "Le moteur de données ne répond pas"
+Vérifiez que MariaDB est bien actif. Sur Windows, tapez "Services" dans le menu démarrer et vérifiez que MariaDB est sur "Démarré".
 
-- Vérifiez que MariaDB est bien installé
-- Vérifiez que le service MariaDB est démarré
-- Assurez-vous que `mysql` est dans le PATH
-
-### Erreur de connexion MySQL
-
-```bash
-# Testez la connexion
-mysql -u root -proot -e "SELECT 1"
-
-# Si erreur "Access denied":
-# Réinitialisez le mot de passe MySQL
-mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('root');"
-```
-
-### Flutter non trouvé (Développeurs uniquement)
-
-Assurez-vous que Flutter est installé et dans le PATH:
-
-```bash
-flutter --version
-which flutter  # Linux/macOS
-```
-
-### Script SQL non trouvé
-
-Téléchargez le script depuis la release ou le dépôt:
-
-```bash
-bash scripts/download-sql.sh
-```
-
-Ou directement depuis la [page des releases](https://github.com/josoavj/ProspectiusFinal/releases/latest)
+### "Erreur d'identifiants"
+Assurez-vous que l'utilisateur est bien `root` et que le mot de passe correspond à celui saisi lors de l'installation du moteur de base de données.
 
 ---
 
-## Structure des Scripts
-
-| Script | Plateforme | Description |
-|--------|-----------|-------------|
-| `setup.sh` | Toutes | Détecte la plateforme et lance le bon script |
-| `install-linux.sh` | Linux | Configuration pour Linux (Ubuntu/Debian/Fedora/Arch) |
-| `install-macos.sh` | macOS | Configuration pour macOS (avec Homebrew) |
-| `install-windows.ps1` | Windows | Configuration pour Windows (PowerShell) |
-| `install-windows.bat` | Windows | Configuration pour Windows (CMD) |
-
----
-
-## Configuration Avancée (Développeurs)
-
-### Changer les Paramètres MySQL
-
-Les paramètres par défaut sont:
-
-- **Host:** localhost
-- **Port:** 3306
-- **User:** root
-- **Password:** root
-
-Pour changer, lancez l'application et modifiez dans la première page de configuration.
-
-### Les paramètres sont sécurisés
-
-Les paramètres de connexion MySQL sont stockés localement (SharedPreferences), tandis que le mot de passe est stocké de manière chiffrée via le **Secure Storage** du système (Keychain/Keystore).
-
-Pour réinitialiser les paramètres:
-
-```bash
-# Linux/macOS
-rm -rf ~/.local/share/prospectius  # ou le dossier de config approprié
-
-# Windows
-# Supprimez le dossier %APPDATA%\prospectius (si existant)
-```
-
----
-
-## Support
-
-Pour plus d'informations:
-
-- **Documentation Flutter:** https://flutter.dev
-- **Documentation MariaDB:** https://mariadb.org
-- **Repository GitHub:** https://github.com/josoavj/ProspectiusFinal
-- **Releases:** https://github.com/josoavj/ProspectiusFinal/releases
-
----
-
-## Licence
-
-Ce projet utilise les dépendances suivantes:
-
-- **provider:** ^6.0.0
-- **mysql1:** ^0.20.0
-- **shared_preferences:** ^2.2.0
-- **crypto:** ^3.0.0
-- **csv:** ^6.0.0
+*Besoin d'aide supplémentaire ? Consultez notre [Foire Aux Questions](./README.md#troubleshooting).*
