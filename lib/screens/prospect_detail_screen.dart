@@ -693,14 +693,23 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
 
   void _handleAddDocument() async {
     try {
-      final result = await FilePicker.platform.pickFiles(allowMultiple: false, type: FileType.any);
+      FilePickerResult? result = await FilePicker.pickFiles(
+        allowMultiple: false,
+        type: FileType.any,
+      );
+
       if (result == null || result.files.isEmpty) return;
+
       final pickedFile = result.files.first;
       if (pickedFile.path == null) return;
+
       final originalFile = File(pickedFile.path!);
       final appDocDir = await getApplicationDocumentsDirectory();
+      
+      // Utilisation de path.join serait idéal, mais on simule ici pour Windows
       final String sep = Platform.isWindows ? '\\' : '/';
       final prospectDocsDir = Directory('${appDocDir.path}${sep}prospect_documents$sep${_currentProspect.id}');
+
       if (!prospectDocsDir.existsSync()) {
         prospectDocsDir.createSync(recursive: true);
       }
