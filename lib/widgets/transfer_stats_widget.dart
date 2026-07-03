@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../core/theme/app_colors.dart';
 import '../providers/audit_provider.dart';
 
 class TransferStatsWidget extends StatefulWidget {
@@ -35,9 +36,9 @@ class _TransferStatsWidgetState extends State<TransferStatsWidget> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
+            color: AppColors.azure.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.shade200),
+            border: Border.all(color: AppColors.azure.withValues(alpha: 0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +70,7 @@ class _TransferStatsWidgetState extends State<TransferStatsWidget> {
                     icon: Icons.folder,
                     label: 'Possédés',
                     value: owned.toString(),
-                    color: Colors.blue,
+                    color: AppColors.azure,
                   ),
                 ],
               ),
