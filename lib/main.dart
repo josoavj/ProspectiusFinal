@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
               useMaterial3: true,
               colorScheme: ColorScheme.fromSeed(
                 seedColor: AppColors.azure,
-                primary: AppColors.azure, // Force l'utilisation du bleu exact
+                primary: AppColors.azure,
                 brightness: Brightness.light,
               ),
               appBarTheme: const AppBarTheme(
