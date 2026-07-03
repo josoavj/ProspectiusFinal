@@ -696,10 +696,13 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       if (pickedFile.path == null) return;
       final originalFile = File(pickedFile.path!);
       final appDocDir = await getApplicationDocumentsDirectory();
-      final prospectDocsDir = Directory('${appDocDir.path}/prospect_documents/${_currentProspect.id}');
-      if (!prospectDocsDir.existsSync()) prospectDocsDir.createSync(recursive: true);
+      final String sep = Platform.isWindows ? '\\' : '/';
+      final prospectDocsDir = Directory('${appDocDir.path}${sep}prospect_documents$sep${_currentProspect.id}');
+      if (!prospectDocsDir.existsSync()) {
+        prospectDocsDir.createSync(recursive: true);
+      }
       final String fileName = pickedFile.name;
-      final String newPath = '${prospectDocsDir.path}/$fileName';
+      final String newPath = '${prospectDocsDir.path}$sep$fileName';
       await originalFile.copy(newPath);
       final document = doc_model.Document(id: 0, idProspect: _currentProspect.id, name: fileName, filePath: newPath, mimeType: pickedFile.extension ?? 'unknown', size: pickedFile.size, createdAt: DateTime.now());
       if (mounted) {
