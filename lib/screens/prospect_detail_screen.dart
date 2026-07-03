@@ -775,10 +775,16 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       return;
     }
     try {
-      if (Platform.isLinux) await Process.run('xdg-open', [doc.filePath]);
-      else if (Platform.isMacOS) await Process.run('open', [doc.filePath]);
-      else if (Platform.isWindows) await Process.run('start', ['', doc.filePath], runInShell: true);
-    } catch (e) { AppLogger.error('Erreur d\'ouverture: $e'); }
+      if (Platform.isLinux) {
+        await Process.run('xdg-open', [doc.filePath]);
+      } else if (Platform.isMacOS) {
+        await Process.run('open', [doc.filePath]);
+      } else if (Platform.isWindows) {
+        await Process.run('start', ['', doc.filePath], runInShell: true);
+      }
+    } catch (e) {
+      AppLogger.error('Erreur d\'ouverture: $e');
+    }
   }
 
   IconData _getInteractionIcon(String type) {
@@ -808,15 +814,6 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       default: return Colors.blue;
     }
   }
-}
-
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
-  final TabBar _tabBar;
-  @override double get minExtent => _tabBar.preferredSize.height;
-  @override double get maxExtent => _tabBar.preferredSize.height;
-  @override Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => Container(color: Theme.of(context).scaffoldBackgroundColor, child: _tabBar);
-  @override bool shouldRebuild(_SliverAppBarDelegate oldDelegate) => false;
 }
 
 class _TabKeepAlive extends StatefulWidget {
