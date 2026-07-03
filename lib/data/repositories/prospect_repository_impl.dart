@@ -2,6 +2,7 @@ import '../../domain/repositories/i_prospect_repository.dart';
 import '../../models/prospect.dart';
 import '../../models/interaction.dart';
 import '../../models/stats.dart';
+import '../../models/status_history.dart';
 import '../../services/mysql_service.dart';
 import '../../services/cache_service.dart';
 import '../../core/constants/sql_queries.dart';
@@ -39,25 +40,39 @@ class ProspectRepositoryImpl implements IProspectRepository {
 
   @override
   Future<void> createProspect(Map<String, dynamic> data) async {
-    await _mysqlService.query(
-      SqlQueries.insertProspect,
-      [
-        data['nom'],
-        data['prenom'],
-        data['email'],
-        data['telephone'],
-        data['adresse'],
-        data['type'],
-        data['userId'],
-        data['priorite'] ?? 'moyenne',
-        data['source'],
-        data['nomEntreprise'],
-        data['poste'],
-        data['linkedinUrl'],
-        data['siteWeb'],
-        data['description'],
-      ],
-    );
+    final connection = _mysqlService.getConnection();
+    
+    await connection.transaction((ctx) async {
+      final result = await ctx.query(
+        SqlQueries.insertProspect,
+        [
+          data['nom'],
+          data['prenom'],
+          data['email'],
+          data['telephone'],
+          data['adresse'],
+          data['type'],
+          data['userId'],
+          data['priorite'] ?? 'moyenne',
+          data['source'],
+          data['nomEntreprise'],
+          data['poste'],
+          data['linkedinUrl'],
+          data['siteWeb'],
+          data['description'],
+        ],
+      );
+
+      final prospectId = result.insertId;
+      if (prospectId != null) {
+        // Enregistrer le statut initial
+        await ctx.query(
+          SqlQueries.insertStatusHistory,
+          [prospectId, null, 'nouveau', data['userId']],
+        );
+      }
+    });
+
     _cache.invalidate(data['userId'] as int);
   }
 
@@ -65,21 +80,9 @@ class ProspectRepositoryImpl implements IProspectRepository {
   Future<void> updateProspect(int id, Map<String, dynamic> data) async {
     // Liste blanche des colonnes autorisées
     const allowedColumns = {
-      'nomp',
-      'prenomp',
-      'email',
-      'telephone',
-      'adresse',
-      'type',
-      'status',
-      'assignation',
-      'priorite',
-      'source',
-      'nom_entreprise',
-      'poste',
-      'linkedin_url',
-      'site_web',
-      'description'
+      'nomp', 'prenomp', 'email', 'telephone', 'adresse', 'type',
+      'status', 'assignation', 'priorite', 'source', 'nom_entreprise',
+      'poste', 'linkedin_url', 'site_web', 'description'
     };
 
     final updates = <String>[];
@@ -93,15 +96,68 @@ class ProspectRepositoryImpl implements IProspectRepository {
     });
 
     if (updates.isEmpty) return;
-    values.add(id);
 
-    await _mysqlService.query(
-      'UPDATE Prospect SET ${updates.join(", ")}, date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
-      values,
-    );
+    final connection = _mysqlService.getConnection();
+    await connection.transaction((ctx) async {
+      // Si le statut est modifié, on enregistre l'historique
+      if (data.containsKey('status')) {
+        final current = await ctx.query('SELECT status FROM Prospect WHERE id_prospect = ?', [id]);
+        if (current.isNotEmpty) {
+          final oldStatus = current.first['status'] as String;
+          final newStatus = data['status'] as String;
+          
+          if (oldStatus != newStatus) {
+            // Note: On suppose que modifiedBy est passé dans data ou géré autrement.
+            // Pour l'instant, si modifiedBy n'est pas là, on met 0 ou on cherche l'ID du créateur
+            // Mais idéalement, modifiedBy devrait être passé.
+            int changedBy = data['userId'] ?? 1; // Fallback temporaire
+            
+            await ctx.query(
+              SqlQueries.insertStatusHistory,
+              [id, oldStatus, newStatus, changedBy],
+            );
+          }
+        }
+      }
+
+      values.add(id);
+      await ctx.query(
+        'UPDATE Prospect SET ${updates.join(", ")}, date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
+        values,
+      );
+    });
     
-    // Invalider le cache (on pourrait être plus fin, mais c'est sûr)
     _cache.clearAll(); 
+  }
+
+  @override
+  Future<void> updateStatus(int id, String newStatus, int changedBy) async {
+    final connection = _mysqlService.getConnection();
+    await connection.transaction((ctx) async {
+      // 1. Récupérer l'ancien statut
+      final current = await ctx.query(
+        'SELECT status FROM Prospect WHERE id_prospect = ?',
+        [id],
+      );
+      
+      if (current.isEmpty) return;
+      final oldStatus = current.first['status'] as String;
+
+      if (oldStatus == newStatus) return;
+
+      // 2. Mettre à jour le prospect
+      await ctx.query(
+        'UPDATE Prospect SET status = ?, date_update = NOW() WHERE id_prospect = ?',
+        [newStatus, id],
+      );
+
+      // 3. Enregistrer l'historique
+      await ctx.query(
+        SqlQueries.insertStatusHistory,
+        [id, oldStatus, newStatus, changedBy],
+      );
+    });
+    _cache.clearAll();
   }
 
   @override
@@ -146,21 +202,39 @@ class ProspectRepositoryImpl implements IProspectRepository {
       // ou on utilise le statut spécifiquement passé dans data['newStatus']
       String? newStatus = data['newStatus'] as String?;
       
-      if (newStatus != null) {
-        await ctx.query(
-          'UPDATE Prospect SET status = ?, date_update = NOW() WHERE id_prospect = ?',
-          [newStatus, data['prospectId']],
-        );
-      } else {
-        // Logique par défaut: nouveau -> interesse
-        await ctx.query(
-          'UPDATE Prospect SET status = "interesse", date_update = NOW() WHERE id_prospect = ? AND status = "nouveau"',
-          [data['prospectId']],
-        );
+      // On récupère le statut actuel pour savoir s'il faut logger
+      final currentRes = await ctx.query('SELECT status FROM Prospect WHERE id_prospect = ?', [data['prospectId']]);
+      if (currentRes.isNotEmpty) {
+        final oldStatus = currentRes.first['status'] as String;
+        final targetStatus = newStatus ?? (oldStatus == 'nouveau' ? 'interesse' : oldStatus);
+
+        if (oldStatus != targetStatus) {
+          // Mettre à jour le prospect
+          await ctx.query(
+            'UPDATE Prospect SET status = ?, date_update = NOW() WHERE id_prospect = ?',
+            [targetStatus, data['prospectId']],
+          );
+
+          // Logger le changement de statut
+          await ctx.query(
+            SqlQueries.insertStatusHistory,
+            [data['prospectId'], oldStatus, targetStatus, data['userId']],
+          );
+        }
       }
     });
 
     _cache.clearAll();
+  }
+
+  @override
+  Future<List<StatusHistory>> getStatusHistory(int prospectId) async {
+    final results = await _mysqlService.query(
+      SqlQueries.selectStatusHistoryByProspectId,
+      [prospectId],
+    );
+
+    return results.map((row) => StatusHistory.fromJson(row.fields)).toList();
   }
 
   @override
