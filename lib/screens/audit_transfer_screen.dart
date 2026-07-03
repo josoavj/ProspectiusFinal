@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../core/theme/app_colors.dart';
 import '../providers/audit_provider.dart';
 
 class AuditTransferScreen extends StatefulWidget {
@@ -96,7 +97,7 @@ class _AuditTransferScreenState extends State<AuditTransferScreen> {
                 break;
               case 'UPDATE':
                 icon = Icons.edit;
-                color = Colors.blue;
+                color = AppColors.azure;
                 break;
               case 'DELETE':
                 icon = Icons.delete;

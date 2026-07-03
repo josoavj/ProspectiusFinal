@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/theme/app_colors.dart';
 import '../providers/auth_provider.dart';
 import '../services/mysql_service.dart';
 import '../services/secure_storage_service.dart';
@@ -176,7 +177,7 @@ class _DatabaseConfigScreenState extends State<DatabaseConfigScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.storage, size: 80, color: Colors.blue[700]),
+        Icon(Icons.storage, size: 80, color: AppColors.azure),
         const SizedBox(height: 24),
         Text(
           'Configuration Base de Données',
@@ -275,7 +276,7 @@ class _DatabaseConfigScreenState extends State<DatabaseConfigScreen> {
           child: ElevatedButton(
             onPressed: _isConnecting ? null : _handleConnect,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[700],
+              backgroundColor: AppColors.azure,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

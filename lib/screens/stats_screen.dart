@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../core/theme/app_colors.dart';
 import '../models/stats.dart';
 import '../providers/auth_provider.dart';
 import '../providers/stats_provider.dart';
@@ -91,7 +92,7 @@ class _StatsScreenState extends State<StatsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatItem('Prospects', stats.totalProspects.toString(), Colors.blue),
+                _buildStatItem('Prospects', stats.totalProspects.toString(), AppColors.azure),
                 _buildStatItem('Clients', stats.convertedClients.toString(), Colors.green),
                 _buildStatItem('Taux', '${(stats.conversionRate * 100).toStringAsFixed(1)}%', Colors.orange),
               ],
@@ -178,7 +179,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
   List<PieChartSectionData> _buildPieSections(StatsProvider statsProvider) {
     final colors = {
-      'nouveau': Colors.blue,
+      'nouveau': AppColors.azure,
       'interesse': Colors.amber,
       'negociation': Colors.orange,
       'converti': Colors.green,
@@ -202,7 +203,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
   Widget _buildSelectableStatusDetails(StatsProvider statsProvider, int total) {
     final colors = {
-      'nouveau': Colors.blue,
+      'nouveau': AppColors.azure,
       'interesse': Colors.amber,
       'negociation': Colors.orange,
       'converti': Colors.green,
@@ -248,7 +249,7 @@ class _StatsScreenState extends State<StatsScreen> {
         const SizedBox(height: 16),
         _buildPerformanceMetric('Efficacité de Conversion', _calculateConversionRate(statsProvider), Colors.green),
         const SizedBox(height: 12),
-        _buildPerformanceMetric('Engagement Prospects', _calculateEngagementRate(statsProvider), Colors.blue),
+        _buildPerformanceMetric('Engagement Prospects', _calculateEngagementRate(statsProvider), AppColors.azure),
         const SizedBox(height: 12),
         _buildPerformanceMetric('Taux de Perte', _calculateLossRate(statsProvider), Colors.red),
       ],

@@ -5,6 +5,7 @@ import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
+import '../core/theme/app_colors.dart';
 import 'prospect_detail_screen.dart';
 import 'dart:ui';
 
@@ -253,13 +254,13 @@ class _PipelineScreenState extends State<PipelineScreen> {
     switch (priority.toLowerCase()) {
       case 'haute': return Colors.redAccent;
       case 'moyenne': return Colors.orangeAccent;
-      default: return Colors.blueAccent;
+      default: return AppColors.azure;
     }
   }
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'nouveau': return Colors.blue;
+      case 'nouveau': return AppColors.azure;
       case 'interesse': return Colors.amber;
       case 'negociation': return Colors.orange;
       case 'converti': return const Color(0xFF06CE70);

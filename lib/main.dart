@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prospectius/services/secure_storage_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,7 +26,7 @@ import 'screens/pipeline_screen.dart';
 import 'screens/configuration_screen.dart';
 import 'widgets/sidebar_navigation.dart';
 import 'services/mysql_service.dart';
-import 'services/secure_storage_service.dart';
+import 'core/theme/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,8 +61,14 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               useMaterial3: true,
               colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.blue,
+                seedColor: AppColors.azure,
+                primary: AppColors.azure,
                 brightness: Brightness.light,
+              ),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: AppColors.azure,
+                foregroundColor: Colors.white,
+                elevation: 0,
               ),
               textTheme: GoogleFonts.lexendTextTheme(),
               fontFamily: GoogleFonts.lexend().fontFamily,

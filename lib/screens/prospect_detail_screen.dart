@@ -16,6 +16,7 @@ import '../providers/custom_field_provider.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
 import '../utils/app_logger.dart';
+import '../core/theme/app_colors.dart';
 import 'edit_prospect_screen.dart';
 
 class ProspectDetailScreen extends StatefulWidget {
@@ -78,6 +79,8 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                 stretch: true,
                 backgroundColor: colorScheme.surface,
                 elevation: 0,
+                iconTheme: IconThemeData(color: colorScheme.primary), // Icônes visibles
+                actionsIconTheme: IconThemeData(color: colorScheme.primary),
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
@@ -203,6 +206,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildInfoTab() {
+    final isParticulier = _currentProspect.type.toLowerCase() == 'particulier';
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -213,7 +217,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           _buildSectionTitle('Coordonnées'),
           _buildContactCard(),
           const SizedBox(height: 24),
-          _buildSectionTitle('Entreprise & Digital'),
+          _buildSectionTitle(isParticulier ? 'Source & Digital' : 'Entreprise & Digital'),
           _buildDigitalCard(),
           const SizedBox(height: 24),
           if (_currentProspect.description?.isNotEmpty ?? false) ...[
@@ -297,15 +301,18 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildDigitalCard() {
+    final isParticulier = _currentProspect.type.toLowerCase() == 'particulier';
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildDetailRow('Entreprise', _currentProspect.nomEntreprise ?? '-', Icons.business_outlined),
-            const Divider(height: 24),
-            _buildDetailRow('Poste', _currentProspect.poste ?? '-', Icons.work_outline),
-            const Divider(height: 24),
+            if (!isParticulier) ...[
+              _buildDetailRow('Entreprise', _currentProspect.nomEntreprise ?? '-', Icons.business_outlined),
+              const Divider(height: 24),
+              _buildDetailRow('Poste', _currentProspect.poste ?? '-', Icons.work_outline),
+              const Divider(height: 24),
+            ],
             _buildDetailRow('Source', _currentProspect.source ?? '-', Icons.source_outlined),
             const Divider(height: 24),
             _buildDetailRow('Site Web', _currentProspect.siteWeb ?? '-', Icons.language_outlined),
@@ -690,16 +697,28 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
 
   void _handleAddDocument() async {
     try {
-      final result = await FilePicker.platform.pickFiles(allowMultiple: false, type: FileType.any);
+      FilePickerResult? result = await FilePicker.pickFiles(
+        allowMultiple: false,
+        type: FileType.any,
+      );
+
       if (result == null || result.files.isEmpty) return;
+
       final pickedFile = result.files.first;
       if (pickedFile.path == null) return;
+
       final originalFile = File(pickedFile.path!);
       final appDocDir = await getApplicationDocumentsDirectory();
-      final prospectDocsDir = Directory('${appDocDir.path}/prospect_documents/${_currentProspect.id}');
-      if (!prospectDocsDir.existsSync()) prospectDocsDir.createSync(recursive: true);
+      
+      // Utilisation de path.join serait idéal, mais on simule ici pour Windows
+      final String sep = Platform.isWindows ? '\\' : '/';
+      final prospectDocsDir = Directory('${appDocDir.path}${sep}prospect_documents$sep${_currentProspect.id}');
+
+      if (!prospectDocsDir.existsSync()) {
+        prospectDocsDir.createSync(recursive: true);
+      }
       final String fileName = pickedFile.name;
-      final String newPath = '${prospectDocsDir.path}/$fileName';
+      final String newPath = '${prospectDocsDir.path}$sep$fileName';
       await originalFile.copy(newPath);
       final document = doc_model.Document(id: 0, idProspect: _currentProspect.id, name: fileName, filePath: newPath, mimeType: pickedFile.extension ?? 'unknown', size: pickedFile.size, createdAt: DateTime.now());
       if (mounted) {
@@ -775,10 +794,16 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       return;
     }
     try {
-      if (Platform.isLinux) await Process.run('xdg-open', [doc.filePath]);
-      else if (Platform.isMacOS) await Process.run('open', [doc.filePath]);
-      else if (Platform.isWindows) await Process.run('start', ['', doc.filePath], runInShell: true);
-    } catch (e) { AppLogger.error('Erreur d\'ouverture: $e'); }
+      if (Platform.isLinux) {
+        await Process.run('xdg-open', [doc.filePath]);
+      } else if (Platform.isMacOS) {
+        await Process.run('open', [doc.filePath]);
+      } else if (Platform.isWindows) {
+        await Process.run('start', ['', doc.filePath], runInShell: true);
+      }
+    } catch (e) {
+      AppLogger.error('Erreur d\'ouverture: $e');
+    }
   }
 
   IconData _getInteractionIcon(String type) {
@@ -792,7 +817,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'nouveau': return Colors.blue;
+      case 'nouveau': return AppColors.azure;
       case 'interesse': return Colors.amber;
       case 'negociation': return Colors.orange;
       case 'converti': return const Color(0xFF06CE70);
@@ -805,18 +830,9 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
     switch (priority.toLowerCase()) {
       case 'haute': return Colors.red;
       case 'moyenne': return Colors.orange;
-      default: return Colors.blue;
+      default: return AppColors.azure;
     }
   }
-}
-
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
-  final TabBar _tabBar;
-  @override double get minExtent => _tabBar.preferredSize.height;
-  @override double get maxExtent => _tabBar.preferredSize.height;
-  @override Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => Container(color: Theme.of(context).scaffoldBackgroundColor, child: _tabBar);
-  @override bool shouldRebuild(_SliverAppBarDelegate oldDelegate) => false;
 }
 
 class _TabKeepAlive extends StatefulWidget {
