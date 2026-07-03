@@ -97,4 +97,18 @@ class SqlQueries {
     VALUES (?, ?, ?)
     ON DUPLICATE KEY UPDATE valeur = VALUES(valeur)
   ''';
+
+  // Status History
+  static const String selectStatusHistoryByProspectId = '''
+    SELECT h.*, a.nom, a.prenom 
+    FROM StatusHistory h
+    JOIN Account a ON h.changed_by = a.id_compte
+    WHERE h.id_prospect = ?
+    ORDER BY h.changed_at DESC
+  ''';
+
+  static const String insertStatusHistory = '''
+    INSERT INTO StatusHistory (id_prospect, old_status, new_status, changed_by, changed_at)
+    VALUES (?, ?, ?, ?, NOW())
+  ''';
 }
