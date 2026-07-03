@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../core/theme/app_colors.dart';
 import '../models/prospect.dart';
 import '../providers/prospect_provider.dart';
 import '../services/excel_service.dart';
@@ -162,7 +163,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
                                     .headlineSmall
                                     ?.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.blue,
+                                      color: AppColors.azure,
                                     ),
                               ),
                               const SizedBox(height: 8),
