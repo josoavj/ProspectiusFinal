@@ -6,6 +6,7 @@ import '../providers/prospect_provider.dart';
 import '../services/excel_service.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
+import '../core/theme/app_colors.dart';
 import 'add_prospect_screen.dart';
 import 'prospect_detail_screen.dart';
 
@@ -224,7 +225,7 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
   Widget _buildStatusChip(String status, ColorScheme colorScheme) {
     Color chipColor;
     switch (status.toLowerCase()) {
-      case 'nouveau': chipColor = Colors.blue; break;
+      case 'nouveau': chipColor = AppColors.azure; break;
       case 'interesse': chipColor = Colors.amber; break;
       case 'negociation': chipColor = Colors.orange; break;
       case 'converti': chipColor = const Color(0xFF06CE70); break;
