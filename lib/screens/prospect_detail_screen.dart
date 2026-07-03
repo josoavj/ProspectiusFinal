@@ -16,6 +16,7 @@ import '../providers/custom_field_provider.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
 import '../utils/app_logger.dart';
+import '../core/theme/app_colors.dart';
 import 'edit_prospect_screen.dart';
 
 class ProspectDetailScreen extends StatefulWidget {
@@ -78,6 +79,8 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                 stretch: true,
                 backgroundColor: colorScheme.surface,
                 elevation: 0,
+                iconTheme: IconThemeData(color: colorScheme.primary), // Icônes visibles
+                actionsIconTheme: IconThemeData(color: colorScheme.primary),
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
@@ -801,7 +804,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'nouveau': return Colors.blue;
+      case 'nouveau': return AppColors.azure;
       case 'interesse': return Colors.amber;
       case 'negociation': return Colors.orange;
       case 'converti': return const Color(0xFF06CE70);
@@ -814,7 +817,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
     switch (priority.toLowerCase()) {
       case 'haute': return Colors.red;
       case 'moyenne': return Colors.orange;
-      default: return Colors.blue;
+      default: return AppColors.azure;
     }
   }
 }
