@@ -1,287 +1,83 @@
-# 🚀 Prospectius - Démarrage Rapide
+# 🚀 Prospectius - Guide de Bienvenue
 
-Bienvenue dans **Prospectius**, une application CRM moderne pour Windows et Linux.
+Bienvenue dans **Prospectius** ! Nous sommes ravis de vous aider à simplifier votre gestion commerciale. Ce guide vous accompagne pas à pas pour que vous soyez opérationnel en quelques minutes.
 
-## 🎯 Choisissez votre approche:
+## 🎯 Quel est votre profil ?
 
-### 👤 Pour les Utilisateurs Finaux (Installation Rapide)
-Vous voulez simplement utiliser l'application sans modifications.
+### 👤 Je suis un Utilisateur
+Vous voulez utiliser l'application pour gérer vos prospects sans toucher au code.
 
-### 👨‍💻 Pour les Développeurs (Développement & Modifications)
-Vous voulez modifier le code et compiler votre propre version.
-
----
-
-## ⚡ Installation Rapide (Utilisateurs Finaux)
-
-### Option 1: Depuis les Exécutables Compilés (Recommandé) ⭐
-
-**La façon la plus simple et la plus rapide!**
-
-**1. Téléchargez les fichiers:**
-- Rendez-vous sur la [page des releases](https://github.com/josoavj/ProspectiusFinal/releases/latest)
-- Téléchargez les fichiers pour votre système:
-  - **Windows:** `prospectius.exe`
-  - **Linux:** `prospectius`
-  - **Tous:** `Prospectius.sql` (script de base de données)
-
-**2. Installez MariaDB:**
-- [Windows](https://mariadb.org/download/)
-- [Linux Ubuntu/Debian](https://mariadb.org/download/#mariadb-repositories): `sudo apt install mariadb-server`
-- [Linux Fedora/RHEL](https://mariadb.org/download/#mariadb-repositories): `sudo dnf install mariadb-server`
-
-**3. Importez la base de données:**
-```bash
-# Linux/macOS
-mysql -u root -proot < Prospectius.sql
-
-# Windows (dans PowerShell ou CMD)
-mysql -u root -proot < Prospectius.sql
-```
-
-**4. Lancez l'application:**
-- **Windows:** Double-cliquez sur `prospectius.exe`
-- **Linux:** `./prospectius`
-
-### Option 2: Depuis les Scripts d'Installation Automatiques
-
-Les scripts téléchargeront automatiquement les fichiers nécessaires.
-
-**Sur Linux:**
-```bash
-git clone https://github.com/josoavj/ProspectiusFinal.git
-cd ProspectiusFinal
-bash scripts/install-linux.sh
-```
-
-**Sur Windows (PowerShell):**
-```powershell
-git clone https://github.com/josoavj/ProspectiusFinal.git
-cd ProspectiusFinal
-powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
-```
+### 👨‍💻 Je suis un Développeur
+Vous voulez explorer le code, le modifier ou compiler votre propre version personnalisée.
 
 ---
 
-## 🛠️ Installation pour Développeurs (Compilation depuis les sources)
+## ⚡ Guide pour les Utilisateurs (Installation Express)
 
-Pour modifier le code et compiler votre propre version.
+### Étape 1 : Téléchargement
+Rendez-vous sur la [page des releases](https://github.com/josoavj/ProspectiusFinal/releases/latest) et téléchargez les fichiers correspondant à votre système :
+- **Windows :** `prospectius.exe`
+- **Linux :** `prospectius`
+- **Base de données :** `Prospectius.sql` (indispensable pour les deux)
 
-### Prérequis
-- **Flutter 3.16.0+**
-- **Dart 3.0.0+**
-- **MariaDB 10.3+** ou **MySQL 5.7+**
-- **Git**
+### Étape 2 : Préparation de l'espace de stockage
+Prospectius a besoin d'un moteur de base de données (MySQL ou MariaDB) pour fonctionner. 
+1. **Installez MariaDB** sur votre ordinateur.
+2. **Importez vos données :** Ouvrez votre terminal ou invite de commande et lancez :
+   ```bash
+   mysql -u root -p < Prospectius.sql
+   ```
 
-### Étapes d'Installation
+### Étape 3 : Lancement et Connexion
+Double-cliquez sur l'icône **Prospectius**. Lors du premier lancement, l'application vous demandera vos identifiants MySQL. Une fois connecté, vous pourrez créer votre compte utilisateur et commencer à ajouter vos premiers prospects.
 
-**1. Cloner le projet:**
+---
+
+## 🛠️ Guide pour les Développeurs (Configuration Technique)
+
+### 1. Préparation de l'environnement
+Assurez-vous d'avoir **Flutter (3.16+)** et **MySQL/MariaDB** installés sur votre machine.
+
+### 2. Installation du projet
 ```bash
 git clone https://github.com/josoavj/ProspectiusFinal.git
 cd ProspectiusFinal
-```
-
-**2. Installer les dépendances Flutter:**
-```bash
 flutter pub get
 ```
 
-**3. Installer MariaDB et importer la base de données:**
+### 3. Lancement en mode développement
 ```bash
-# Télécharger le script SQL
-bash scripts/download-sql.sh
-
-# Importer la base de données
-mysql -u root -proot < scripts/Prospectius.sql
-```
-
-**4. Lancer l'application en développement:**
-```bash
-# Linux
-flutter run -d linux
-
-# Windows
+# Pour Windows
 flutter run -d windows
-
-# macOS
-flutter run -d macos
-```
-
-**5. Compiler pour la production:**
-```bash
-# Windows (exécutable standalone)
-flutter build windows --release
-# Le résultat se trouve dans: build/windows/x64/runner/Release/prospectius.exe
-
-# Linux (exécutable standalone)
-flutter build linux --release
-# Le résultat se trouve dans: build/linux/x64/release/bundle/prospectius
-
-# macOS (application bundle)
-flutter build macos --release
-# Le résultat se trouve dans: build/macos/Build/Products/Release/Prospectius.app
+# Pour Linux
+flutter run -d linux
 ```
 
 ---
 
-## 🔐 Premier Accès
+## 🔐 Vos premiers pas dans l'application
 
-Une fois l'application lancée:
+Une fois Prospectius ouvert :
 
-### 1. Configuration de la Base de Données
-À la première exécution, vous devrez configurer la connexion:
-
-```
-Host: localhost
-Port: 3306
-User: root
-Password: root
-Database: Prospectius
-```
-
-### 2. Créer un Compte
-- Cliquez sur le bouton **"S'inscrire"**
-- Remplissez le formulaire avec vos informations
-- Complétez l'inscription
-- Vous pourrez alors vous connecter avec vos identifiants
+1. **Branchez la base de données :** Saisissez l'hôte (généralement `localhost`) et vos accès MySQL.
+2. **Créez votre accès :** Cliquez sur "S'inscrire" pour créer votre profil commercial.
+3. **Explorez :** Utilisez le Pipeline pour visualiser votre tunnel de vente ou l'Exploration pour retrouver rapidement un contact.
 
 ---
 
-## ❓ Besoin d'Aide?
+## ❓ Un souci ? Pas de panique !
 
-### Pour les Utilisateurs
-- Consultez la [documentation](./docs)
-- Exécutez `bash scripts/validate.sh` pour un diagnostic (si vous avez cloné le repo)
-- Vérifiez que MariaDB est bien installé et en cours d'exécution
-- Assurez-vous que le port 3306 est disponible
+### "Je ne vois pas mes données"
+Vérifiez que votre serveur MariaDB ou MySQL est bien lancé. Sur Windows, vérifiez les Services système. Sur Linux, utilisez `sudo systemctl status mariadb`.
 
-### Pour les Développeurs
-Vous avez modifié le code et voulez tester vos changements?
+### "L'application ne s'ouvre pas"
+Assurez-vous d'avoir téléchargé la version correspondant à votre système (64-bit requis).
 
-**Validation de l'Installation:**
-```bash
-bash scripts/validate.sh
-```
-
-Cela affiche un diagnostic complet du système.
-
-**Nettoyage et Réinitialisation:**
-```bash
-bash scripts/clean.sh
-```
-
-Nettoie les caches et réinstalle les dépendances.
-
-### Documentation Complète
-
-- **[INSTALLATION.md](INSTALLATION.md)** - Guide détaillé pour chaque OS
-- **[ENVIRONMENT.md](ENVIRONMENT.md)** - Variables et configuration
-- **[scripts/README.md](scripts/README.md)** - Documentation des scripts
-- **[README.md](README.md)** - Vue d'ensemble du projet
+### Besoin d'explications détaillées ?
+- **[Le Manuel Complet](./INSTALLATION.md)** : Pour tout savoir sur l'installation.
+- **[La Sécurité](./SECURITY.md)** : Pour comprendre comment nous protégeons vos données.
 
 ---
 
-## 🐛 Problèmes Courants
-
-### "MariaDB non trouvé"
-```bash
-# Linux (Ubuntu/Debian)
-sudo systemctl start mariadb
-
-# macOS
-brew services start mariadb
-
-# Windows
-# Services.msc → Chercher "MariaDB" → Démarrer
-```
-
-### "Flutter non trouvé"
-Installez Flutter: https://flutter.dev/docs/get-started/install
-
-### "Base de données non importée"
-```bash
-bash scripts/download-sql.sh
-mysql -u root -proot < scripts/prospectius.sql
-```
-
----
-
-## 🎯 Fonctionnalités Principales
-
-✅ **Gestion de Prospects**
-- Ajouter/modifier/supprimer des prospects
-- Classer par statut (Nouveau, En cours, Qualifié, etc.)
-- Ajouter des notes et contacts
-
-✅ **Suivi des Interactions**
-- Enregistrer les interactions avec les prospects
-- Historique complet par prospect
-
-✅ **Statistiques**
-- Tableau de bord avec métriques clés
-- Taux de conversion
-- Distribution par statut
-
-✅ **Authentification**
-- Connexion sécurisée
-- Gestion des comptes utilisateurs
-
----
-
-## 📋 Prérequis Système
-
-| Plateforme | Req. Minimum | Recommandé |
-|-----------|-------------|-----------|
-| **Windows** | Windows 8.1+ | Windows 10+ (64-bit) |
-| **Linux** | Ubuntu 18.04+ | Ubuntu 22.04+ (64-bit) |
-| **macOS** | 10.11+ | 12.0+ |
-
-**Logiciels requis:**
-- **MariaDB 10.3+** ou **MySQL 5.7+**
-
-**Pour les développeurs:**
-- Flutter 3.16.0+
-- Dart 3.0.0+
-
----
-
-## 🔧 Configuration Avancée
-
-Pour des configurations personnalisées, consultez:
-- [ENVIRONMENT.md](ENVIRONMENT.md) pour les variables
-- [CONFIGURATION.md](CONFIGURATION.md) pour les paramètres par défaut
-- [scripts/README.md](scripts/README.md) pour les options des scripts
-
----
-
-## 🤝 Contribution
-
-Pour contribuer au projet:
-
-1. Fork le dépôt
-2. Créez une branche (`git checkout -b feature/improvement`)
-3. Commitez vos changements (`git commit -am 'Add improvement'`)
-4. Poussez vers la branche (`git push origin feature/improvement`)
-5. Ouvrez une Pull Request
-
----
-
-## 📄 Licence
-
-Tous droits réservés.
-
----
-
-## 📞 Support
-
-Pour toute question ou problème:
-1. Exécutez `bash scripts/validate.sh` pour un diagnostic
-2. Consultez la [documentation](./docs)
-3. Vérifiez les [issues existantes](../../issues)
-
----
-
-**Version:** 1.0.0  
-**Dernière mise à jour:** 2024-11-29
-
-Bon démarrage! 🎉
+**Réalisé avec passion par APEXNova Labs © 2025**  
+*Version 1.1.0 - Un CRM à votre image.*
