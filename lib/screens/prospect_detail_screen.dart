@@ -206,6 +206,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildInfoTab() {
+    final isParticulier = _currentProspect.type.toLowerCase() == 'particulier';
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -216,7 +217,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           _buildSectionTitle('Coordonnées'),
           _buildContactCard(),
           const SizedBox(height: 24),
-          _buildSectionTitle('Entreprise & Digital'),
+          _buildSectionTitle(isParticulier ? 'Source & Digital' : 'Entreprise & Digital'),
           _buildDigitalCard(),
           const SizedBox(height: 24),
           if (_currentProspect.description?.isNotEmpty ?? false) ...[
@@ -300,15 +301,18 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildDigitalCard() {
+    final isParticulier = _currentProspect.type.toLowerCase() == 'particulier';
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildDetailRow('Entreprise', _currentProspect.nomEntreprise ?? '-', Icons.business_outlined),
-            const Divider(height: 24),
-            _buildDetailRow('Poste', _currentProspect.poste ?? '-', Icons.work_outline),
-            const Divider(height: 24),
+            if (!isParticulier) ...[
+              _buildDetailRow('Entreprise', _currentProspect.nomEntreprise ?? '-', Icons.business_outlined),
+              const Divider(height: 24),
+              _buildDetailRow('Poste', _currentProspect.poste ?? '-', Icons.work_outline),
+              const Divider(height: 24),
+            ],
             _buildDetailRow('Source', _currentProspect.source ?? '-', Icons.source_outlined),
             const Divider(height: 24),
             _buildDetailRow('Site Web', _currentProspect.siteWeb ?? '-', Icons.language_outlined),
