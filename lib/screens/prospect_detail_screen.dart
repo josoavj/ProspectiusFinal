@@ -36,7 +36,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   void initState() {
     super.initState();
     _currentProspect = widget.prospect;
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {}); // Pour mettre à jour le FAB selon l'onglet
@@ -58,6 +58,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
     context.read<ProspectProvider>().loadInteractions(id);
     context.read<TaskProvider>().loadTasks(id);
     context.read<DocumentProvider>().loadDocuments(id);
+    context.read<ProspectProvider>().loadStatusHistory(id);
     context.read<CustomFieldProvider>().loadValuesForProspect(id);
     context.read<CustomFieldProvider>().loadFields();
   }
@@ -152,6 +153,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                         Tab(icon: Icon(Icons.info_outline, size: 20), text: 'Infos'),
                         Tab(icon: Icon(Icons.task_alt, size: 20), text: 'Tâches'),
                         Tab(icon: Icon(Icons.description_outlined, size: 20), text: 'Docs'),
+                        Tab(icon: Icon(Icons.route_outlined, size: 20), text: 'Parcours'),
                         Tab(icon: Icon(Icons.history, size: 20), text: 'Suivi'),
                       ],
                     ),
@@ -167,6 +169,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
             _buildTabContent(_buildInfoTab(), 'info'),
             _buildTabContent(_buildTasksTab(), 'tasks'),
             _buildTabContent(_buildDocumentsTab(), 'docs'),
+            _buildTabContent(_buildStatusHistoryTab(), 'parcours'),
             _buildTabContent(_buildHistoryTab(), 'history'),
           ],
         ),
@@ -191,12 +194,12 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget? _buildFab() {
-    if (_tabController.index == 0) return null;
+    if (_tabController.index == 0 || _tabController.index == 3) return null;
     return FloatingActionButton.extended(
       onPressed: () {
         if (_tabController.index == 1) _showAddTaskDialog();
         if (_tabController.index == 2) _handleAddDocument();
-        if (_tabController.index == 3) _showAddInteractionDialog();
+        if (_tabController.index == 4) _showAddInteractionDialog();
       },
       icon: Icon(_tabController.index == 1 ? Icons.add_task : 
                  _tabController.index == 2 ? Icons.upload_file : Icons.add_comment_outlined),
@@ -446,6 +449,130 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                         trailing: IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => provider.deleteDocument(doc.id, _currentProspect.id)),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         onTap: () => isImage ? _showImagePreview(doc) : _openDocument(doc),
+                      ),
+                    );
+                  },
+                ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatusHistoryTab() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Consumer<ProspectProvider>(
+      builder: (context, provider, _) {
+        return SimpleStateBuilder(
+          isLoading: provider.isLoading,
+          error: provider.error,
+          child: provider.statusHistory.isEmpty
+              ? _buildEmptyState(Icons.route_outlined, 'Aucun changement de statut enregistré')
+              : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(20),
+                  itemCount: provider.statusHistory.length,
+                  itemBuilder: (context, index) {
+                    final history = provider.statusHistory[index];
+                    return IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          Column(
+                            children: [
+                              Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: _getStatusColor(history.newStatus),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: colorScheme.surface, width: 2),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _getStatusColor(history.newStatus).withValues(alpha: 0.3),
+                                      blurRadius: 4,
+                                      spreadRadius: 1,
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  width: 2,
+                                  color: index == provider.statusHistory.length - 1 
+                                      ? Colors.transparent 
+                                      : colorScheme.outlineVariant.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 30),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: _getStatusColor(history.newStatus).withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          TextFormatter.formatStatus(history.newStatus).toUpperCase(),
+                                          style: TextStyle(
+                                            color: _getStatusColor(history.newStatus),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${history.changedAt.day}/${history.changedAt.month} à ${history.changedAt.hour}:${history.changedAt.minute.toString().padLeft(2, '0')}',
+                                        style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  RichText(
+                                    text: TextSpan(
+                                      style: TextStyle(color: colorScheme.onSurface, fontSize: 14, height: 1.4),
+                                      children: [
+                                        const TextSpan(text: 'Passage de '),
+                                        TextSpan(
+                                          text: TextFormatter.formatStatus(history.oldStatus ?? 'Inconnu'),
+                                          style: const TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                        const TextSpan(text: ' à '),
+                                        TextSpan(
+                                          text: TextFormatter.formatStatus(history.newStatus),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: _getStatusColor(history.newStatus),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.person_outline, size: 14, color: colorScheme.outline),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Modifié par: ${history.changedByName ?? "Utilisateur #${history.changedBy}"}',
+                                        style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
