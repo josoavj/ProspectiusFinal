@@ -107,38 +107,38 @@ class AboutScreen extends StatelessWidget {
                 // Features Card
                 _buildSectionCard(
                   context,
-                  title: 'Fonctionnalités Clés',
+                  title: 'Ce que Prospectius fait pour vous',
                   child: Column(
                     children: [
                       _buildFeatureItem(
                         context,
                         icon: Icons.assignment_ind_outlined,
-                        title: 'Gestion Centralisée',
-                        description: 'Regroupez toutes les données de vos prospects dans un espace unique et sécurisé.',
+                        title: 'Votre carnet d\'adresses intelligent',
+                        description: 'Oubliez les fichiers Excel éparpillés. Toutes les informations de vos prospects sont réunies, organisées et accessibles en un clic.',
                       ),
                       _buildFeatureItem(
                         context,
                         icon: Icons.view_kanban_outlined,
-                        title: 'Pipeline de Vente',
-                        description: 'Gérez votre tunnel de vente par simple glisser-déposer grâce à la vue Kanban.',
+                        title: 'Visualisez votre succès',
+                        description: 'Suivez le parcours de vos futurs clients d\'un simple coup d\'œil. Faites progresser vos opportunités comme sur un tableau de bord intuitif.',
                       ),
                       _buildFeatureItem(
                         context,
                         icon: Icons.forum_outlined,
-                        title: 'Suivi des Échanges',
-                        description: 'Historisez chaque interaction, assignez des responsables et planifiez les suites.',
+                        title: 'La mémoire de vos relations',
+                        description: 'Ne perdez plus le fil. Notez chaque appel ou réunion pour vous souvenir de chaque détail important lors de votre prochain échange.',
                       ),
                       _buildFeatureItem(
                         context,
                         icon: Icons.notification_add_outlined,
-                        title: 'Gestion des Rappels',
-                        description: 'Créez des tâches et rappels personnalisés directement liés à vos fiches prospects.',
+                        title: 'Zéro oubli, plus de ventes',
+                        description: 'Planifiez vos prochaines actions. L\'application vous rappelle ce que vous devez faire pour ne jamais rater une relance cruciale.',
                       ),
                       _buildFeatureItem(
                         context,
                         icon: Icons.analytics_outlined,
-                        title: 'Analyses & Statistiques',
-                        description: 'Suivez vos taux de conversion et la performance de votre équipe en temps réel.',
+                        title: 'Comprenez vos résultats',
+                        description: 'Visualisez clairement vos progrès grâce à des graphiques simples qui vous montrent vos taux de réussite et votre croissance.',
                       ),
                     ],
                   ),
