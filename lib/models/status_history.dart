@@ -4,6 +4,7 @@ class StatusHistory {
   final String? oldStatus;
   final String newStatus;
   final int changedBy;
+  final String? changedByName;
   final DateTime changedAt;
 
   StatusHistory({
@@ -12,17 +13,24 @@ class StatusHistory {
     required this.oldStatus,
     required this.newStatus,
     required this.changedBy,
+    this.changedByName,
     required this.changedAt,
   });
 
   factory StatusHistory.fromJson(Map<String, dynamic> json) {
+    String? name;
+    if (json['nom'] != null && json['prenom'] != null) {
+      name = "${json['prenom']} ${json['nom']}";
+    }
+
     return StatusHistory(
       id: json['id_status_history'] as int,
       idProspect: json['id_prospect'] as int,
       oldStatus: json['old_status'] as String?,
       newStatus: json['new_status'] as String? ?? '',
       changedBy: json['changed_by'] as int,
-      changedAt: DateTime.parse(json['changed_at'] as String),
+      changedByName: name,
+      changedAt: DateTime.parse(json['changed_at'].toString()),
     );
   }
 

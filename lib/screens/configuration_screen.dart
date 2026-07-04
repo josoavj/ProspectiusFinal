@@ -222,11 +222,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
               builder: (context, settings, _) {
                 return _buildSettingSection(
                   icon: Icons.palette_outlined,
-                  title: 'Apparence',
-                  subtitle: 'Personnalisez votre interface visuelle',
+                  title: 'Confort visuel',
+                  subtitle: 'Adaptez l\'interface à vos préférences de travail',
                   colorScheme: colorScheme,
                   children: [
-                    const Text('Mode de thème', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const Text('Ambiance de l\'application', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 4),
+                    Text('Choisissez un mode clair pour le jour ou sombre pour reposer vos yeux.', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
@@ -244,7 +246,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Taille du texte', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Lisibilité du texte', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                            Text('Ajustez la taille des caractères pour un confort optimal.', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                          ],
+                        ),
                         Text('${(settings.fontSizeFactor * 100).toInt()}%', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
                       ],
                     ),
@@ -262,52 +270,52 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
 
             // Section Système
             _buildSettingSection(
-              icon: Icons.terminal_outlined,
-              title: 'Environnement & Système',
-              subtitle: 'Détails techniques de l\'instance',
+              icon: Icons.info_outline_rounded,
+              title: 'Santé du système',
+              subtitle: 'Informations techniques sur votre installation actuelle',
               colorScheme: colorScheme,
               children: [
-                _buildSystemInfoItem('Version Application', '1.1.0 Stable (Build 2025.01)', colorScheme),
-                _buildSystemInfoItem('Plateforme Exécution', Platform.operatingSystem.toUpperCase(), colorScheme),
-                _buildSystemInfoItem('Moteur de Rendu', 'Flutter 3.x (Skia/Impeller)', colorScheme),
-                _buildSystemInfoItem('Protocole Database', 'MySQL driver 0.20.0', colorScheme),
+                _buildSystemInfoItem('État de la version', '1.1.0 (Dernière mise à jour)', colorScheme),
+                _buildSystemInfoItem('Système d\'exploitation', Platform.operatingSystem.toUpperCase(), colorScheme),
+                _buildSystemInfoItem('Moteur graphique', 'Impeller/Skia (Optimisé)', colorScheme),
+                _buildSystemInfoItem('Connexion SQL', 'Active et sécurisée', colorScheme),
               ],
             ),
             const SizedBox(height: 16),
 
             // Section Aide & Documentation (Le nouveau "A propos" complet)
             _buildSettingSection(
-              icon: Icons.menu_book_outlined,
-              title: 'Ressources & Documentation',
-              subtitle: 'Guides et informations utiles',
+              icon: Icons.help_outline_rounded,
+              title: 'Besoin d\'aide ?',
+              subtitle: 'Guides pour tirer le meilleur parti de Prospectius',
               colorScheme: colorScheme,
               children: [
                 _buildDocumentationItem(
                   context,
-                  icon: Icons.description_outlined,
-                  title: 'Manuel d\'utilisation',
-                  desc: 'Apprenez à maîtriser le pipeline Kanban et les automatisations.',
+                  icon: Icons.auto_stories_outlined,
+                  title: 'Guide de démarrage rapide',
+                  desc: 'Tout ce qu\'il faut savoir pour bien débuter avec vos premiers prospects.',
                   onTap: () {},
                 ),
                 _buildDocumentationItem(
                   context,
-                  icon: Icons.keyboard_command_key_outlined,
-                  title: 'Raccourcis Clavier',
-                  desc: 'Optimisez votre saisie avec les combinaisons de touches (Ctrl+N, Ctrl+F).',
+                  icon: Icons.keyboard_alt_outlined,
+                  title: 'Astuces clavier',
+                  desc: 'Gagnez du temps au quotidien grâce aux raccourcis essentiels.',
                   onTap: () {},
                 ),
                 _buildDocumentationItem(
                   context,
-                  icon: Icons.security_outlined,
-                  title: 'Politique de Confidentialité',
-                  desc: 'Consultez comment vos données MySQL sont sécurisées localement.',
+                  icon: Icons.verified_user_outlined,
+                  title: 'Sécurité de vos données',
+                  desc: 'Comprendre comment vos informations sont protégées localement.',
                   onTap: () {},
                 ),
                 _buildDocumentationItem(
                   context,
-                  icon: Icons.support_agent_outlined,
-                  title: 'Support Technique',
-                  desc: 'Un problème ? Contactez l\'équipe APEXNova Labs via GitHub.',
+                  icon: Icons.alternate_email_outlined,
+                  title: 'Contacter l\'assistance',
+                  desc: 'Une question ou une suggestion ? Notre équipe est à votre écoute.',
                   onTap: () {},
                 ),
               ],

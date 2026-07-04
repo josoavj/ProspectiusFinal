@@ -1,393 +1,47 @@
-# Guide de Contribution - Prospectius
+# Faire grandir Prospectius ensemble
 
-Merci de votre intérêt pour contribuer à Prospectius! Ce guide explique comment contribuer efficacement au projet.
-
-## 🎯 Avant de Commencer
-
-### Configurer l'Environnement de Développement
-
-1. **Cloner le dépôt:**
-
-   ```bash
-   git clone <repository-url>
-   cd prospectius
-   ```
-
-2. **Installer les dépendances:**
-
-   ```bash
-   bash scripts/setup.sh
-   # Ou manuellement:
-   flutter pub get
-   ```
-
-3. **Valider l'installation:**
-
-   ```bash
-   bash scripts/validate.sh
-   ```
-
-4. **Lancer l'app en mode debug:**
-
-   ```bash
-   flutter run
-   ```
+Merci de vouloir contribuer à Prospectius ! Ce projet est ouvert à tous ceux qui souhaitent aider les commerciaux à mieux travailler. Que vous soyez développeur, designer ou simple utilisateur avec une bonne idée, votre aide est précieuse.
 
 ---
 
-## 🔄 Workflow de Contribution
+## 💡 Comment aider ?
 
-### 1. Créer une Issue
+### 1. Signaler une idée ou un bug
+Vous avez trouvé un comportement étrange ou vous avez une idée géniale ? Ouvrez une "Issue" sur GitHub. Expliquez-nous simplement ce que vous avez remarqué ou ce que vous aimeriez voir. Une capture d'écran est toujours la bienvenue !
 
-Avant de commencer, créez une issue pour discuter de:
-
-- **Bugs:** Décrire le comportement inattendu
-- **Features:** Expliquer la nouvelle fonctionnalité
-- **Améliorations:** Proposer l'optimisation
-
-**Format recommandé:**
-
-```markdown
-## Description
-Brève description du problème/feature
-
-## Context
-Contexte additionnel
-
-## Steps to Reproduce (si bug)
-1. Étape 1
-2. Étape 2
-3. Étape 3
-
-## Expected Behavior
-Comportement attendu
-
-## Actual Behavior
-Comportement actuel
-
-## Screenshots
-Si applicable, ajouter des captures
-```
-
-### 2. Fork et Brancher
-
-```bash
-# Fork le repo sur GitHub
-
-git clone https://github.com/votre-username/prospectius.git
-cd prospectius
-
-# Créer une branche descriptive
-git checkout -b feature/description-courte
-# ou
-git checkout -b fix/bug-description
-```
-
-**Conventions de nommage:**
-
-- `feature/user-authentication` - Nouvelle fonctionnalité
-- `fix/database-connection-error` - Correction de bug
-- `docs/installation-guide` - Documentation
-- `refactor/service-layer` - Refactorisation
-- `test/add-unit-tests` - Tests
-
-### 3. Développer et Tester
-
-**Format du code:**
-
-```bash
-# Formater le code Dart
-dart format lib/ test/
-
-# Analyser le code
-dart analyze
-
-# Linter Flutter
-flutter analyze
-```
-
-**Standards de code:**
-
-- Suivre les conventions Dart (PascalCase pour classes, camelCase pour variables)
-- Documentez les fonctions publiques avec des commentaires `///`
-- Maintenez une couverture de tests > 80%
-- Pas de `print()` en production (utiliser `debugPrint()`)
-
-**Exemple de code documenté:**
-
-```dart
-/// Authentifie un utilisateur avec les identifiants fournis.
-///
-/// Vérifie le couple [username]/[password] dans la base de données.
-/// Retourne un [Account] si authentification réussie.
-///
-/// Throws [AuthException] si identifiants invalides
-/// Throws [DatabaseException] si connexion échouée
-Future<Account> authenticate(String username, String password) async {
-  // Implementation
-}
-```
-
-### 4. Tester
-
-**Avant de soumettre:**
-
-```bash
-# Exécuter les tests
-flutter test
-
-# Tester sur les plateformes cibles
-flutter run -d windows
-flutter run -d linux
-
-# Build de release (pour vérifier les avertissements)
-flutter build windows --release
-flutter build linux --release
-```
-
-**Ajouter des tests:**
-
-- Créer `test/models/prospect_test.dart` pour les modèles
-- Créer `test/services/database_service_test.dart` pour les services
-- Créer `test/providers/auth_provider_test.dart` pour les providers
-
-### 5. Committer
-
-**Messages de commit clairs:**
-
-```bash
-# Feature
-git commit -m "feat: add prospect search functionality
-
-- Implement SearchProspectWidget
-- Add search filtering in ProspectProvider
-- Update tests for new search logic"
-
-# Bug fix
-git commit -m "fix: prevent null pointer in database connection
-
-- Add null check before database access
-- Add test case for empty database
-- Update error handling in MySQLService"
-
-# Docs
-git commit -m "docs: update installation guide for Linux
-
-- Add Ubuntu 22.04 specific instructions
-- Clarify MariaDB setup process"
-```
-
-**Format:**
-
-```
-<type>: <subject>
-
-<body>
-
-<footer>
-```
-
-Types acceptés:
-
-- `feat:` - Nouvelle fonctionnalité
-- `fix:` - Correction de bug
-- `docs:` - Documentation
-- `style:` - Formatage sans changement de logique
-- `refactor:` - Refactorisation sans changement externe
-- `perf:` - Amélioration de performance
-- `test:` - Ajout ou modification de tests
-
-### 6. Push et Pull Request
-
-```bash
-git push origin feature/description-courte
-```
-
-**Template de Pull Request:**
-
-```markdown
-## Description
-Courte description des changements
-
-## Type de changement
-- [ ] Bug fix
-- [ ] Nouvelle fonctionnalité
-- [ ] Breaking change
-- [ ] Documentation
-
-## Checklist
-- [ ] Code suit les conventions du projet
-- [ ] Tests ajoutés/mis à jour
-- [ ] Documentation mise à jour
-- [ ] Pas d'erreurs de linting
-- [ ] Tests passent localement
-
-## Screenshots/Videos
-Si applicable, ajouter des démonstrations
-
-## Issues Liées
-Fixes #123
-Related to #456
-```
+### 2. Proposer une modification
+Si vous êtes développeur et que vous voulez mettre la main à la pâte :
+1. **Forkez** le projet pour avoir votre propre copie.
+2. **Créez une branche** pour votre travail (`feature/ma-super-idee`).
+3. **Développez** vos changements en suivant nos standards de qualité.
+4. **Envoyez une Pull Request** pour que nous puissions discuter de votre ajout.
 
 ---
 
-## 📐 Architecture du Projet (Clean Architecture)
+## 🛠️ Nos règles d'or pour le code
 
-Respectez cette structure pour les nouveaux fichiers:
-
-```
-lib/
-├── core/                # Constantes, DI, Thèmes
-├── data/
-│   ├── repositories/    # Implémentations des dépôts
-│   └── datasources/     # Sources de données (MySQL)
-├── domain/
-│   └── repositories/    # Interfaces (Contrats)
-├── models/              # Entités métier
-├── services/            # Services techniques
-├── providers/           # Gestion d'état (Provider)
-├── screens/             # UI
-└── widgets/             # Composants réutilisables
-```
-
-**Ajouter une nouvelle feature:**
-
-1. Définir l'interface du dépôt dans `lib/domain/repositories/`
-2. Créer le modèle dans `lib/models/`
-3. Implémenter le dépôt dans `lib/data/repositories/`
-4. Créer ou mettre à jour un provider dans `lib/providers/`
-5. Créer l'écran dans `lib/screens/`
+Pour que Prospectius reste une application de haute qualité, nous suivons quelques principes :
+- **Clarté avant tout** : Le code doit être facile à lire. Nommez vos variables et fonctions de manière explicite (en anglais pour la structure technique).
+- **Propreté (Clean Architecture)** : Respectez l'organisation en couches (Salle, Cuisine, Recettes) que nous avons définie.
+- **Tests** : Si vous ajoutez une fonctionnalité, assurez-vous qu'elle fonctionne correctement en ajoutant un petit test.
+- **Zéro avertissement** : Lancez `flutter analyze` avant de proposer vos changements. Un code sans avertissement est un code serein.
 
 ---
 
-## 🧪 Tests
+## 📋 Checklist avant de nous envoyer votre travail
 
-### Types de Tests à Ajouter
-
-**Tests Unitaires:**
-
-```dart
-// test/models/prospect_test.dart
-void main() {
-  group('Prospect Model', () {
-    test('creates prospect with valid data', () {
-      final prospect = Prospect(
-        id: 1,
-        idCompte: 1,
-        nom: 'Dupont',
-        // ...
-      );
-      expect(prospect.nom, 'Dupont');
-    });
-  });
-}
-```
-
-**Tests de Fournisseur:**
-
-```dart
-// test/providers/prospect_provider_test.dart
-void main() {
-  group('ProspectProvider', () {
-    test('loads prospects successfully', () async {
-      // Utiliser mockito pour mocker DatabaseService
-    });
-  });
-}
-```
-
-### Exécuter les Tests
-
-```bash
-# Tous les tests
-flutter test
-
-# Fichier spécifique
-flutter test test/models/prospect_test.dart
-
-# Avec couverture
-flutter test --coverage
-```
+- [ ] Mon code est joliment formaté (`dart format .`).
+- [ ] J'ai vérifié que mon changement fonctionne sur Windows et Linux.
+- [ ] J'ai mis à jour la documentation si nécessaire.
+- [ ] Mon message de validation (commit) explique clairement ce que j'ai fait.
 
 ---
 
-## 📚 Documentation
+## 🤝 Besoin d'un coup de main ?
 
-### Ajouter de la Documentation
+Si vous êtes perdu dans le code ou si vous ne savez pas par où commencer, n'hésitez pas à poser une question dans l'onglet "Discussions" de GitHub. Nous sommes là pour nous entraider.
 
-1. **Code inline:**
-
-   ```dart
-   /// Description courte
-   /// 
-   /// Description plus longue si nécessaire
-   /// 
-   /// Example:
-   /// ```dart
-   /// var result = myFunction(param);
-   /// ```
-   ```
-
-2. **Fichiers README:**
-   - Ajouter à `lib/services/README.md` si nouveau service
-   - Ajouter à `lib/providers/README.md` si nouveau provider
-
-3. **Mise à jour des guides:**
-   - Mettre à jour `INSTALLATION.md` si changements de setup
-   - Mettre à jour `ENVIRONMENT.md` si nouvelles variables
+Merci de faire partie de l'aventure Prospectius ! 🚀
 
 ---
-
-## 🚨 Checklist Avant Soumission
-
-- [ ] Code formaté avec `dart format`
-- [ ] `dart analyze` ne donne aucune erreur
-- [ ] Tests ajoutés et tous passent (`flutter test`)
-- [ ] Commit message clair et descriptif
-- [ ] Description PR complète avec checklist
-- [ ] Aucune dépendance non-essayée ajoutée
-- [ ] Documentation mise à jour
-- [ ] Pas de `TODO` oubliés
-- [ ] Fonctionne sur Windows ET Linux
-- [ ] Pas de breaking changes (ou bien documentés)
-
----
-
-## 🤔 Questions?
-
-1. Consultez la documentation dans `/docs`
-2. Cherchez dans les [issues existantes](../../issues)
-3. Créez une issue de discussion
-4. Consultez les commentaires du code existant
-
----
-
-## 📋 Processus de Review
-
-Les contributeurs doivent:
-
-1. Passer la validation automatisée
-2. Être approuvés par au moins 1 mainteneur
-3. Pas de conflits avec la branche principale
-4. Code doit suivre les standards du projet
-
----
-
-## 🎉 Après Acceptation
-
-Votre contribution sera:
-
-- Mergée dans `main`
-- Créditée dans les releases notes
-- Incluse dans la version suivante
-
----
-
-## 📞 Besoin d'Aide?
-
-- Lisez [ARCHITECTURE.md](./ARCHITECTURE.md) pour la structure
-- Consultez [README.md](./README.md) pour la vue d'ensemble
-- Vérifiez [scripts/README.md](./scripts/README.md) pour le développement
-
-Merci pour votre contribution! 🙏
+*Réalisé avec passion par APEXNova Labs © 2025*

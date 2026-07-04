@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/prospect.dart';
 import '../models/interaction.dart';
+import '../models/status_history.dart';
 import '../domain/repositories/i_prospect_repository.dart';
 import '../utils/exception_handler.dart';
 import '../core/di/service_locator.dart';
@@ -10,12 +11,14 @@ class ProspectProvider extends ChangeNotifier {
   
   List<Prospect> _prospects = [];
   final List<Interaction> _interactions = [];
+  List<StatusHistory> _statusHistory = [];
   bool _isLoading = false;
   String? _error;
   Prospect? _selectedProspect;
 
   List<Prospect> get prospects => _prospects;
   List<Interaction> get interactions => _interactions;
+  List<StatusHistory> get statusHistory => _statusHistory;
   bool get isLoading => _isLoading;
   String? get error => _error;
   Prospect? get selectedProspect => _selectedProspect;
@@ -107,7 +110,7 @@ class ProspectProvider extends ChangeNotifier {
 
   Future<bool> updateProspectStatus(int userId, String userRole, int prospectId, String newStatus) async {
     try {
-      await _repository.updateProspect(prospectId, {'status': newStatus});
+      await _repository.updateStatus(prospectId, newStatus, userId);
       await loadProspects(userId, userRole);
       return true;
     } catch (e) {
@@ -175,6 +178,18 @@ class ProspectProvider extends ChangeNotifier {
     } catch (e) {
       _error = _formatError(e);
       return false;
+    }
+  }
+
+  Future<void> loadStatusHistory(int prospectId) async {
+    _setLoading(true);
+    try {
+      _statusHistory = await _repository.getStatusHistory(prospectId);
+      _error = null;
+    } catch (e) {
+      _error = _formatError(e);
+    } finally {
+      _setLoading(false);
     }
   }
 
