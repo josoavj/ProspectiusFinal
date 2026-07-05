@@ -9,8 +9,8 @@ AppPublisher=APEXNova Labs
 AppPublisherURL=https://github.com/josoavj/ProspectiusFinal
 DefaultDirName={autopf}\Prospectius
 DefaultGroupName=Prospectius
-; Icône de l'application (si vous en avez une au format .ico)
-; SetupIconFile=..\..\assets\app_icon.ico
+; On utilise l'icône générée par Flutter pour l'installeur
+SetupIconFile=..\..\windows\runner\resources\app_icon.ico
 Compression=lzma2
 SolidCompression=yes
 OutputDir=..\..\installers
