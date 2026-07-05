@@ -34,19 +34,11 @@ class AboutScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 32),
                 // Logo/Icon
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.people_alt_rounded,
-                      size: 60,
-                      color: colorScheme.primary,
-                    ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: Image.asset(
+                    'assets/images/Logo Prospectius.png',
+                    height: 150,
                   ),
                 ),
                 const SizedBox(height: 32),

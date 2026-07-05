@@ -86,7 +86,6 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo avec animation de scale et fade
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: ScaleTransition(
@@ -102,10 +101,12 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.business_center,
-                      size: 100,
-                      color: Colors.white,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(32),
+                      child: Image.asset(
+                        'assets/images/Logo Prospectius.png',
+                        height: 150,
+                      ),
                     ),
                   ),
                 ),

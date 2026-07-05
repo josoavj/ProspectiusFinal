@@ -29,15 +29,27 @@ class SidebarNavigation extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Prospectius',
-                    style: TextStyle(
-                      color: colorScheme.onPrimary,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.asset(
+                          'assets/images/Logo Prospectius.png',
+                          height: 40,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Prospectius',
+                        style: TextStyle(
+                          color: colorScheme.onPrimary,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Consumer<AuthProvider>(
                     builder: (context, authProvider, _) {
                       return Column(
