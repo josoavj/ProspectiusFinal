@@ -57,7 +57,13 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.business_center_rounded, size: 84, color: colorScheme.primary),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Image.asset(
+                      'assets/images/Logo Prospectius.png',
+                      height: 120,
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   Text(
                     'Prospectius',
