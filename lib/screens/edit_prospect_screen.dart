@@ -92,7 +92,8 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
       'linkedin_url': _linkedinController.text,
       'site_web': _siteWebController.text,
       'description': _descriptionController.text,
-      'userId': authProvider.currentUser!.id, // Ajouté pour l'historique des statuts
+      'userId': authProvider.currentUser!.id,
+      'version': widget.prospect.version, // Ajout de la version pour le verrouillage
     };
 
     final success = await prospectProvider.updateProspect(

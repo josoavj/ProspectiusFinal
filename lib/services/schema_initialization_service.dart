@@ -106,6 +106,7 @@ class SchemaInitializationService {
           linkedin_url VARCHAR(255),
           site_web VARCHAR(255),
           description TEXT,
+          version INT DEFAULT 1,
           creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           date_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           deleted_at TIMESTAMP NULL,

@@ -9,6 +9,7 @@ abstract class IProspectRepository {
   Future<void> updateProspect(int id, Map<String, dynamic> data);
   Future<void> updateStatus(int id, String newStatus, int changedBy);
   Future<void> deleteProspect(int id);
+  Future<void> purgeDeletedProspects(int daysOld);
   
   Future<List<Interaction>> getInteractions(int prospectId);
   Future<void> createInteraction(Map<String, dynamic> data);

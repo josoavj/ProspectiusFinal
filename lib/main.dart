@@ -3,6 +3,7 @@ import 'package:prospectius/services/secure_storage_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 import 'core/di/service_locator.dart';
 import 'providers/auth_provider.dart';
 import 'providers/prospect_provider.dart';
@@ -36,6 +37,13 @@ void main() async {
 
   runApp(const MyApp());
 }
+class SearchIntent extends Intent {
+  const SearchIntent();
+}
+
+class NewProspectIntent extends Intent {
+  const NewProspectIntent();
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -43,6 +51,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
+// ... (MultiProvider config)
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProspectProvider()),
@@ -102,11 +111,25 @@ class MyApp extends StatelessWidget {
             ),
             themeMode: settings.themeMode,
             builder: (context, child) {
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  textScaler: TextScaler.linear(settings.fontSizeFactor),
+              return Shortcuts(
+                shortcuts: <LogicalKeySet, Intent>{
+                  LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF): const SearchIntent(),
+                  LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyN): const NewProspectIntent(),
+                },
+                child: Actions(
+                  actions: <Type, Action<Intent>>{
+                    SearchIntent: CallbackAction<SearchIntent>(onInvoke: (intent) {
+                       // Logique pour naviguer vers Exploration ou focus search
+                       return null;
+                    }),
+                  },
+                  child: MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                      textScaler: TextScaler.linear(settings.fontSizeFactor),
+                    ),
+                    child: child!,
+                  ),
                 ),
-                child: child!,
               );
             },
             home: const AuthWrapper(),

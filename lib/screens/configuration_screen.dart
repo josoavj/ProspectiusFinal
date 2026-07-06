@@ -4,6 +4,7 @@ import 'dart:io';
 import '../services/mysql_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/prospect_provider.dart';
 import '../services/secure_storage_service.dart';
 import '../providers/settings_provider.dart';
 
@@ -320,9 +321,55 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+
+            // Section Maintenance
+            if (userRole == 'Administrateur')
+              _buildSettingSection(
+                icon: Icons.cleaning_services_outlined,
+                title: 'Maintenance des données',
+                subtitle: 'Gérez le stockage et nettoyez la base',
+                colorScheme: colorScheme,
+                children: [
+                  _buildDocumentationItem(
+                    context,
+                    icon: Icons.delete_sweep_outlined,
+                    title: 'Purger les prospects supprimés',
+                    desc: 'Supprime définitivement les prospects mis à la corbeille il y a plus de 30 jours.',
+                    onTap: () => _showPurgeConfirmDialog(context),
+                  ),
+                ],
+              ),
             const SizedBox(height: 40),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showPurgeConfirmDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmer la purge'),
+        content: const Text('Voulez-vous supprimer définitivement les données marquées comme supprimées depuis plus de 30 jours ? Cette action est irréversible.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          TextButton(
+            onPressed: () async {
+              final prospectProvider = context.read<ProspectProvider>();
+              final messenger = ScaffoldMessenger.of(context);
+              Navigator.pop(context);
+              await prospectProvider.purgeOldData(30);
+              if (mounted) {
+                messenger.showSnackBar(
+                  const SnackBar(content: Text('Purge terminée avec succès')),
+                );
+              }
+            },
+            child: const Text('Purger maintenant', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

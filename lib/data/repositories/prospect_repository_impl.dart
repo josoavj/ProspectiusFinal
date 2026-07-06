@@ -6,6 +6,7 @@ import '../../models/status_history.dart';
 import '../../services/mysql_service.dart';
 import '../../services/cache_service.dart';
 import '../../core/constants/sql_queries.dart';
+import '../../utils/exception_handler.dart';
 
 class ProspectRepositoryImpl implements IProspectRepository {
   final MySQLService _mysqlService;
@@ -99,44 +100,66 @@ class ProspectRepositoryImpl implements IProspectRepository {
 
     final connection = _mysqlService.getConnection();
     await connection.transaction((ctx) async {
-      // Si le statut est modifié, on enregistre l'historique
-      if (data.containsKey('status')) {
-        final current = await ctx.query('SELECT status FROM Prospect WHERE id_prospect = ?', [id]);
-        if (current.isNotEmpty) {
-          final oldStatus = current.first['status'] as String;
-          final newStatus = data['status'] as String;
-          
-          if (oldStatus != newStatus) {
-            // Note: On suppose que modifiedBy est passé dans data ou géré autrement.
-            // Pour l'instant, si modifiedBy n'est pas là, on met 0 ou on cherche l'ID du créateur
-            // Mais idéalement, modifiedBy devrait être passé.
-            int changedBy = data['userId'] ?? 1; // Fallback temporaire
-            
-            await ctx.query(
-              SqlQueries.insertStatusHistory,
-              [id, oldStatus, newStatus, changedBy],
+      // 1. Vérification de la version pour le verrouillage optimiste
+      if (data.containsKey('version')) {
+        final checkVersion = await ctx.query(
+          'SELECT version FROM Prospect WHERE id_prospect = ?',
+          [id],
+        );
+        if (checkVersion.isNotEmpty) {
+          final currentVersion = checkVersion.first['version'] as int;
+          if (currentVersion != data['version']) {
+            throw DatabaseException(
+              message: 'Conflit de modification: Les données de ce prospect ont été mises à jour par un autre utilisateur.',
+              code: 'OPTIMISTIC_LOCK_ERROR',
             );
           }
         }
       }
 
+      // 2. Gestion de l'historique des statuts
+      if (data.containsKey('status')) {
+        final current = await ctx.query('SELECT status FROM Prospect WHERE id_prospect = ?', [id]);
+        if (current.isNotEmpty) {
+          final oldStatus = current.first['status'] as String;
+          final newStatus = data['status'] as String;
+          if (oldStatus != newStatus) {
+            int changedBy = data['userId'] ?? 1;
+            await ctx.query(SqlQueries.insertStatusHistory, [id, oldStatus, newStatus, changedBy]);
+          }
+        }
+      }
+
+      // 3. Mise à jour avec incrémentation de la version
       values.add(id);
-      await ctx.query(
-        'UPDATE Prospect SET ${updates.join(", ")}, date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
+      final updateResult = await ctx.query(
+        'UPDATE Prospect SET ${updates.join(", ")}, version = version + 1, date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL',
         values,
       );
+
+      if (updateResult.affectedRows == 0) {
+        throw DatabaseException(message: 'Impossible de mettre à jour le prospect: il a peut-être été supprimé.');
+      }
     });
     
     _cache.clearAll(); 
   }
 
   @override
+  Future<void> purgeDeletedProspects(int daysOld) async {
+    await _mysqlService.query(
+      'DELETE FROM Prospect WHERE deleted_at < DATE_SUB(NOW(), INTERVAL ? DAY)',
+      [daysOld],
+    );
+  }
+
+  @override
   Future<void> updateStatus(int id, String newStatus, int changedBy) async {
     final connection = _mysqlService.getConnection();
     await connection.transaction((ctx) async {
-      // 1. Récupérer l'ancien statut
+      // 1. Récupérer l'ancien statut et la version
       final current = await ctx.query(
-        'SELECT status FROM Prospect WHERE id_prospect = ?',
+        'SELECT status, version FROM Prospect WHERE id_prospect = ?',
         [id],
       );
       
@@ -145,9 +168,9 @@ class ProspectRepositoryImpl implements IProspectRepository {
 
       if (oldStatus == newStatus) return;
 
-      // 2. Mettre à jour le prospect
+      // 2. Mettre à jour le prospect (incrémenter version)
       await ctx.query(
-        'UPDATE Prospect SET status = ?, date_update = NOW() WHERE id_prospect = ?',
+        'UPDATE Prospect SET status = ?, version = version + 1, date_update = NOW() WHERE id_prospect = ?',
         [newStatus, id],
       );
 
