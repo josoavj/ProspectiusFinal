@@ -7,6 +7,7 @@ import 'connection_pool_service.dart';
 import 'migration_service.dart';
 import 'schema_initialization_service.dart';
 import 'secure_storage_service.dart';
+import 'logging_service.dart'; // Ajout
 
 class MySQLConfig {
   final String host;
@@ -242,46 +243,45 @@ class MySQLService {
     }
   }
 
-  Future<mysql.Results> query(String sql,
-      [List<dynamic> values = const []]) async {
-    if (_connection == null || !_isConnected) {
-      AppLogger.warning(
-          'Tentative de requête sans connexion active, tentative de reconnexion...');
-      // Essayer de reconnecter automatiquement
+  Future<mysql.Results> query(String sql, [List<dynamic> values = const []]) async {
+    int retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
       try {
-        await _reconnect();
-      } catch (e) {
-        AppLogger.error('Impossible de reconnecter à MySQL', e);
-        throw ConnectionException(
-          message: 'MySQL non connecté',
-          code: 'NOT_CONNECTED',
-        );
-      }
-    }
-    try {
-      if (_usePool && _pool.isInitialized) {
-        return await _pool.execute(
-          (connection) async {
+        if (_connection == null || !_isConnected) {
+          AppLogger.warning('Tentative de reconnexion automatique...');
+          await _reconnect();
+        }
+
+        if (_usePool && _pool.isInitialized) {
+          return await _pool.execute((connection) async {
             final results = await connection.query(sql, values);
             AppLogger.debug('SQL Execute: $sql | Rows: ${results.length}');
             return results;
-          },
-        );
+          });
+        }
+        
+        final results = await _connection!.query(sql, values);
+        AppLogger.debug('SQL Execute: $sql | Rows: ${results.length}');
+        return results;
+      } catch (e, stackTrace) {
+        retryCount++;
+        AppLogger.warning('Échec de la requête (tentative $retryCount/$maxRetries): $e');
+        LoggingService().logError('Erreur SQL (tentative $retryCount): $e', stackTrace);
+        _isConnected = false;
+        
+        if (retryCount >= maxRetries) {
+          throw DatabaseException(
+            message: 'Erreur réseau persistante avec la base de données. Vérifiez votre connexion.',
+            originalException: e as Exception,
+          );
+        }
+        // Attendre un peu avant de réessayer
+        await Future.delayed(Duration(milliseconds: 500 * retryCount));
       }
-      final results = await _connection!.query(sql, values);
-      AppLogger.debug('SQL Execute: $sql | Rows: ${results.length}');
-      return results;
-    } catch (e, stackTrace) {
-      AppLogger.error(
-          'Erreur lors de l\'exécution de la requête', e, stackTrace);
-      // Marquer comme déconnecté et rethrow
-      _isConnected = false;
-      throw DatabaseException(
-        message: 'Erreur lors de l\'exécution de la requête: $e',
-        originalException: e as Exception,
-        stackTrace: stackTrace,
-      );
     }
+    throw Exception('Erreur fatale de connexion');
   }
 
   Future<void> close() async {
