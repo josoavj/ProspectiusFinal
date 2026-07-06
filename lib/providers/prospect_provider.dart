@@ -4,6 +4,7 @@ import '../models/interaction.dart';
 import '../models/status_history.dart';
 import '../domain/repositories/i_prospect_repository.dart';
 import '../utils/exception_handler.dart';
+import '../utils/app_logger.dart';
 import '../core/di/service_locator.dart';
 
 class ProspectProvider extends ChangeNotifier {
@@ -108,7 +109,7 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateProspectStatus(int userId, String userRole, int prospectId, String newStatus) async {
+  Future<bool> updateProspectStatus(int userId, String userRole, int prospectId, String newStatus, {int? version}) async {
     try {
       await _repository.updateStatus(prospectId, newStatus, userId);
       await loadProspects(userId, userRole);
@@ -190,6 +191,14 @@ class ProspectProvider extends ChangeNotifier {
       _error = _formatError(e);
     } finally {
       _setLoading(false);
+    }
+  }
+
+  Future<void> purgeOldData(int days) async {
+    try {
+      await _repository.purgeDeletedProspects(days);
+    } catch (e) {
+      AppLogger.error('Erreur lors de la purge: $e');
     }
   }
 
