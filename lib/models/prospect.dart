@@ -17,6 +17,7 @@ class Prospect {
   final DateTime creation;
   final DateTime dateUpdate;
   final int assignation;
+  final int version;
 
   Prospect({
     required this.id,
@@ -37,6 +38,7 @@ class Prospect {
     required this.creation,
     required this.dateUpdate,
     required this.assignation,
+    this.version = 1,
   });
 
   factory Prospect.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,7 @@ class Prospect {
       creation: DateTime.parse(json['creation'].toString()),
       dateUpdate: DateTime.parse(json['date_update'].toString()),
       assignation: (num.tryParse((json['assignation'] ?? 0).toString()) ?? 0).toInt(),
+      version: (num.tryParse((json['version'] ?? 1).toString()) ?? 1).toInt(),
     );
   }
 
@@ -81,6 +84,7 @@ class Prospect {
         'creation': creation.toIso8601String(),
         'date_update': dateUpdate.toIso8601String(),
         'assignation': assignation,
+        'version': version,
       };
 
   String get fullName => '$prenom $nom';
