@@ -26,10 +26,12 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
   late TextEditingController _linkedinController;
   late TextEditingController _siteWebController;
   late TextEditingController _descriptionController;
+  late TextEditingController _consentementSourceController;
 
   late String _selectedType;
   late String _selectedStatus;
   late String _selectedPriorite;
+  DateTime? _consentementDate;
   bool _isLoading = false;
 
   @override
@@ -47,10 +49,12 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     _linkedinController = TextEditingController(text: p.linkedinUrl ?? '');
     _siteWebController = TextEditingController(text: p.siteWeb ?? '');
     _descriptionController = TextEditingController(text: p.description ?? '');
+    _consentementSourceController = TextEditingController(text: p.consentementSource ?? '');
 
     _selectedType = p.type;
     _selectedStatus = p.status;
     _selectedPriorite = p.priorite;
+    _consentementDate = p.consentementDate;
   }
 
   @override
@@ -66,8 +70,9 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     _linkedinController.dispose();
     _siteWebController.dispose();
     _descriptionController.dispose();
+    _consentementSourceController.dispose();
     super.dispose();
-  }
+}
 
   void _handleSave() async {
     final authProvider = context.read<AuthProvider>();
@@ -92,6 +97,8 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
       'linkedin_url': _linkedinController.text,
       'site_web': _siteWebController.text,
       'description': _descriptionController.text,
+      'consentement_date': _consentementDate?.toIso8601String(),
+      'consentement_source': _consentementSourceController.text,
       'userId': authProvider.currentUser!.id,
       'version': widget.prospect.version, // Ajout de la version pour le verrouillage
     };
@@ -122,6 +129,8 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
         linkedinUrl: _linkedinController.text,
         siteWeb: _siteWebController.text,
         description: _descriptionController.text,
+        consentementDate: _consentementDate,
+        consentementSource: _consentementSourceController.text,
         creation: widget.prospect.creation,
         dateUpdate: DateTime.now(),
         assignation: widget.prospect.assignation,
@@ -169,6 +178,28 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                 const SizedBox(height: 16),
                 _buildSection(context, 'Notes', [
                   _buildField(_descriptionController, 'Description / Contexte', Icons.note_outlined, maxLines: 5),
+                ]),
+                const SizedBox(height: 16),
+                _buildSection(context, 'RGPD & Conformité', [
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.calendar_today_outlined),
+                    title: const Text('Date du consentement', style: TextStyle(fontSize: 14)),
+                    subtitle: Text(_consentementDate == null ? 'Non définie' : '${_consentementDate!.day}/${_consentementDate!.month}/${_consentementDate!.year}'),
+                    trailing: TextButton(
+                      onPressed: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: _consentementDate ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime.now(),
+                        );
+                        if (date != null) setState(() => _consentementDate = date);
+                      },
+                      child: const Text('Modifier'),
+                    ),
+                  ),
+                  _buildField(_consentementSourceController, 'Source du consentement (ex: Formulaire web)', Icons.verified_user_outlined),
                 ]),
                 const SizedBox(height: 32),
                 SizedBox(
