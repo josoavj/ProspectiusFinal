@@ -7,6 +7,7 @@ import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
 import '../services/secure_storage_service.dart';
 import '../providers/settings_provider.dart';
+import 'help_detail_screen.dart';
 
 class ConfigurationScreen extends StatefulWidget {
   const ConfigurationScreen({super.key});
@@ -296,28 +297,60 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                   icon: Icons.auto_stories_outlined,
                   title: 'Guide de démarrage rapide',
                   desc: 'Tout ce qu\'il faut savoir pour bien débuter avec vos premiers prospects.',
-                  onTap: () {},
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HelpDetailScreen(
+                        title: 'Démarrage Rapide',
+                        type: 'start',
+                      ),
+                    ),
+                  ),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.keyboard_alt_outlined,
                   title: 'Astuces clavier',
                   desc: 'Gagnez du temps au quotidien grâce aux raccourcis essentiels.',
-                  onTap: () {},
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HelpDetailScreen(
+                        title: 'Raccourcis Clavier',
+                        type: 'keyboard',
+                      ),
+                    ),
+                  ),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.verified_user_outlined,
                   title: 'Sécurité de vos données',
                   desc: 'Comprendre comment vos informations sont protégées localement.',
-                  onTap: () {},
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HelpDetailScreen(
+                        title: 'Sécurité & Confidentialité',
+                        type: 'security',
+                      ),
+                    ),
+                  ),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.alternate_email_outlined,
                   title: 'Contacter l\'assistance',
                   desc: 'Une question ou une suggestion ? Notre équipe est à votre écoute.',
-                  onTap: () {},
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const HelpDetailScreen(
+                        title: 'Support & Contact',
+                        type: 'support',
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
