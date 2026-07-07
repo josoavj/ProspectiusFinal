@@ -26,12 +26,14 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   late TextEditingController _linkedinController;
   late TextEditingController _siteWebController;
   late TextEditingController _descriptionController;
+  late TextEditingController _consentementSourceController;
   late TextEditingController _interactionNoteController;
 
   String _selectedType = 'particulier';
   String _selectedStatus = 'nouveau';
   String _selectedPriorite = 'moyenne';
   String _selectedInteractionType = 'appel';
+  DateTime? _consentementDate;
 
   @override
   void initState() {
@@ -48,11 +50,13 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _linkedinController = TextEditingController(text: p?.linkedinUrl ?? '');
     _siteWebController = TextEditingController(text: p?.siteWeb ?? '');
     _descriptionController = TextEditingController(text: p?.description ?? '');
+    _consentementSourceController = TextEditingController(text: p?.consentementSource ?? '');
     _interactionNoteController = TextEditingController();
 
     _selectedType = p?.type ?? 'particulier';
     _selectedStatus = p?.status ?? 'nouveau';
     _selectedPriorite = p?.priorite ?? 'moyenne';
+    _consentementDate = p?.consentementDate;
   }
 
   @override
@@ -68,6 +72,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _linkedinController.dispose();
     _siteWebController.dispose();
     _descriptionController.dispose();
+    _consentementSourceController.dispose();
     _interactionNoteController.dispose();
     super.dispose();
   }
@@ -112,6 +117,8 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
       'linkedinUrl': _linkedinController.text,
       'siteWeb': _siteWebController.text,
       'description': _descriptionController.text,
+      'consentementDate': _consentementDate,
+      'consentementSource': _consentementSourceController.text,
     };
 
     bool success;
@@ -196,6 +203,28 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
             const SizedBox(height: 16),
             _buildSection(context, 'Notes', [
               _buildField(_descriptionController, 'Description / Contexte', Icons.note_outlined, maxLines: 3),
+            ]),
+            const SizedBox(height: 16),
+            _buildSection(context, 'RGPD & Conformité', [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.calendar_today_outlined),
+                title: const Text('Date du consentement', style: TextStyle(fontSize: 14)),
+                subtitle: Text(_consentementDate == null ? 'Non définie' : '${_consentementDate!.day}/${_consentementDate!.month}/${_consentementDate!.year}'),
+                trailing: TextButton(
+                  onPressed: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now(),
+                    );
+                    if (date != null) setState(() => _consentementDate = date);
+                  },
+                  child: const Text('Modifier'),
+                ),
+              ),
+              _buildField(_consentementSourceController, 'Source du consentement (ex: Formulaire web)', Icons.verified_user_outlined),
             ]),
             if (widget.prospect == null) ...[
               const SizedBox(height: 16),
