@@ -2,105 +2,66 @@
 <h1 align="center">Prospectius</h1>
 
 <p align="center">
-  <strong>Transformez vos relations commerciales en succès durable</strong>
+  <strong>Le CRM nouvelle génération : Sécurisé, Collaboratif et Centré sur l'Humain</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.2.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/flutter-%3E%3D3.0.0-blue" alt="Flutter">
-  <img src="https://img.shields.io/badge/database-MySQL-orange" alt="Database">
-  <img src="https://img.shields.io/github/last-commit/josoavj/ProspectiusFinal?style=flat-square" alt="Last Commit">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue" alt="Platform">
+  <img src="https://img.shields.io/badge/security-RGPD--ready-green" alt="Security">
 </p>
 
-## Pourquoi Prospectius ?
+## Votre partenaire de croissance
 
-Prospectius n'est pas seulement un outil de gestion, c'est le partenaire de votre croissance commerciale. Conçu pour simplifier la vie des commerciaux et des entrepreneurs, il vous aide à centraliser vos contacts, à visualiser vos opportunités et à ne jamais perdre le fil d'un échange important.
+Prospectius transforme la gestion de vos prospects en une expérience fluide et valorisante. Conçu pour les entreprises exigeantes, il allie la puissance d'un outil professionnel à la simplicité d'une interface moderne et intuitive.
 
-## Ce que vous pouvez faire avec Prospectius
+## Les forces de Prospectius
 
-### Un carnet d'adresses intelligent
+### 🛡️ Sécurité & Confidentialité sans compromis
+*   **Souveraineté des données** : Vos informations restent sur VOTRE base MySQL. Aucun stockage cloud tiers.
+*   **Protection bancaire** : Mots de passe hachés avec BCrypt et stockage sécurisé des identifiants (Keystore Windows).
+*   **Prêt pour le RGPD** : Suivi natif du consentement et purge automatique des données anciennes.
 
-Regroupez toutes les informations de vos prospects au même endroit. Fini les notes volantes ou les fichiers Excel oubliés. Que ce soit une entreprise ou un particulier, chaque fiche contient tout ce dont vous avez besoin pour réussir.
+### 🎢 Pilotage Visuel (Pipeline Kanban)
+Gérez votre flux de vente par simple glisser-déposer. Visualisez instantanément la santé de votre activité et priorisez vos actions grâce aux indicateurs de priorité et de statut.
 
-### Visualisez votre réussite avec le Pipeline
+### 📝 Mémoire Collaborative
+*   **Parcours du Prospect** : Suivez l'historique complet des changements de statut.
+*   **Suivi des Échanges** : Historisez chaque appel, email ou réunion avec précision.
+*   **Attribution (RBAC)** : Gérez les accès par rôle (Admin, Commercial, Utilisateur) pour une collaboration sécurisée.
 
-Suivez l'avancée de vos opportunités sur un tableau intuitif. Faites glisser vos prospects d'une étape à l'autre (Nouveau, Intéressé, Négociation...) et voyez votre tunnel de vente se remplir.
-
-### La mémoire de vos relations
-
-Notez chaque appel, chaque email et chaque réunion. Prospectius garde l'historique complet de vos échanges pour que vous sachiez exactement où vous en êtes lors de votre prochaine relance.
-
-### Zéro oubli, plus de ventes
-
-Planifiez des rappels et des tâches directement sur vos fiches prospects. L'application vous aide à prioriser vos actions pour ne jamais laisser passer une opportunité cruciale.
-
-### Comprenez vos résultats
-
-Visualisez vos performances grâce à des statistiques simples et claires. Analysez vos taux de conversion pour savoir ce qui fonctionne le mieux dans votre stratégie.
+### ⚙️ Performance & Robustesse
+*   **Résilience** : Connexion à la base de données auto-réparatrice (Retry logic).
+*   **Intégrité** : Verrouillage optimiste pour éviter les conflits lors de modifications simultanées.
+*   **Vitesse** : Navigation native optimisée pour Windows avec raccourcis clavier (`Ctrl+F`, `Ctrl+N`).
 
 ---
 
-## Installation Rapide
+## 🚀 Installation & Déploiement
 
-### Pour les Utilisateurs
+### 👤 Utilisateurs (Production) 
 
-**Étape 1 : Téléchargement**
+1. **Serveur** : Installez MariaDB ou MySQL sur votre machine ou réseau.
+2.  **Logiciel** : Téléchargez et lancez `Prospectius_Setup.exe` (Windows).
+3.  **Connexion** : Saisissez vos accès lors du premier lancement. L'application prépare la base de données automatiquement.
 
-Téléchargez la version adaptée à votre ordinateur (Windows ou Linux) sur la [page des releases](https://github.com/josoavj/ProspectiusFinal/releases/latest).
+### 👨‍💻 Développeurs (Open Source)
 
-**Étape 2 : Préparation de la base de données**
-
-Prospectius utilise MySQL ou MariaDB pour stocker vos données en toute sécurité sur votre propre machine ou serveur.
-
-1. Installez MariaDB ou MySQL.
-2. Importez le fichier `Prospectius.sql` fourni.
-
-**Étape 3 : Premier lancement**
-
-Lancez l'application. Lors de la première ouverture, saisissez vos identifiants de base de données pour connecter Prospectius à votre espace de stockage.
+Consultez notre [Guide de Démarrage Rapide](./docs/QUICKSTART.md) pour configurer votre environnement Flutter et contribuer au projet.
 
 ---
 
-## Pour les Développeurs
+## 📁 Ressources
+- [Démarrage Rapide](./docs/QUICKSTART.md)
+- [Architecture Technique](./docs/ARCHITECTURE.md)
+- [Guide d'Installation détaillé](./docs/INSTALLATION.md)
+- [Journal des Modifications (Changelog)](./CHANGELOG.md)
 
-Le projet est construit avec **Flutter** et suit une architecture propre (Clean Architecture) pour une maintenance simplifiée.
+## 👥 Équipe & Support
 
-### Configuration Express
-
-```bash
-git clone https://github.com/josoavj/ProspectiusFinal.git
-cd ProspectiusFinal
-flutter pub get
-# Activez votre plateforme
-flutter config --enable-windows-desktop 
-flutter config --enable-linux-desktop
-```
-
-### Lancement
-
-```bash
-# Windows
-flutter run -d windows
-# Linux
-flutter run -d linux
-```
+- **Vision & Développement Principal** : [josoavj](https://github.com/josoavj)
+- **Expérience Utilisateur & Design** : [Maminirina ANDRIAMASINORO](https://github.com/AinaMaminirina18)
 
 ---
-
-## 📁 Structure du projet
-
-- **lib/presentation** : Tout ce que l'utilisateur voit et touche (écrans, widgets).
-- **lib/domain** : Les règles métier et la logique pure de l'application.
-- **lib/data** : Le pont vers votre base de données MySQL.
-- **lib/providers** : Le cerveau qui coordonne l'affichage et les données.
-
-## L'Équipe derrière le projet
-
-- **Vision & Développement Principal :** [josoavj](https://github.com/josoavj)
-
-## Notice de Sécurité
-
-Prospectius est conçu pour respecter la confidentialité de vos données commerciales. Toutes les informations sont stockées localement sur votre instance MySQL. Pour plus de détails, consultez notre [Politique de Sécurité](./SECURITY.md).
-
----
-*Réalisé par APEXNova Labs © 2025*
+*Réalisé avec passion par APEXNova Labs © 2025*
