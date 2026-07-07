@@ -106,12 +106,18 @@ class SchemaInitializationService {
           linkedin_url VARCHAR(255),
           site_web VARCHAR(255),
           description TEXT,
+          consentement_date DATETIME NULL,
+          consentement_source VARCHAR(100) NULL,
           version INT DEFAULT 1,
           creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           date_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           deleted_at TIMESTAMP NULL,
           assignation INT,
+          created_by INT,
+          updated_by INT,
           FOREIGN KEY (assignation) REFERENCES Account(id_compte) ON DELETE SET NULL,
+          FOREIGN KEY (created_by) REFERENCES Account(id_compte) ON DELETE SET NULL,
+          FOREIGN KEY (updated_by) REFERENCES Account(id_compte) ON DELETE SET NULL,
           INDEX idx_assignation (assignation),
           INDEX idx_status (status),
           INDEX idx_prospect_full_name (nomp, prenomp),
@@ -202,7 +208,8 @@ class SchemaInitializationService {
           FOREIGN KEY (id_prospect) REFERENCES Prospect(id_prospect) ON DELETE CASCADE,
           FOREIGN KEY (changed_by) REFERENCES Account(id_compte) ON DELETE RESTRICT,
           INDEX idx_prospect (id_prospect),
-          INDEX idx_changed_by (changed_by)
+          INDEX idx_changed_by (changed_by),
+          INDEX idx_changed_at (changed_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       ''');
       AppLogger.success('Table StatusHistory créée/vérifiée');

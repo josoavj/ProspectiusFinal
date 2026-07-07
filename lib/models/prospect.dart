@@ -14,6 +14,8 @@ class Prospect {
   final String? linkedinUrl;
   final String? siteWeb;
   final String? description;
+  final DateTime? consentementDate;
+  final String? consentementSource;
   final DateTime creation;
   final DateTime dateUpdate;
   final int assignation;
@@ -35,6 +37,8 @@ class Prospect {
     this.linkedinUrl,
     this.siteWeb,
     this.description,
+    this.consentementDate,
+    this.consentementSource,
     required this.creation,
     required this.dateUpdate,
     required this.assignation,
@@ -58,6 +62,8 @@ class Prospect {
       linkedinUrl: json['linkedin_url']?.toString(),
       siteWeb: json['site_web']?.toString(),
       description: json['description']?.toString(),
+      consentementDate: json['consentement_date'] != null ? DateTime.parse(json['consentement_date'].toString()) : null,
+      consentementSource: json['consentement_source']?.toString(),
       creation: DateTime.parse(json['creation'].toString()),
       dateUpdate: DateTime.parse(json['date_update'].toString()),
       assignation: (num.tryParse((json['assignation'] ?? 0).toString()) ?? 0).toInt(),
@@ -81,6 +87,8 @@ class Prospect {
         'linkedin_url': linkedinUrl,
         'site_web': siteWeb,
         'description': description,
+        'consentement_date': consentementDate?.toIso8601String(),
+        'consentement_source': consentementSource,
         'creation': creation.toIso8601String(),
         'date_update': dateUpdate.toIso8601String(),
         'assignation': assignation,

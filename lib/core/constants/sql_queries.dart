@@ -16,8 +16,8 @@ class SqlQueries {
   
   static const String insertProspect = '''
     INSERT INTO Prospect 
-    (nomp, prenomp, email, telephone, adresse, type, assignation, status, priorite, source, nom_entreprise, poste, linkedin_url, site_web, description, creation, date_update)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'nouveau', ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+    (nomp, prenomp, email, telephone, adresse, type, assignation, status, priorite, source, nom_entreprise, poste, linkedin_url, site_web, description, consentement_date, consentement_source, creation, date_update)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'nouveau', ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
   ''';
 
   static const String softDeleteProspect = '''
