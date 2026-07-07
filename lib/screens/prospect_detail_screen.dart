@@ -228,6 +228,9 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
             _buildDescriptionCard(),
             const SizedBox(height: 24),
           ],
+          _buildSectionTitle('RGPD & Conformité'),
+          _buildRGPDCard(),
+          const SizedBox(height: 24),
           _buildSectionTitle('Champs Personnalisés'),
           _buildCustomFieldsList(),
         ],
@@ -321,6 +324,26 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
             _buildDetailRow('Site Web', _currentProspect.siteWeb ?? '-', Icons.language_outlined),
             const Divider(height: 24),
             _buildDetailRow('LinkedIn', _currentProspect.linkedinUrl ?? '-', Icons.link_outlined),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRGPDCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final dateStr = _currentProspect.consentementDate != null 
+        ? '${_currentProspect.consentementDate!.day}/${_currentProspect.consentementDate!.month}/${_currentProspect.consentementDate!.year}'
+        : 'Non renseignée';
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildDetailRow('Date Consentement', dateStr, Icons.calendar_today_outlined),
+            const Divider(height: 24),
+            _buildDetailRow('Source Consentement', _currentProspect.consentementSource ?? 'Non renseignée', Icons.verified_user_outlined),
           ],
         ),
       ),
