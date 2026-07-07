@@ -61,6 +61,8 @@ class ProspectRepositoryImpl implements IProspectRepository {
           data['linkedinUrl'],
           data['siteWeb'],
           data['description'],
+          data['consentementDate']?.toUtc(),
+          data['consentementSource'],
         ],
       );
 
@@ -83,7 +85,8 @@ class ProspectRepositoryImpl implements IProspectRepository {
     const allowedColumns = {
       'nomp', 'prenomp', 'email', 'telephone', 'adresse', 'type',
       'status', 'assignation', 'priorite', 'source', 'nom_entreprise',
-      'poste', 'linkedin_url', 'site_web', 'description'
+      'poste', 'linkedin_url', 'site_web', 'description',
+      'consentement_date', 'consentement_source'
     };
 
     final updates = <String>[];
