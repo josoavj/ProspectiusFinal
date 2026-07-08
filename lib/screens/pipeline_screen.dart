@@ -51,6 +51,7 @@ class _PipelineScreenState extends State<PipelineScreen> {
           return SimpleStateBuilder(
             isLoading: provider.isLoading && provider.prospects.isEmpty,
             error: provider.error,
+            loadingWidget: const SkeletonKanbanLoader(),
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final isWideScreen = constraints.maxWidth > 1400;
