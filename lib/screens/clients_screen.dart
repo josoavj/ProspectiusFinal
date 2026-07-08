@@ -4,6 +4,7 @@ import '../models/prospect.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
 import '../utils/text_formatter.dart';
+import '../widgets/data_state_widget.dart';
 import 'prospect_detail_screen.dart';
 
 class ClientsScreen extends StatefulWidget {
@@ -61,9 +62,12 @@ class _ClientsScreenState extends State<ClientsScreen> {
                 ),
               ),
               Expanded(
-                child: prospectProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _buildClientsList(prospectProvider),
+                child: SimpleStateBuilder(
+                  isLoading: prospectProvider.isLoading && prospectProvider.prospects.isEmpty,
+                  error: prospectProvider.error,
+                  loadingWidget: const SkeletonListLoader(),
+                  child: _buildClientsList(prospectProvider),
+                ),
               ),
             ],
           );

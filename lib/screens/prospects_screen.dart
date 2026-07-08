@@ -107,8 +107,9 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
               ),
               Expanded(
                 child: SimpleStateBuilder(
-                  isLoading: prospectProvider.isLoading,
+                  isLoading: prospectProvider.isLoading && prospectProvider.prospects.isEmpty,
                   error: prospectProvider.error,
+                  loadingWidget: const SkeletonListLoader(),
                   child: prospectProvider.prospects.isEmpty
                       ? Center(
                           child: Column(
