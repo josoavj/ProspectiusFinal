@@ -75,7 +75,8 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       body: Consumer<ProspectProvider>(
@@ -112,26 +113,38 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
                   loadingWidget: const SkeletonListLoader(),
                   child: prospectProvider.prospects.isEmpty
                       ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.people_outline, size: 64, color: colorScheme.outline),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Aucun prospect',
-                                style: TextStyle(fontSize: 18, color: colorScheme.onSurfaceVariant),
-                              ),
-                              const SizedBox(height: 24),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const AddProspectScreen()),
-                                  );
-                                },
-                                icon: const Icon(Icons.add),
-                                label: const Text('Ajouter un prospect'),
-                              ),
-                            ],
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(24),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(Icons.person_add_outlined, size: 80, color: colorScheme.primary),
+                                ),
+                                const SizedBox(height: 24),
+                                Text(
+                                  'Commencez votre aventure',
+                                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Votre liste de prospects est vide pour le moment. Ajoutez votre premier contact pour commencer à suivre vos opportunités.',
+                                  style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 32),
+                                // On ne met pas de bouton ici pour éviter le doublon avec le FAB, 
+                                // mais on peut mettre une petite flèche qui pointe vers le FAB (optionnel)
+                                Icon(Icons.arrow_downward, color: colorScheme.primary.withValues(alpha: 0.5)),
+                                Text('Cliquez sur le bouton en bas à droite', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w500, fontSize: 13)),
+                              ],
+                            ),
                           ),
                         )
                       : ListView.builder(
