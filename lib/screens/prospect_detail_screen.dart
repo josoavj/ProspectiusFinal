@@ -209,7 +209,14 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildInfoTab() {
-    final isParticulier = _currentProspect.type.toLowerCase() == 'particulier';
+    final type = _currentProspect.type.toLowerCase();
+    final isParticulier = type == 'particulier';
+    final isOrganisation = type == 'organisation';
+    
+    String sectionTitle = 'Entreprise & Digital';
+    if (isParticulier) sectionTitle = 'Source & Digital';
+    if (isOrganisation) sectionTitle = 'Organisation & Digital';
+
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -220,7 +227,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           _buildSectionTitle('Coordonnées'),
           _buildContactCard(),
           const SizedBox(height: 24),
-          _buildSectionTitle(isParticulier ? 'Source & Digital' : 'Entreprise & Digital'),
+          _buildSectionTitle(sectionTitle),
           _buildDigitalCard(),
           const SizedBox(height: 24),
           if (_currentProspect.description?.isNotEmpty ?? false) ...[
@@ -307,14 +314,21 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildDigitalCard() {
-    final isParticulier = _currentProspect.type.toLowerCase() == 'particulier';
+    final type = _currentProspect.type.toLowerCase();
+    final isParticulier = type == 'particulier';
+    final isOrganisation = type == 'organisation';
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             if (!isParticulier) ...[
-              _buildDetailRow('Entreprise', _currentProspect.nomEntreprise ?? '-', Icons.business_outlined),
+              _buildDetailRow(
+                isOrganisation ? 'Organisation' : 'Entreprise', 
+                _currentProspect.nomEntreprise ?? '-', 
+                isOrganisation ? Icons.account_balance_outlined : Icons.business_outlined
+              ),
               const Divider(height: 24),
               _buildDetailRow('Poste', _currentProspect.poste ?? '-', Icons.work_outline),
               const Divider(height: 24),
