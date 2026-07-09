@@ -281,6 +281,7 @@ class _PasswordChangeDialog extends StatefulWidget {
 }
 
 class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
+  int _currentStep = 1; // 1: Vérification actuel, 2: Nouveau mot de passe
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _hasMinLength = false;
@@ -289,6 +290,7 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
   bool _hasDigits = false;
   bool _showCriteria = false;
   bool _passwordsMatch = false;
+  bool _isValidating = false;
   String? _error;
 
   @override
@@ -311,122 +313,274 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
     });
   }
 
+  Future<void> _validateCurrentPassword() async {
+    final current = widget.currentPasswordController.text;
+    if (current.isEmpty) {
+      setState(() => _error = 'Veuillez saisir votre mot de passe actuel');
+      return;
+    }
+
+    setState(() {
+      _isValidating = true;
+      _error = null;
+    });
+
+    final auth = context.read<AuthProvider>();
+    // On utilise la méthode de login pour vérifier le mot de passe actuel
+    final isValid = await auth.verifyCurrentPassword(current);
+
+    if (mounted) {
+      setState(() {
+        _isValidating = false;
+        if (isValid) {
+          _currentStep = 2;
+        } else {
+          _error = 'Mot de passe actuel incorrect';
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return AlertDialog(
-      title: const Text('Modifier le mot de passe'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_error != null) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: colorScheme.error),
-                ),
-                child: Text(
-                  _error!,
-                  style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13),
-                ),
-              ),
-            ],
-            TextField(
-              controller: widget.currentPasswordController,
-              obscureText: _obscureCurrent,
-              decoration: InputDecoration(
-                labelText: 'Mot de passe actuel',
-                prefixIcon: const Icon(Icons.lock_person_outlined),
-                suffixIcon: IconButton(
-                  icon: Icon(_obscureCurrent ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
-                ),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+      title: Row(
+        children: [
+          const Icon(Icons.security_outlined, size: 20),
+          const SizedBox(width: 12),
+          const Text('Sécurité'),
+          const Spacer(),
+          _buildStepIndicator(colorScheme),
+        ],
+      ),
+      content: SizedBox(
+        width: 400,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          transitionBuilder: (child, animation) => FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: animation.drive(Tween(begin: const Offset(0.1, 0), end: Offset.zero)),
+              child: child,
             ),
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 16),
-            Focus(
-              onFocusChange: (hasFocus) => setState(() => _showCriteria = hasFocus),
-              child: TextField(
-                controller: widget.passwordController,
-                obscureText: _obscureNew,
-                decoration: InputDecoration(
-                  labelText: 'Nouveau mot de passe',
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscureNew = !_obscureNew),
-                  ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _showCriteria ? Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: _buildLiveCriteria(colorScheme),
-              ) : const SizedBox.shrink(),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: widget.confirmController,
-              obscureText: _obscureNew,
-              decoration: InputDecoration(
-                labelText: 'Confirmer le nouveau mot de passe',
-                prefixIcon: const Icon(Icons.lock_reset_outlined),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-            _buildMatchIndicator(colorScheme),
-          ],
+          ),
+          child: _currentStep == 1 ? _buildStep1(colorScheme) : _buildStep2(colorScheme),
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
-        ElevatedButton(
-          onPressed: () async {
-            final current = widget.currentPasswordController.text;
-            final password = widget.passwordController.text;
-            final confirm = widget.confirmController.text;
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Annuler'),
+        ),
+        if (_currentStep == 1)
+          ElevatedButton(
+            onPressed: _isValidating ? null : _validateCurrentPassword,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: _isValidating
+                ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Suivant'),
+          )
+        else
+          ElevatedButton(
+            onPressed: _isValidating ? null : _handleFinalUpdate,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF06CE70),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: _isValidating
+                ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('Confirmer'),
+          ),
+      ],
+    );
+  }
 
-            if (current.isEmpty) {
-              setState(() => _error = 'Veuillez saisir votre mot de passe actuel');
-              return;
-            }
+  Widget _buildStepIndicator(ColorScheme colorScheme) {
+    return Row(
+      children: [
+        _buildStepCircle(1, _currentStep >= 1, colorScheme),
+        Container(width: 20, height: 2, color: _currentStep == 2 ? colorScheme.primary : colorScheme.outlineVariant),
+        _buildStepCircle(2, _currentStep == 2, colorScheme),
+      ],
+    );
+  }
 
-            final validation = Validators.validatePassword(password);
-            if (!validation.isValid) {
-              setState(() => _error = validation.error!);
-              return;
-            }
+  Widget _buildStepCircle(int step, bool isActive, ColorScheme colorScheme) {
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: isActive ? colorScheme.primary : colorScheme.surface,
+        shape: BoxShape.circle,
+        border: Border.all(color: isActive ? colorScheme.primary : colorScheme.outlineVariant),
+      ),
+      child: Center(
+        child: Text(
+          step.toString(),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: isActive ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
 
-            if (password != confirm) {
-              setState(() => _error = 'Les nouveaux mots de passe sont différents');
-              return;
-            }
-
-            final auth = context.read<AuthProvider>();
-            final success = await auth.changePassword(auth.currentUser!.id, current, password);
-            if (success && context.mounted) {
-              Navigator.pop(context);
-              AppSnackBars.showSuccess(context, 'Mot de passe mis à jour');
-            } else if (context.mounted) {
-              setState(() => _error = auth.error ?? 'Erreur lors du changement');
-            }
-          },
-          child: const Text('Mettre à jour'),
+  Widget _buildStep1(ColorScheme colorScheme) {
+    return Column(
+      key: const ValueKey(1),
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Vérification de l\'identité',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Pour des raisons de sécurité, veuillez saisir votre mot de passe actuel.',
+          style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13),
+        ),
+        const SizedBox(height: 24),
+        if (_error != null) _buildErrorMessage(colorScheme),
+        TextField(
+          controller: widget.currentPasswordController,
+          obscureText: _obscureCurrent,
+          autofocus: true,
+          onSubmitted: (_) => _validateCurrentPassword(),
+          decoration: InputDecoration(
+            labelText: 'Mot de passe actuel',
+            prefixIcon: const Icon(Icons.lock_person_outlined),
+            suffixIcon: IconButton(
+              icon: Icon(_obscureCurrent ? Icons.visibility_off : Icons.visibility),
+              onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         ),
       ],
     );
+  }
+
+  Widget _buildStep2(ColorScheme colorScheme) {
+    return Column(
+      key: const ValueKey(2),
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Nouveau mot de passe',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Choisissez un mot de passe robuste que vous n\'utilisez pas ailleurs.',
+          style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13),
+        ),
+        const SizedBox(height: 24),
+        if (_error != null) _buildErrorMessage(colorScheme),
+        Focus(
+          onFocusChange: (hasFocus) => setState(() => _showCriteria = hasFocus),
+          child: TextField(
+            controller: widget.passwordController,
+            obscureText: _obscureNew,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: 'Nouveau mot de passe',
+              prefixIcon: const Icon(Icons.lock_outline),
+              suffixIcon: IconButton(
+                icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility),
+                onPressed: () => setState(() => _obscureNew = !_obscureNew),
+              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: _showCriteria ? Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: _buildLiveCriteria(colorScheme),
+          ) : const SizedBox.shrink(),
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: widget.confirmController,
+          obscureText: _obscureNew,
+          onSubmitted: (_) => _handleFinalUpdate(),
+          decoration: InputDecoration(
+            labelText: 'Confirmer le mot de passe',
+            prefixIcon: const Icon(Icons.lock_reset_outlined),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        _buildMatchIndicator(colorScheme),
+      ],
+    );
+  }
+
+  Widget _buildErrorMessage(ColorScheme colorScheme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.error.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, size: 18, color: colorScheme.error),
+          const SizedBox(width: 12),
+          Expanded(child: Text(_error!, style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13))),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleFinalUpdate() async {
+    final password = widget.passwordController.text;
+    final confirm = widget.confirmController.text;
+
+    final validation = Validators.validatePassword(password);
+    if (!validation.isValid) {
+      setState(() => _error = validation.error!);
+      return;
+    }
+
+    if (password != confirm) {
+      setState(() => _error = 'Les mots de passe sont différents');
+      return;
+    }
+
+    setState(() {
+      _isValidating = true;
+      _error = null;
+    });
+
+    final auth = context.read<AuthProvider>();
+    final current = widget.currentPasswordController.text;
+    
+    final success = await auth.changePassword(auth.currentUser!.id, current, password);
+    
+    if (mounted) {
+      setState(() => _isValidating = false);
+      if (success) {
+        Navigator.pop(context);
+        AppSnackBars.showSuccess(context, 'Mot de passe mis à jour');
+      } else {
+        setState(() => _error = auth.error ?? 'Erreur lors du changement');
+      }
+    }
   }
 
   Widget _buildLiveCriteria(ColorScheme colorScheme) {
