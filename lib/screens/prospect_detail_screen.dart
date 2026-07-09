@@ -345,7 +345,6 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildRGPDCard() {
-    final colorScheme = Theme.of(context).colorScheme;
     final dateStr = _currentProspect.consentementDate != null 
         ? '${_currentProspect.consentementDate!.day}/${_currentProspect.consentementDate!.month}/${_currentProspect.consentementDate!.year}'
         : 'Non renseignée';
@@ -862,7 +861,6 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   void _handleAddDocument() async {
     try {
       FilePickerResult? result = await FilePicker.pickFiles(
-        allowMultiple: false,
         type: FileType.any,
       );
 
