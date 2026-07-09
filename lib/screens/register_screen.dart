@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/validators.dart';
+import '../utils/app_snackbars.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -87,9 +88,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Inscription réussie! Vous pouvez maintenant vous connecter.')),
-      );
+      AppSnackBars.showSuccess(context, 'Inscription réussie ! Vous pouvez maintenant vous connecter.');
       Navigator.of(context).pop();
     }
   }
