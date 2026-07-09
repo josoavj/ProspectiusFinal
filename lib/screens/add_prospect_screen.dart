@@ -4,6 +4,7 @@ import '../models/prospect.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
 import '../utils/text_formatter.dart';
+import '../utils/app_snackbars.dart';
 
 class AddProspectScreen extends StatefulWidget {
   final Prospect? prospect;
@@ -162,7 +163,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     }
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(widget.prospect != null ? 'Prospect mis à jour' : 'Prospect créé')));
+      AppSnackBars.showSuccess(context, widget.prospect != null ? 'Prospect mis à jour' : 'Prospect créé');
       Navigator.pop(context);
     }
   }
