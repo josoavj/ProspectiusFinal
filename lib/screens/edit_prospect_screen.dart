@@ -4,6 +4,7 @@ import '../models/prospect.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
 import '../utils/text_formatter.dart';
+import '../utils/app_snackbars.dart';
 
 class EditProspectScreen extends StatefulWidget {
   final Prospect prospect;
@@ -135,7 +136,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
         dateUpdate: DateTime.now(),
         assignation: widget.prospect.assignation,
       );
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Prospect mis à jour')));
+      AppSnackBars.showSuccess(context, 'Prospect mis à jour');
       Navigator.pop(context, updatedProspect);
     }
   }
