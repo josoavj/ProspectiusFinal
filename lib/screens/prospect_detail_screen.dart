@@ -16,6 +16,7 @@ import '../providers/custom_field_provider.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
 import '../utils/app_logger.dart';
+import '../utils/app_snackbars.dart';
 import '../core/theme/app_colors.dart';
 import 'edit_prospect_screen.dart';
 
@@ -209,7 +210,14 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildInfoTab() {
-    final isParticulier = _currentProspect.type.toLowerCase() == 'particulier';
+    final type = _currentProspect.type.toLowerCase();
+    final isParticulier = type == 'particulier';
+    final isOrganisation = type == 'organisation';
+    
+    String sectionTitle = 'Entreprise & Digital';
+    if (isParticulier) sectionTitle = 'Source & Digital';
+    if (isOrganisation) sectionTitle = 'Organisation & Digital';
+
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -220,7 +228,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           _buildSectionTitle('Coordonnées'),
           _buildContactCard(),
           const SizedBox(height: 24),
-          _buildSectionTitle(isParticulier ? 'Source & Digital' : 'Entreprise & Digital'),
+          _buildSectionTitle(sectionTitle),
           _buildDigitalCard(),
           const SizedBox(height: 24),
           if (_currentProspect.description?.isNotEmpty ?? false) ...[
@@ -307,14 +315,21 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildDigitalCard() {
-    final isParticulier = _currentProspect.type.toLowerCase() == 'particulier';
+    final type = _currentProspect.type.toLowerCase();
+    final isParticulier = type == 'particulier';
+    final isOrganisation = type == 'organisation';
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             if (!isParticulier) ...[
-              _buildDetailRow('Entreprise', _currentProspect.nomEntreprise ?? '-', Icons.business_outlined),
+              _buildDetailRow(
+                isOrganisation ? 'Organisation' : 'Entreprise', 
+                _currentProspect.nomEntreprise ?? '-', 
+                isOrganisation ? Icons.account_balance_outlined : Icons.business_outlined
+              ),
               const Divider(height: 24),
               _buildDetailRow('Poste', _currentProspect.poste ?? '-', Icons.work_outline),
               const Divider(height: 24),
@@ -331,7 +346,6 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildRGPDCard() {
-    final colorScheme = Theme.of(context).colorScheme;
     final dateStr = _currentProspect.consentementDate != null 
         ? '${_currentProspect.consentementDate!.day}/${_currentProspect.consentementDate!.month}/${_currentProspect.consentementDate!.year}'
         : 'Non renseignée';
@@ -848,7 +862,6 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   void _handleAddDocument() async {
     try {
       FilePickerResult? result = await FilePicker.pickFiles(
-        allowMultiple: false,
         type: FileType.any,
       );
 
@@ -873,11 +886,11 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       final document = doc_model.Document(id: 0, idProspect: _currentProspect.id, name: fileName, filePath: newPath, mimeType: pickedFile.extension ?? 'unknown', size: pickedFile.size, createdAt: DateTime.now());
       if (mounted) {
         final success = await context.read<DocumentProvider>().addDocument(document);
-        if (success && mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Document ajouté avec succès')));
+        if (success && mounted) AppSnackBars.showSuccess(context, 'Document ajouté avec succès');
       }
     } catch (e) {
       AppLogger.error('Erreur lors de l\'ajout du document: $e');
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red));
+      if (mounted) AppSnackBars.showError(context, 'Erreur: $e');
     }
   }
 
@@ -940,7 +953,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   Future<void> _openDocument(doc_model.Document doc) async {
     final file = File(doc.filePath);
     if (!file.existsSync()) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Fichier introuvable'), backgroundColor: Colors.red));
+      if (mounted) AppSnackBars.showError(context, 'Fichier introuvable');
       return;
     }
     try {

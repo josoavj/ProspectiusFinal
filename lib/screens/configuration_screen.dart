@@ -7,6 +7,7 @@ import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
 import '../services/secure_storage_service.dart';
 import '../providers/settings_provider.dart';
+import '../utils/app_snackbars.dart';
 import 'help_detail_screen.dart';
 
 class ConfigurationScreen extends StatefulWidget {
@@ -84,9 +85,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             _isConnecting = false;
             _showEditMode = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Configuration mise à jour avec succès')),
-          );
+          AppSnackBars.showSuccess(context, 'Configuration mise à jour avec succès');
         }
       } else if (mounted) {
         setState(() {
@@ -391,13 +390,10 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
           TextButton(
             onPressed: () async {
               final prospectProvider = context.read<ProspectProvider>();
-              final messenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
               await prospectProvider.purgeOldData(30);
               if (mounted) {
-                messenger.showSnackBar(
-                  const SnackBar(content: Text('Purge terminée avec succès')),
-                );
+                AppSnackBars.showSuccess(context, 'Purge terminée avec succès');
               }
             },
             child: const Text('Purger maintenant', style: TextStyle(color: Colors.red)),

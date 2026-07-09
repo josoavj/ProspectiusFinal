@@ -4,6 +4,7 @@ import '../models/prospect.dart';
 import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
 import '../utils/text_formatter.dart';
+import '../utils/app_snackbars.dart';
 
 class EditProspectScreen extends StatefulWidget {
   final Prospect prospect;
@@ -135,7 +136,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
         dateUpdate: DateTime.now(),
         assignation: widget.prospect.assignation,
       );
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Prospect mis à jour')));
+      AppSnackBars.showSuccess(context, 'Prospect mis à jour');
       Navigator.pop(context, updatedProspect);
     }
   }
@@ -163,7 +164,11 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                 _buildSection(context, 'Professionnel', [
                   _buildDropdown('Type', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!), labelFormatter: TextFormatter.formatType),
                   if (_selectedType != 'particulier') ...[
-                    _buildField(_nomEntrepriseController, 'Entreprise', Icons.business),
+                    _buildField(
+                      _nomEntrepriseController, 
+                      _selectedType == 'organisation' ? 'Organisation' : 'Entreprise',
+                      _selectedType == 'organisation' ? Icons.account_balance : Icons.business
+                    ),
                     _buildField(_posteController, 'Poste', Icons.work_outline),
                   ],
                   _buildDropdown('Priorité', _selectedPriorite, ['basse', 'moyenne', 'haute'], (val) => setState(() => _selectedPriorite = val!), labelFormatter: TextFormatter.formatPriority),

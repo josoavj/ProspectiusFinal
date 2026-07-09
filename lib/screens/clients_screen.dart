@@ -77,7 +77,10 @@ class _ClientsScreenState extends State<ClientsScreen> {
   }
 
   Widget _buildClientsList(ProspectProvider prospectProvider) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final clientColor = const Color(0xFF06CE70);
+    
     final clients = prospectProvider.prospects
         .where((prospect) => prospect.status == 'converti')
         .toList();
@@ -89,17 +92,34 @@ class _ClientsScreenState extends State<ClientsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.people_outline, size: 64, color: colorScheme.outline),
-              const SizedBox(height: 16),
-              const Text(
-                'Aucun client converti',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: clientColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.verified_outlined, size: 80, color: clientColor),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 24),
               Text(
-                'Les prospects convertis en clients apparaîtront ici',
+                'Félicitations pour vos succès !',
+                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: colorScheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'C\'est ici que vous retrouverez tous vos prospects convertis en clients. Continuez vos efforts pour remplir cette liste !',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: 32),
+              OutlinedButton.icon(
+                onPressed: () {
+                  // On ouvre le drawer pour aider l'utilisateur à naviguer
+                  Scaffold.of(context).openDrawer();
+                },
+                icon: const Icon(Icons.rocket_launch_outlined),
+                label: const Text('Convertir de nouveaux prospects'),
               ),
             ],
           ),
@@ -108,7 +128,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(20),
       itemCount: clients.length,
       itemBuilder: (context, index) => _buildClientListItem(context, clients[index]),
     );
@@ -118,30 +138,54 @@ class _ClientsScreenState extends State<ClientsScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final clientColor = const Color(0xFF06CE70);
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Card(
-        margin: EdgeInsets.zero,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
         child: InkWell(
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => ProspectDetailScreen(prospect: client)),
             );
           },
-          borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: clientColor.withValues(alpha: 0.1),
-                  child: Text(
-                    client.prenom.isNotEmpty ? client.prenom[0].toUpperCase() : '?',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: clientColor,
+                Hero(
+                  tag: 'client_avatar_${client.id}',
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [clientColor, clientColor.withValues(alpha: 0.7)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
+                      child: Text(
+                        client.prenom.isNotEmpty ? client.prenom[0].toUpperCase() : '?',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -152,34 +196,55 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     children: [
                       Text(
                         TextFormatter.capitalize(client.fullName),
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        client.email.isEmpty ? 'Aucun email' : client.email,
-                        style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Icon(Icons.business_center_outlined, size: 14, color: colorScheme.onSurfaceVariant),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              client.nomEntreprise ?? 'Particulier',
+                              style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: clientColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: clientColor.withValues(alpha: 0.5)),
-                  ),
-                  child: Text(
-                    'Converti',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: clientColor,
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: clientColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle, size: 12, color: clientColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            'ACTIF',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: clientColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Icon(Icons.arrow_forward_ios, size: 14, color: colorScheme.outline),
+                  ],
                 ),
               ],
             ),

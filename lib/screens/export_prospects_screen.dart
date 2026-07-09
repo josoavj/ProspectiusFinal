@@ -135,10 +135,6 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Exporter les prospects'),
-        elevation: 0,
-      ),
       body: Consumer<ProspectProvider>(
         builder: (context, prospectProvider, _) {
           return SingleChildScrollView(
