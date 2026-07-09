@@ -6,6 +6,7 @@ import '../providers/prospect_provider.dart';
 import '../services/excel_service.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
+import '../utils/app_snackbars.dart';
 import '../core/theme/app_colors.dart';
 import 'add_prospect_screen.dart';
 import 'prospect_detail_screen.dart';
@@ -58,16 +59,12 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
         }
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$count prospects importés avec succès')),
-          );
+          AppSnackBars.showSuccess(context, '$count prospects importés avec succès');
           _loadProspects();
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erreur lors de l\'import: $e'), backgroundColor: Theme.of(context).colorScheme.error),
-          );
+          AppSnackBars.showError(context, 'Erreur lors de l\'import: $e');
         }
       }
     }
