@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../utils/app_logger.dart';
 import '../utils/exception_handler.dart';
 import '../utils/validators.dart';
+import '../utils/app_snackbars.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -417,7 +418,7 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
             final success = await auth.changePassword(auth.currentUser!.id, current, password);
             if (success && context.mounted) {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mot de passe mis à jour')));
+              AppSnackBars.showSuccess(context, 'Mot de passe mis à jour');
             } else if (context.mounted) {
               setState(() => _error = auth.error ?? 'Erreur lors du changement');
             }
