@@ -188,7 +188,11 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
             _buildSection(context, 'Professionnel', [
               _buildDropdown('Type', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!), labelFormatter: TextFormatter.formatType),
               if (_selectedType != 'particulier') ...[
-                _buildField(_nomEntrepriseController, 'Entreprise', Icons.business),
+                _buildField(
+                  _nomEntrepriseController, 
+                  _selectedType == 'organisation' ? 'Organisation' : 'Entreprise',
+                  _selectedType == 'organisation' ? Icons.account_balance : Icons.business
+                ),
                 _buildField(_posteController, 'Poste', Icons.work_outline),
               ],
               _buildDropdown('Priorité', _selectedPriorite, ['basse', 'moyenne', 'haute'], (val) => setState(() => _selectedPriorite = val!), labelFormatter: TextFormatter.formatPriority),
