@@ -105,6 +105,16 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> verifyCurrentPassword(String password) async {
+    if (_currentUser == null) return false;
+    try {
+      await _authRepository.authenticate(_currentUser!.username, password);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<bool> changePassword(int userId, String currentPassword, String newPassword) async {
     _setLoading(true);
     _error = null;
