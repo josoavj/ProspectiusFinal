@@ -390,11 +390,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
           TextButton(
             onPressed: () async {
               final prospectProvider = context.read<ProspectProvider>();
-              Navigator.pop(context);
+              final navigator = Navigator.of(context);
+              
               await prospectProvider.purgeOldData(30);
-              if (mounted) {
-                AppSnackBars.showSuccess(context, 'Purge terminée avec succès');
-              }
+              
+              if (!context.mounted) return;
+              navigator.pop();
+              AppSnackBars.showSuccess(context, 'Purge terminée avec succès');
             },
             child: const Text('Purger maintenant', style: TextStyle(color: Colors.red)),
           ),
