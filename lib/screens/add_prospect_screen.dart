@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
 import '../models/prospect.dart';
@@ -37,7 +38,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   late TextEditingController _nomController;
   late TextEditingController _prenomController;
   late TextEditingController _emailController;
-  late TextEditingController _telephoneController;
+  late List<TextEditingController> _phoneControllers;
   late TextEditingController _adresseController;
   late TextEditingController _sourceController;
   late TextEditingController _nomEntrepriseController;
@@ -61,7 +62,14 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _nomController = TextEditingController(text: p?.nom ?? '');
     _prenomController = TextEditingController(text: p?.prenom ?? '');
     _emailController = TextEditingController(text: p?.email ?? '');
-    _telephoneController = TextEditingController(text: p?.telephone ?? '');
+    
+    // Initialisation des téléphones (gestion multiple)
+    if (p?.telephone != null && p!.telephone.isNotEmpty) {
+      _phoneControllers = p.telephone.split(', ').map((t) => TextEditingController(text: t)).toList();
+    } else {
+      _phoneControllers = [TextEditingController()];
+    }
+
     _adresseController = TextEditingController(text: p?.adresse ?? '');
     _sourceController = TextEditingController(text: p?.source ?? '');
     _nomEntrepriseController = TextEditingController(text: p?.nomEntreprise ?? '');
@@ -83,7 +91,9 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _nomController.dispose();
     _prenomController.dispose();
     _emailController.dispose();
-    _telephoneController.dispose();
+    for (var c in _phoneControllers) {
+      c.dispose();
+    }
     _adresseController.dispose();
     _sourceController.dispose();
     _nomEntrepriseController.dispose();
@@ -94,6 +104,23 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _consentementSourceController.dispose();
     _interactionNoteController.dispose();
     super.dispose();
+  }
+
+  void _addPhoneField() {
+    if (_phoneControllers.length < 3) {
+      setState(() => _phoneControllers.add(TextEditingController()));
+    } else {
+      AppSnackBars.showWarning(context, 'Maximum 3 numéros autorisés');
+    }
+  }
+
+  void _removePhoneField(int index) {
+    if (_phoneControllers.length > 1) {
+      setState(() {
+        _phoneControllers[index].dispose();
+        _phoneControllers.removeAt(index);
+      });
+    }
   }
 
   void _nextStep() {
@@ -114,18 +141,27 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     }
   }
 
+  String _getJoinedPhones() {
+    return _phoneControllers
+        .map((c) => c.text.trim())
+        .where((t) => t.isNotEmpty)
+        .join(', ');
+  }
+
   void _handleSave() async {
     final authProvider = context.read<AuthProvider>();
     final prospectProvider = context.read<ProspectProvider>();
 
     if (authProvider.currentUser == null) return;
 
+    final phoneData = _getJoinedPhones();
+
     final data = {
       'userId': authProvider.currentUser!.id,
       'nom': _nomController.text,
       'prenom': _prenomController.text,
       'email': _emailController.text,
-      'telephone': _telephoneController.text,
+      'telephone': phoneData,
       'adresse': _adresseController.text,
       'type': _selectedType,
       'status': _selectedStatus,
@@ -146,7 +182,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
         'nomp': _nomController.text,
         'prenomp': _prenomController.text,
         'email': _emailController.text,
-        'telephone': _telephoneController.text,
+        'telephone': phoneData,
         'adresse': _adresseController.text,
         'type': _selectedType,
         'status': _selectedStatus,
@@ -198,7 +234,6 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // Effet de flou sur le fond (permet de voir la liste derrière)
           Positioned.fill(
             child: GestureDetector(
               onTap: () => Navigator.pop(context),
@@ -210,7 +245,6 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
               ),
             ),
           ),
-          // Contenu principal centré
           Center(
             child: Container(
               constraints: BoxConstraints(
@@ -336,7 +370,42 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
           const SizedBox(height: 16),
           _buildField(_emailController, 'Email', Icons.email_outlined, type: TextInputType.emailAddress),
           const SizedBox(height: 16),
-          _buildField(_telephoneController, 'Téléphone', Icons.phone_outlined, type: TextInputType.phone),
+          
+          // Gestion des téléphones multiples
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Téléphone(s)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey)),
+              TextButton.icon(
+                onPressed: _addPhoneField,
+                icon: const Icon(Icons.add, size: 16),
+                label: const Text('Ajouter', style: TextStyle(fontSize: 12)),
+              ),
+            ],
+          ),
+          ...List.generate(_phoneControllers.length, (index) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildField(
+                    _phoneControllers[index], 
+                    'Numéro ${index + 1}', 
+                    Icons.phone_outlined, 
+                    type: TextInputType.phone,
+                    prefixText: '+261 ',
+                    formatters: [PhoneInputFormatter()],
+                  ),
+                ),
+                if (_phoneControllers.length > 1)
+                  IconButton(
+                    onPressed: () => _removePhoneField(index),
+                    icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
+                  ),
+              ],
+            ),
+          )),
+
           const SizedBox(height: 24),
           _buildSectionTitle('Profil Professionnel'),
           _buildDropdown('Type de contact', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!), labelFormatter: TextFormatter.formatType),
@@ -452,6 +521,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
           const SizedBox(height: 24),
           _buildSummaryItem('Identité', '${_nomController.text} ${_prenomController.text}'),
           _buildSummaryItem('Email', _emailController.text),
+          _buildSummaryItem('Téléphone(s)', _getJoinedPhones()),
           _buildSummaryItem('Profil', '${TextFormatter.formatType(_selectedType)} (${_selectedPriorite.toUpperCase()})'),
           if (_selectedType != 'particulier') _buildSummaryItem('Entité', _nomEntrepriseController.text),
           _buildSummaryItem('Source', _sourceController.text),
@@ -508,14 +578,16 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     );
   }
 
-  Widget _buildField(TextEditingController controller, String label, IconData icon, {TextInputType type = TextInputType.text, int maxLines = 1}) {
+  Widget _buildField(TextEditingController controller, String label, IconData icon, {TextInputType type = TextInputType.text, int maxLines = 1, String? prefixText, List<TextInputFormatter>? formatters}) {
     return TextField(
       controller: controller,
       keyboardType: type,
       maxLines: maxLines,
+      inputFormatters: formatters,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, size: 20),
+        prefixText: prefixText,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
         fillColor: Theme.of(context).colorScheme.surfaceContainerLow.withValues(alpha: 0.5),
