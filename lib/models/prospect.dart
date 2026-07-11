@@ -95,5 +95,5 @@ class Prospect {
         'version': version,
       };
 
-  String get fullName => '$prenom $nom';
+  String get fullName => '$nom $prenom';
 }
