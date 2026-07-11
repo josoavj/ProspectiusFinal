@@ -271,7 +271,7 @@ class _MainScreenState extends State<MainScreen> {
       case 6:
         return 'À propos';
       case 7:
-        return 'Profil';
+        return 'Mon Profil';
       case 8:
         return 'Paramètres';
       case 9:
