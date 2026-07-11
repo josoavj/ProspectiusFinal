@@ -600,6 +600,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   }
 
   Widget _buildStepSummary() {
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       key: const ValueKey(5),
       padding: const EdgeInsets.all(24),
@@ -608,26 +609,84 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.fact_check_outlined, color: Colors.green, size: 28),
-              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.fact_check_outlined, color: Colors.green, size: 24),
+              ),
+              const SizedBox(width: 16),
               const Text('Vérification finale', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),
-          const SizedBox(height: 24),
-          _buildSummaryItem('Identité', '${_nomController.text} ${_prenomController.text}'),
-          _buildSummaryItem('Email', _emailController.text),
-          _buildSummaryItem('Téléphone(s)', _getJoinedPhones()),
-          _buildSummaryItem('Profil', '${TextFormatter.formatType(_selectedType)} (${_selectedPriorite.toUpperCase()})'),
-          _buildSummaryItem('Statut Initial', 'Intéressé (Automatique)'),
-          if (_selectedType != 'particulier') _buildSummaryItem('Entité', _nomEntrepriseController.text),
-          _buildSummaryItem('Source', _sourceController.text),
-          _buildSummaryItem('RGPD', _consentementDate == null ? 'Non défini' : 'Consentement le ${_consentementDate!.day}/${_consentementDate!.month}/${_consentementDate!.year}'),
-          if (_interactionNoteController.text.isNotEmpty) ...[
-            const Divider(height: 32),
-            const Text('Note d\'entrée', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
-            const SizedBox(height: 8),
-            Text(_interactionNoteController.text, style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic)),
-          ],
+          const SizedBox(height: 32),
+          
+          _buildRecapSection(
+            'COORDONNÉES',
+            Icons.contact_mail_outlined,
+            [
+              _buildSummaryItem('Identité', '${_nomController.text.toUpperCase()} ${_prenomController.text}'),
+              _buildSummaryItem('Email', _emailController.text),
+              _buildSummaryItem('Téléphone(s)', _getJoinedPhones()),
+              _buildSummaryItem('Adresse', _adresseController.text),
+            ],
+          ),
+          
+          _buildRecapSection(
+            'PROFIL & SOURCE',
+            Icons.business_center_outlined,
+            [
+              _buildSummaryItem('Type', TextFormatter.formatType(_selectedType)),
+              if (_selectedType != 'particulier') 
+                _buildSummaryItem(_selectedType == 'organisation' ? 'Organisation' : 'Entreprise', _nomEntrepriseController.text),
+              _buildSummaryItem('Poste', _posteController.text),
+              _buildSummaryItem('Priorité', _selectedPriorite.toUpperCase(), valueColor: _getPriorityColor(_selectedPriorite)),
+              _buildSummaryItem('Source lead', _sourceController.text),
+            ],
+          ),
+
+          _buildRecapSection(
+            'PRÉSENCE DIGITALE',
+            Icons.language,
+            [
+              _buildSummaryItem('Site Web', _siteWebController.text),
+              _buildSummaryItem('LinkedIn', _linkedinController.text),
+            ],
+          ),
+
+          _buildRecapSection(
+            'SANTÉ LÉGALE (RGPD)',
+            Icons.verified_user_outlined,
+            [
+              _buildSummaryItem('Consentement', _consentementDate == null ? 'Non défini' : 'Accordé le ${TextFormatter.formatDate(_consentementDate!)}'),
+              _buildSummaryItem('Preuve', _consentementSourceController.text),
+            ],
+          ),
+
+          if (_interactionNoteController.text.isNotEmpty)
+            _buildRecapSection(
+              'INTERACTION INITIALE',
+              Icons.chat_bubble_outline,
+              [
+                _buildSummaryItem('Canal', TextFormatter.formatInteractionType(_selectedInteractionType)),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+                  ),
+                  child: Text(
+                    _interactionNoteController.text,
+                    style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+                  ),
+                ),
+              ],
+            ),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -707,16 +766,81 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     );
   }
 
-  Widget _buildSummaryItem(String label, String value) {
+  Widget _buildSummaryItem(String label, String value, {Color? valueColor}) {
+    if (value.trim().isEmpty || value == '261') return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 100, child: Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13))),
-          Expanded(child: Text(value.isEmpty ? '-' : value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
+          SizedBox(
+            width: 110,
+            child: Text(
+              label,
+              style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: valueColor,
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Widget _buildRecapSection(String title, IconData icon, List<Widget> items) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: colorScheme.primary.withValues(alpha: 0.7)),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                  color: colorScheme.primary.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLow.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: items,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getPriorityColor(String priority) {
+    switch (priority.toLowerCase()) {
+      case 'haute': return Colors.redAccent;
+      case 'moyenne': return Colors.orangeAccent;
+      default: return Colors.blueAccent;
+    }
   }
 }
