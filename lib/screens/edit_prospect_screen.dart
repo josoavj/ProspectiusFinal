@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/prospect.dart';
 import '../providers/auth_provider.dart';
@@ -19,7 +20,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
   late TextEditingController _nomController;
   late TextEditingController _prenomController;
   late TextEditingController _emailController;
-  late TextEditingController _telephoneController;
+  late List<TextEditingController> _phoneControllers;
   late TextEditingController _adresseController;
   late TextEditingController _sourceController;
   late TextEditingController _nomEntrepriseController;
@@ -42,7 +43,13 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     _nomController = TextEditingController(text: p.nom);
     _prenomController = TextEditingController(text: p.prenom);
     _emailController = TextEditingController(text: p.email);
-    _telephoneController = TextEditingController(text: p.telephone);
+    
+    if (p.telephone.isNotEmpty) {
+      _phoneControllers = p.telephone.split(', ').map((t) => TextEditingController(text: t)).toList();
+    } else {
+      _phoneControllers = [TextEditingController()];
+    }
+
     _adresseController = TextEditingController(text: p.adresse);
     _sourceController = TextEditingController(text: p.source ?? '');
     _nomEntrepriseController = TextEditingController(text: p.nomEntreprise ?? '');
@@ -63,7 +70,9 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     _nomController.dispose();
     _prenomController.dispose();
     _emailController.dispose();
-    _telephoneController.dispose();
+    for (var c in _phoneControllers) {
+      c.dispose();
+    }
     _adresseController.dispose();
     _sourceController.dispose();
     _nomEntrepriseController.dispose();
@@ -73,7 +82,24 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     _descriptionController.dispose();
     _consentementSourceController.dispose();
     super.dispose();
-}
+  }
+
+  void _addPhoneField() {
+    if (_phoneControllers.length < 3) {
+      setState(() => _phoneControllers.add(TextEditingController()));
+    } else {
+      AppSnackBars.showWarning(context, 'Maximum 3 numéros autorisés');
+    }
+  }
+
+  void _removePhoneField(int index) {
+    if (_phoneControllers.length > 1) {
+      setState(() {
+        _phoneControllers[index].dispose();
+        _phoneControllers.removeAt(index);
+      });
+    }
+  }
 
   void _handleSave() async {
     final authProvider = context.read<AuthProvider>();
@@ -83,11 +109,16 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
 
     setState(() => _isLoading = true);
 
+    final phoneData = _phoneControllers
+        .map((c) => c.text.trim())
+        .where((t) => t.isNotEmpty)
+        .join(', ');
+
     final updateData = {
       'nomp': _nomController.text,
       'prenomp': _prenomController.text,
       'email': _emailController.text,
-      'telephone': _telephoneController.text,
+      'telephone': phoneData,
       'adresse': _adresseController.text,
       'type': _selectedType,
       'status': _selectedStatus,
@@ -101,7 +132,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
       'consentement_date': _consentementDate?.toIso8601String(),
       'consentement_source': _consentementSourceController.text,
       'userId': authProvider.currentUser!.id,
-      'version': widget.prospect.version, // Ajout de la version pour le verrouillage
+      'version': widget.prospect.version,
     };
 
     final success = await prospectProvider.updateProspect(
@@ -119,7 +150,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
         nom: _nomController.text,
         prenom: _prenomController.text,
         email: _emailController.text,
-        telephone: _telephoneController.text,
+        telephone: phoneData,
         adresse: _adresseController.text,
         type: _selectedType,
         status: _selectedStatus,
@@ -135,6 +166,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
         creation: widget.prospect.creation,
         dateUpdate: DateTime.now(),
         assignation: widget.prospect.assignation,
+        version: widget.prospect.version + 1,
       );
       AppSnackBars.showSuccess(context, 'Prospect mis à jour');
       Navigator.pop(context, updatedProspect);
@@ -157,7 +189,36 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                   _buildField(_nomController, 'Nom', Icons.person),
                   _buildField(_prenomController, 'Prénom', Icons.person_outline),
                   _buildField(_emailController, 'Email', Icons.email_outlined, type: TextInputType.emailAddress),
-                  _buildField(_telephoneController, 'Téléphone', Icons.phone_outlined, type: TextInputType.phone),
+                  
+                  // Multi-phone UI
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Téléphone(s)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+                      IconButton(onPressed: _addPhoneField, icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.blue)),
+                    ],
+                  ),
+                  ...List.generate(_phoneControllers.length, (index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildField(
+                            _phoneControllers[index], 
+                            'Numéro ${index+1}', 
+                            Icons.phone_outlined, 
+                            type: TextInputType.phone,
+                            prefixText: '+261 ',
+                            formatters: [PhoneInputFormatter()],
+                          ),
+                        ),
+                        if (_phoneControllers.length > 1)
+                          IconButton(onPressed: () => _removePhoneField(index), icon: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 20)),
+                      ],
+                    ),
+                  )),
+
                   _buildField(_adresseController, 'Adresse', Icons.location_on_outlined),
                 ]),
                 const SizedBox(height: 16),
@@ -169,7 +230,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                       _selectedType == 'organisation' ? 'Organisation' : 'Entreprise',
                       _selectedType == 'organisation' ? Icons.account_balance : Icons.business
                     ),
-                    _buildField(_posteController, 'Poste', Icons.work_outline),
+                    _buildField(_posteController, 'Poste occupé', Icons.work_outline),
                   ],
                   _buildDropdown('Priorité', _selectedPriorite, ['basse', 'moyenne', 'haute'], (val) => setState(() => _selectedPriorite = val!), labelFormatter: TextFormatter.formatPriority),
                   _buildDropdown('Statut', _selectedStatus, ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'], (val) => setState(() => _selectedStatus = val!), labelFormatter: TextFormatter.formatStatus),
@@ -244,14 +305,16 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     );
   }
 
-  Widget _buildField(TextEditingController controller, String label, IconData icon, {TextInputType type = TextInputType.text, int maxLines = 1}) {
+  Widget _buildField(TextEditingController controller, String label, IconData icon, {TextInputType type = TextInputType.text, int maxLines = 1, String? prefixText, List<TextInputFormatter>? formatters}) {
     return TextField(
       controller: controller,
       keyboardType: type,
       maxLines: maxLines,
+      inputFormatters: formatters,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, size: 20),
+        prefixText: prefixText,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       ),
