@@ -261,7 +261,7 @@ class _MainScreenState extends State<MainScreen> {
       case 1:
         return 'Pipeline';
       case 2:
-        return 'Exploration';
+        return 'Exploration & Filtres';
       case 3:
         return 'Statistiques Globales';
       case 4:
