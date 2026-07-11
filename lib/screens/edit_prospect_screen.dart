@@ -154,8 +154,8 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
             child: Column(
               children: [
                 _buildSection(context, 'Informations Personnelles', [
-                  _buildField(_prenomController, 'Prénom', Icons.person_outline),
                   _buildField(_nomController, 'Nom', Icons.person),
+                  _buildField(_prenomController, 'Prénom', Icons.person_outline),
                   _buildField(_emailController, 'Email', Icons.email_outlined, type: TextInputType.emailAddress),
                   _buildField(_telephoneController, 'Téléphone', Icons.phone_outlined, type: TextInputType.phone),
                   _buildField(_adresseController, 'Adresse', Icons.location_on_outlined),
