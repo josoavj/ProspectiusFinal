@@ -160,9 +160,7 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => const AddProspectScreen()))
-              .then((_) => _loadProspects());
+          AddProspectScreen.show(context).then((_) => _loadProspects());
         },
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
