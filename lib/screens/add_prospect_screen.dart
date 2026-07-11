@@ -53,7 +53,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   String _selectedStatus = 'interesse';
   String _selectedPriorite = 'moyenne';
   String _selectedInteractionType = 'appel';
-  DateTime? _consentementDate;
+  DateTime? _consentementDate = DateTime.now(); // Par défaut à aujourd'hui
 
   @override
   void initState() {
@@ -470,6 +470,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   }
 
   Widget _buildStepNotesRGPD() {
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       key: const ValueKey(3),
       padding: const EdgeInsets.all(24),
@@ -479,31 +480,101 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
           _buildSectionTitle('Notes & Contexte'),
           _buildField(_descriptionController, 'Commentaires libres', Icons.note_outlined, maxLines: 5),
           const SizedBox(height: 32),
-          _buildSectionTitle('Conformité RGPD'),
+          
+          // Section RGPD re-stylisée
+          Row(
+            children: [
+              Icon(Icons.verified_user_rounded, color: Colors.green[600], size: 20),
+              const SizedBox(width: 10),
+              const Text('Protection & Consentement', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Prouvez que ce prospect a accepté d\'être contacté pour rester en conformité avec la loi.',
+            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
+          ),
+          const SizedBox(height: 20),
+          
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.blue.withValues(alpha: 0.1))),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.green.withValues(alpha: 0.05), 
+              borderRadius: BorderRadius.circular(20), 
+              border: Border.all(color: Colors.green.withValues(alpha: 0.1))
+            ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.calendar_today_outlined, size: 20),
-                  title: const Text('Date du consentement', style: TextStyle(fontSize: 14)),
-                  subtitle: Text(_consentementDate == null ? 'Non définie' : '${_consentementDate!.day}/${_consentementDate!.month}/${_consentementDate!.year}'),
-                  trailing: TextButton(
-                    onPressed: () async {
-                      final date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime.now());
-                      if (date != null) setState(() => _consentementDate = date);
-                    },
-                    child: const Text('Modifier'),
-                  ),
+                const Text('D\'où provient son accord ?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildQuickSourceChip('Formulaire web', Icons.language),
+                    _buildQuickSourceChip('Appel direct', Icons.phone_callback),
+                    _buildQuickSourceChip('Email', Icons.alternate_email),
+                    _buildQuickSourceChip('Rencontre / Salon', Icons.handshake_outlined),
+                    _buildQuickSourceChip('Autre', Icons.more_horiz),
+                  ],
                 ),
-                _buildField(_consentementSourceController, 'Preuve / Source légale', Icons.verified_user_outlined),
+                const SizedBox(height: 20),
+                _buildField(
+                  _consentementSourceController, 
+                  'Détails de la source (optionnel)', 
+                  Icons.edit_note,
+                ),
+                const Divider(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Date du consentement', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(
+                          _consentementDate == null ? 'Non définie' : '${_consentementDate!.day}/${_consentementDate!.month}/${_consentementDate!.year}',
+                          style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        final date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime.now());
+                        if (date != null) setState(() => _consentementDate = date);
+                      },
+                      icon: const Icon(Icons.calendar_month, size: 18),
+                      label: const Text('Changer'),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildQuickSourceChip(String label, IconData icon) {
+    final isSelected = _consentementSourceController.text == label;
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return ChoiceChip(
+      label: Text(label),
+      avatar: Icon(icon, size: 14, color: isSelected ? Colors.white : colorScheme.primary),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) {
+          setState(() {
+            _consentementSourceController.text = label;
+          });
+        }
+      },
+      selectedColor: colorScheme.primary,
+      labelStyle: TextStyle(color: isSelected ? Colors.white : colorScheme.onSurface, fontSize: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
 
