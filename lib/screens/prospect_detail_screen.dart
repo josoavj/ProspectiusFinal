@@ -785,7 +785,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                   DropdownButtonFormField<String>(
                     initialValue: newStatus,
                     decoration: const InputDecoration(labelText: 'Modifier le Statut', border: OutlineInputBorder()),
-                    items: ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'].map((s) => DropdownMenuItem(value: s, child: Text(TextFormatter.formatStatus(s)))).toList(),
+                    items: ['interesse', 'negociation', 'converti', 'perdu'].map((s) => DropdownMenuItem(value: s, child: Text(TextFormatter.formatStatus(s)))).toList(),
                     onChanged: (val) => setDialogState(() => newStatus = val!),
                   ),
                   const SizedBox(height: 16),
@@ -986,7 +986,6 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'nouveau': return AppColors.azure;
       case 'interesse': return Colors.amber;
       case 'negociation': return Colors.orange;
       case 'converti': return const Color(0xFF06CE70);
