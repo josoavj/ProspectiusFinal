@@ -298,6 +298,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildContactCard() {
+    final phones = _currentProspect.telephone.split(', ');
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -305,7 +306,12 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           children: [
             _buildDetailRow('Email', _currentProspect.email, Icons.email_outlined),
             const Divider(height: 24),
-            _buildDetailRow('Téléphone', _currentProspect.telephone, Icons.phone_outlined),
+            ...List.generate(phones.length, (index) => Column(
+              children: [
+                _buildDetailRow('Téléphone ${index + 1}', TextFormatter.formatPhone(phones[index]), Icons.phone_outlined),
+                if (index < phones.length - 1) const Divider(height: 24),
+              ],
+            )),
             const Divider(height: 24),
             _buildDetailRow('Adresse', _currentProspect.adresse, Icons.location_on_outlined),
           ],
