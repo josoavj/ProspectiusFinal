@@ -11,6 +11,7 @@ import '../../domain/repositories/i_document_repository.dart';
 import '../../domain/repositories/i_custom_field_repository.dart';
 import '../../services/secure_storage_service.dart';
 import '../../services/logging_service.dart';
+import '../../services/backup_service.dart';
 
 class ServiceLocator {
   static final ServiceLocator _instance = ServiceLocator._internal();
@@ -21,6 +22,14 @@ class ServiceLocator {
   late final MySQLService mysqlService;
   late final SecureStorageService secureStorage;
   late final LoggingService loggingService;
+  BackupService? _backupService;
+  
+  BackupService get backupService {
+    if (_backupService == null) {
+      _backupService = BackupService(mysqlService);
+    }
+    return _backupService!;
+  }
   
   // Repositories
   late final IProspectRepository prospectRepository;
@@ -35,6 +44,7 @@ class ServiceLocator {
     
     secureStorage = SecureStorageService();
     mysqlService = MySQLService();
+    _backupService = BackupService(mysqlService);
     
     // Initialisation des dépôts
     prospectRepository = ProspectRepositoryImpl(mysqlService);
