@@ -143,8 +143,8 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
 
   String _getJoinedPhones() {
     return _phoneControllers
-        .map((c) => c.text.trim())
-        .where((t) => t.isNotEmpty)
+        .map((c) => '261${c.text.replaceAll(' ', '')}')
+        .where((t) => t.length > 3)
         .join(', ');
   }
 
@@ -395,6 +395,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
                     type: TextInputType.phone,
                     prefixText: '+261 ',
                     formatters: [PhoneInputFormatter()],
+                    maxLength: 9, // 7 chiffres + 2 espaces
                   ),
                 ),
                 if (_phoneControllers.length > 1)
@@ -578,16 +579,18 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     );
   }
 
-  Widget _buildField(TextEditingController controller, String label, IconData icon, {TextInputType type = TextInputType.text, int maxLines = 1, String? prefixText, List<TextInputFormatter>? formatters}) {
+  Widget _buildField(TextEditingController controller, String label, IconData icon, {TextInputType type = TextInputType.text, int maxLines = 1, String? prefixText, List<TextInputFormatter>? formatters, int? maxLength}) {
     return TextField(
       controller: controller,
       keyboardType: type,
       maxLines: maxLines,
       inputFormatters: formatters,
+      maxLength: maxLength,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, size: 20),
         prefixText: prefixText,
+        counterText: '', // Cacher le compteur de caractères
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
         fillColor: Theme.of(context).colorScheme.surfaceContainerLow.withValues(alpha: 0.5),
