@@ -298,6 +298,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
   }
 
   Widget _buildContactCard() {
+    final phones = _currentProspect.telephone.split(', ');
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -305,7 +306,12 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
           children: [
             _buildDetailRow('Email', _currentProspect.email, Icons.email_outlined),
             const Divider(height: 24),
-            _buildDetailRow('Téléphone', _currentProspect.telephone, Icons.phone_outlined),
+            ...List.generate(phones.length, (index) => Column(
+              children: [
+                _buildDetailRow('Téléphone ${index + 1}', TextFormatter.formatPhone(phones[index]), Icons.phone_outlined),
+                if (index < phones.length - 1) const Divider(height: 24),
+              ],
+            )),
             const Divider(height: 24),
             _buildDetailRow('Adresse', _currentProspect.adresse, Icons.location_on_outlined),
           ],
@@ -779,7 +785,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
                   DropdownButtonFormField<String>(
                     initialValue: newStatus,
                     decoration: const InputDecoration(labelText: 'Modifier le Statut', border: OutlineInputBorder()),
-                    items: ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'].map((s) => DropdownMenuItem(value: s, child: Text(TextFormatter.formatStatus(s)))).toList(),
+                    items: ['interesse', 'negociation', 'converti', 'perdu'].map((s) => DropdownMenuItem(value: s, child: Text(TextFormatter.formatStatus(s)))).toList(),
                     onChanged: (val) => setDialogState(() => newStatus = val!),
                   ),
                   const SizedBox(height: 16),
@@ -980,7 +986,6 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'nouveau': return AppColors.azure;
       case 'interesse': return Colors.amber;
       case 'negociation': return Colors.orange;
       case 'converti': return const Color(0xFF06CE70);

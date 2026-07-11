@@ -71,7 +71,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
         // Enregistrer le statut initial
         await ctx.query(
           SqlQueries.insertStatusHistory,
-          [prospectId, null, 'nouveau', data['userId']],
+          [prospectId, null, 'interesse', data['userId']],
         );
       }
     });
@@ -232,7 +232,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
       final currentRes = await ctx.query('SELECT status FROM Prospect WHERE id_prospect = ?', [data['prospectId']]);
       if (currentRes.isNotEmpty) {
         final oldStatus = currentRes.first['status'] as String;
-        final targetStatus = newStatus ?? (oldStatus == 'nouveau' ? 'interesse' : oldStatus);
+        final targetStatus = newStatus ?? oldStatus;
 
         if (oldStatus != targetStatus) {
           // Mettre à jour le prospect

@@ -179,7 +179,6 @@ class _StatsScreenState extends State<StatsScreen> {
 
   List<PieChartSectionData> _buildPieSections(StatsProvider statsProvider) {
     final colors = {
-      'nouveau': AppColors.azure,
       'interesse': Colors.amber,
       'negociation': Colors.orange,
       'converti': Colors.green,
@@ -203,7 +202,6 @@ class _StatsScreenState extends State<StatsScreen> {
 
   Widget _buildSelectableStatusDetails(StatsProvider statsProvider, int total) {
     final colors = {
-      'nouveau': AppColors.azure,
       'interesse': Colors.amber,
       'negociation': Colors.orange,
       'converti': Colors.green,

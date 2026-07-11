@@ -7,7 +7,6 @@ import '../services/excel_service.dart';
 import '../widgets/data_state_widget.dart';
 import '../utils/text_formatter.dart';
 import '../utils/app_snackbars.dart';
-import '../core/theme/app_colors.dart';
 import 'add_prospect_screen.dart';
 import 'prospect_detail_screen.dart';
 
@@ -160,9 +159,7 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => const AddProspectScreen()))
-              .then((_) => _loadProspects());
+          AddProspectScreen.show(context).then((_) => _loadProspects());
         },
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
@@ -236,7 +233,6 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
   Widget _buildStatusChip(String status, ColorScheme colorScheme) {
     Color chipColor;
     switch (status.toLowerCase()) {
-      case 'nouveau': chipColor = AppColors.azure; break;
       case 'interesse': chipColor = Colors.amber; break;
       case 'negociation': chipColor = Colors.orange; break;
       case 'converti': chipColor = const Color(0xFF06CE70); break;

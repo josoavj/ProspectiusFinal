@@ -163,7 +163,6 @@ class ExcelService {
     }
 
     for (final status in [
-      'nouveau',
       'interesse',
       'negociation',
       'converti',

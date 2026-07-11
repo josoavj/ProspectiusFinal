@@ -17,7 +17,7 @@ class PipelineScreen extends StatefulWidget {
 }
 
 class _PipelineScreenState extends State<PipelineScreen> {
-  final List<String> _statuses = ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'];
+  final List<String> _statuses = ['interesse', 'negociation', 'converti', 'perdu'];
   final ScrollController _horizontalController = ScrollController();
 
   @override
@@ -261,7 +261,6 @@ class _PipelineScreenState extends State<PipelineScreen> {
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'nouveau': return AppColors.azure;
       case 'interesse': return Colors.amber;
       case 'negociation': return Colors.orange;
       case 'converti': return const Color(0xFF06CE70);
