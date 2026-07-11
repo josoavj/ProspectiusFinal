@@ -27,7 +27,6 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
   String? _errorMessage;
 
   final _statuses = [
-    'nouveau',
     'interesse',
     'negociation',
     'converti',
