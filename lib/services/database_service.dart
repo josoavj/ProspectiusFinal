@@ -160,7 +160,7 @@ class DatabaseService {
               telephone: row['telephone'] as String? ?? '',
               adresse: row['adresse'] as String? ?? '',
               type: row['type'] as String? ?? '',
-              status: row['status'] as String? ?? 'nouveau',
+              status: row['status'] as String? ?? 'interesse',
               creation: DateTime.parse(row['creation'].toString()),
               dateUpdate: DateTime.parse(row['date_update'].toString()),
               assignation: (row['assignation'] as num?)?.toInt() ?? 0,
@@ -199,7 +199,7 @@ class DatabaseService {
 
       const sql = '''INSERT INTO Prospect 
            (nomp, prenomp, email, telephone, adresse, type, assignation, status, creation, date_update)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 'nouveau', NOW(), NOW())''';
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'interesse', NOW(), NOW())''';
 
       AppLogger.logRequest('CREATE_PROSPECT', sql, [
         nom,
