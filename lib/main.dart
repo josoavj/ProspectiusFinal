@@ -29,6 +29,8 @@ import 'widgets/sidebar_navigation.dart';
 import 'services/mysql_service.dart';
 import 'core/theme/app_colors.dart';
 
+import 'screens/add_prospect_screen.dart'; // Ajout
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -121,6 +123,10 @@ class MyApp extends StatelessWidget {
                     SearchIntent: CallbackAction<SearchIntent>(onInvoke: (intent) {
                        // Logique pour naviguer vers Exploration ou focus search
                        return null;
+                    }),
+                    NewProspectIntent: CallbackAction<NewProspectIntent>(onInvoke: (intent) {
+                      AddProspectScreen.show(context);
+                      return null;
                     }),
                   },
                   child: MediaQuery(
