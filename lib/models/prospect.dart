@@ -54,7 +54,7 @@ class Prospect {
       telephone: json['telephone']?.toString() ?? '',
       adresse: json['adresse']?.toString() ?? '',
       type: json['type']?.toString() ?? 'particulier',
-      status: json['status']?.toString() ?? 'nouveau',
+      status: json['status']?.toString() ?? 'interesse',
       priorite: json['priorite']?.toString() ?? 'moyenne',
       source: json['source']?.toString(),
       nomEntreprise: json['nom_entreprise']?.toString(),
