@@ -22,7 +22,6 @@ class TextFormatter {
 
   static String _formatStatus(String status) {
     switch (status.toLowerCase()) {
-      case 'nouveau': return 'Nouveau';
       case 'interesse': return 'Intéressé';
       case 'negociation': return 'Négociation';
       case 'converti': return 'Converti';
