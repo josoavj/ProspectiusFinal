@@ -263,7 +263,7 @@ class _MainScreenState extends State<MainScreen> {
       case 2:
         return 'Exploration';
       case 3:
-        return 'Statistiques';
+        return 'Statistiques Globales';
       case 4:
         return 'Clients';
       case 5:
