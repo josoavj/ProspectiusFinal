@@ -50,7 +50,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   late TextEditingController _interactionNoteController;
 
   String _selectedType = 'particulier';
-  String _selectedStatus = 'nouveau';
+  String _selectedStatus = 'interesse';
   String _selectedPriorite = 'moyenne';
   String _selectedInteractionType = 'appel';
   DateTime? _consentementDate;
@@ -81,7 +81,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
     _interactionNoteController = TextEditingController();
 
     _selectedType = p?.type ?? 'particulier';
-    _selectedStatus = p?.status ?? 'nouveau';
+    _selectedStatus = p?.status ?? 'interesse';
     _selectedPriorite = p?.priorite ?? 'moyenne';
     _consentementDate = p?.consentementDate;
   }
@@ -357,6 +357,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
   }
 
   Widget _buildStepPersoPro() {
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       key: const ValueKey(1),
       padding: const EdgeInsets.all(24),
@@ -409,7 +410,29 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
 
           const SizedBox(height: 24),
           _buildSectionTitle('Profil Professionnel'),
-          _buildDropdown('Type de contact', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!), labelFormatter: TextFormatter.formatType),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdown('Type de contact', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!), labelFormatter: TextFormatter.formatType),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
+                ),
+                child: Column(
+                  children: [
+                    Text('STATUT', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: colorScheme.primary, letterSpacing: 1)),
+                    const SizedBox(height: 2),
+                    Text('Intéressé', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.primary)),
+                  ],
+                ),
+              ),
+            ],
+          ),
           if (_selectedType != 'particulier') ...[
             const SizedBox(height: 16),
             _buildField(
@@ -524,6 +547,7 @@ class _AddProspectScreenState extends State<AddProspectScreen> {
           _buildSummaryItem('Email', _emailController.text),
           _buildSummaryItem('Téléphone(s)', _getJoinedPhones()),
           _buildSummaryItem('Profil', '${TextFormatter.formatType(_selectedType)} (${_selectedPriorite.toUpperCase()})'),
+          _buildSummaryItem('Statut Initial', 'Intéressé (Automatique)'),
           if (_selectedType != 'particulier') _buildSummaryItem('Entité', _nomEntrepriseController.text),
           _buildSummaryItem('Source', _sourceController.text),
           _buildSummaryItem('RGPD', _consentementDate == null ? 'Non défini' : 'Consentement le ${_consentementDate!.day}/${_consentementDate!.month}/${_consentementDate!.year}'),
