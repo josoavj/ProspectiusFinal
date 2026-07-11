@@ -7,6 +7,8 @@ import '../providers/auth_provider.dart';
 import '../providers/prospect_provider.dart';
 import '../services/secure_storage_service.dart';
 import '../providers/settings_provider.dart';
+import '../services/excel_service.dart';
+import '../core/di/service_locator.dart';
 import '../utils/app_snackbars.dart';
 import 'help_detail_screen.dart';
 
@@ -26,6 +28,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   bool _isConnecting = false;
   bool _showEditMode = false;
   String? _error;
+  bool _isBackingUp = false;
+  String? _defaultBackupPath;
   final SecureStorageService _secureStorage = SecureStorageService();
 
   @override
@@ -33,7 +37,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSavedConfig();
+      _loadDefaultBackupPath();
     });
+  }
+
+  Future<void> _loadDefaultBackupPath() async {
+    final path = await sl.backupService.getDefaultBackupDirectory();
+    if (mounted) setState(() => _defaultBackupPath = path);
   }
 
   Future<void> _loadSavedConfig() async {
@@ -137,6 +147,33 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     _passwordController.dispose();
     _databaseController.dispose();
     super.dispose();
+  }
+
+  void _handleBackup({bool customPath = false}) async {
+    String? selectedDir;
+    
+    if (customPath) {
+      final excelService = ExcelService();
+      selectedDir = await excelService.pickExportDirectory();
+      if (selectedDir == null) return;
+    }
+
+    setState(() => _isBackingUp = true);
+    
+    try {
+      final backupService = sl.backupService;
+      final path = await backupService.createFullBackup(directoryPath: selectedDir);
+      
+      if (mounted) {
+        if (path != null) {
+          AppSnackBars.showSuccess(context, 'Sauvegarde terminée avec succès !\nEmplacement : $path');
+        } else {
+          AppSnackBars.showError(context, 'Échec de la sauvegarde de la base de données');
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _isBackingUp = false);
+    }
   }
 
   @override
@@ -355,15 +392,35 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Section Maintenance
+            // Section Maintenance & Sauvegarde
             if (userRole == 'Administrateur')
               _buildSettingSection(
-                icon: Icons.cleaning_services_outlined,
-                title: 'Maintenance des données',
-                subtitle: 'Gérez le stockage et nettoyez la base',
+                icon: Icons.shield_outlined,
+                title: 'Sécurité & Sauvegarde',
+                subtitle: 'Protégez vos données et maintenez la base',
                 colorScheme: colorScheme,
                 children: [
-                  _buildDocumentationItem(
+                  _buildActionItem(
+                    context,
+                    icon: Icons.backup_outlined,
+                    title: 'Sauvegarde standard',
+                    desc: 'Dossier par défaut : ${_defaultBackupPath ?? "Chargement..."}',
+                    onTap: _isBackingUp ? () {} : () => _handleBackup(customPath: false),
+                    trailing: _isBackingUp 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.arrow_forward_ios, size: 14),
+                  ),
+                  const Divider(height: 32),
+                  _buildActionItem(
+                    context,
+                    icon: Icons.drive_file_move_outlined,
+                    title: 'Sauvegarde personnalisée',
+                    desc: 'Choisissez manuellement l\'emplacement du fichier (Clé USB, Disque...)',
+                    onTap: _isBackingUp ? () {} : () => _handleBackup(customPath: true),
+                    trailing: const Icon(Icons.folder_open_outlined, size: 18),
+                  ),
+                  const Divider(height: 32),
+                  _buildActionItem(
                     context,
                     icon: Icons.delete_sweep_outlined,
                     title: 'Purger les prospects supprimés',
@@ -373,6 +430,38 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                 ],
               ),
             const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionItem(BuildContext context, {required IconData icon, required String title, required String desc, required VoidCallback onTap, Widget? trailing}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, size: 20, color: colorScheme.primary),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 2),
+                  Text(desc, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                ],
+              ),
+            ),
+            trailing ?? Icon(Icons.chevron_right, size: 16, color: colorScheme.outline),
           ],
         ),
       ),
