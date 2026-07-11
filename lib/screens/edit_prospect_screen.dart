@@ -234,7 +234,7 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
                     _buildField(_posteController, 'Poste occupé', Icons.work_outline),
                   ],
                   _buildDropdown('Priorité', _selectedPriorite, ['basse', 'moyenne', 'haute'], (val) => setState(() => _selectedPriorite = val!), labelFormatter: TextFormatter.formatPriority),
-                  _buildDropdown('Statut', _selectedStatus, ['nouveau', 'interesse', 'negociation', 'converti', 'perdu'], (val) => setState(() => _selectedStatus = val!), labelFormatter: TextFormatter.formatStatus),
+                  _buildDropdown('Statut', _selectedStatus, ['interesse', 'negociation', 'converti', 'perdu'], (val) => setState(() => _selectedStatus = val!), labelFormatter: TextFormatter.formatStatus),
                 ]),
                 const SizedBox(height: 16),
                 _buildSection(context, 'Digital & Source', [
