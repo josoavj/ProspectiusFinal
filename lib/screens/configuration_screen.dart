@@ -176,6 +176,31 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     }
   }
 
+  void _navigateToHelp(String title, String type) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => HelpDetailScreen(title: title, type: type),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.05, 0.0); // Léger glissement de droite
+          const end = Offset.zero;
+          const curve = Curves.easeOutCubic; // Courbe fluide
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -333,60 +358,28 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                   icon: Icons.auto_stories_outlined,
                   title: 'Guide de démarrage rapide',
                   desc: 'Tout ce qu\'il faut savoir pour bien débuter avec vos premiers prospects.',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HelpDetailScreen(
-                        title: 'Démarrage Rapide',
-                        type: 'start',
-                      ),
-                    ),
-                  ),
+                  onTap: () => _navigateToHelp('Démarrage Rapide', 'start'),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.keyboard_alt_outlined,
                   title: 'Astuces clavier',
                   desc: 'Gagnez du temps au quotidien grâce aux raccourcis essentiels.',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HelpDetailScreen(
-                        title: 'Raccourcis Clavier',
-                        type: 'keyboard',
-                      ),
-                    ),
-                  ),
+                  onTap: () => _navigateToHelp('Raccourcis Clavier', 'keyboard'),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.verified_user_outlined,
                   title: 'Sécurité de vos données',
                   desc: 'Comprendre comment vos informations sont protégées localement.',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HelpDetailScreen(
-                        title: 'Sécurité & Confidentialité',
-                        type: 'security',
-                      ),
-                    ),
-                  ),
+                  onTap: () => _navigateToHelp('Sécurité & Confidentialité', 'security'),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.alternate_email_outlined,
                   title: 'Contacter l\'assistance',
                   desc: 'Une question ou une suggestion ? Notre équipe est à votre écoute.',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HelpDetailScreen(
-                        title: 'Support & Contact',
-                        type: 'support',
-                      ),
-                    ),
-                  ),
+                  onTap: () => _navigateToHelp('Support & Contact', 'support'),
                 ),
               ],
             ),
