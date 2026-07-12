@@ -287,4 +287,19 @@ class MySQLService {
   Future<void> close() async {
     await disconnect();
   }
+
+  /// Récupère la version du serveur de base de données
+  Future<String> getDatabaseVersion() async {
+    try {
+      final results = await query('SELECT VERSION() as version');
+      return results.first['version'] as String;
+    } catch (_) {
+      return 'Inconnue';
+    }
+  }
+
+  /// Retourne le mode de connexion actuel
+  String getConnectionMode() {
+    return _usePool ? 'Pool de connexions (Optimisé)' : 'Connexion unique';
+  }
 }
