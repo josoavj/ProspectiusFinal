@@ -91,11 +91,6 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Explorez et filtrez vos prospects',
-              style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
-            ),
-            const SizedBox(height: 20),
             _buildSearchBar(colorScheme),
             const SizedBox(height: 20),
             _buildFiltersSection(colorScheme),

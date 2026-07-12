@@ -25,9 +25,7 @@ class ServiceLocator {
   BackupService? _backupService;
   
   BackupService get backupService {
-    if (_backupService == null) {
-      _backupService = BackupService(mysqlService);
-    }
+    _backupService ??= BackupService(mysqlService);
     return _backupService!;
   }
   

@@ -67,13 +67,20 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   Widget _buildHeader() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final statsProvider = context.watch<StatsProvider>();
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        const Text('Statistiques Globales', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        IconButton.filledTonal(
-          onPressed: _loadStats,
+        ElevatedButton.icon(
+          onPressed: statsProvider.isLoading ? null : _loadStats,
           icon: const Icon(Icons.refresh),
+          label: const Text('Actualiser'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+          ),
         ),
       ],
     );

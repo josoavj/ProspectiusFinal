@@ -204,9 +204,25 @@ class _AuthWrapperState extends State<AuthWrapper> {
         if (connected) {
           // Connecté avec succès
           if (authProvider.isAuthenticated) {
-            Navigator.of(context).pushReplacementNamed('/prospects');
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(milliseconds: 600),
+              ),
+            );
           } else {
-            Navigator.of(context).pushReplacementNamed('/login');
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(milliseconds: 600),
+              ),
+            );
           }
         } else {
           // Erreur de connexion, afficher la page de configuration
@@ -261,9 +277,9 @@ class _MainScreenState extends State<MainScreen> {
       case 1:
         return 'Pipeline';
       case 2:
-        return 'Exploration';
+        return 'Exploration & Filtres';
       case 3:
-        return 'Statistiques';
+        return 'Statistiques Globales';
       case 4:
         return 'Clients';
       case 5:
@@ -271,7 +287,7 @@ class _MainScreenState extends State<MainScreen> {
       case 6:
         return 'À propos';
       case 7:
-        return 'Profil';
+        return 'Mon Profil';
       case 8:
         return 'Paramètres';
       case 9:

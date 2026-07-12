@@ -30,6 +30,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   String? _error;
   bool _isBackingUp = false;
   String? _defaultBackupPath;
+  String _dbVersion = 'Chargement...';
+  String _connMode = 'Vérification...';
   final SecureStorageService _secureStorage = SecureStorageService();
 
   @override
@@ -38,7 +40,19 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSavedConfig();
       _loadDefaultBackupPath();
+      _loadSystemHealth();
     });
+  }
+
+  Future<void> _loadSystemHealth() async {
+    final version = await sl.mysqlService.getDatabaseVersion();
+    final mode = sl.mysqlService.getConnectionMode();
+    if (mounted) {
+      setState(() {
+        _dbVersion = version;
+        _connMode = mode;
+      });
+    }
   }
 
   Future<void> _loadDefaultBackupPath() async {
@@ -176,6 +190,31 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     }
   }
 
+  void _navigateToHelp(String title, String type) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => HelpDetailScreen(title: title, type: type),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.05, 0.0); // Léger glissement de droite
+          const end = Offset.zero;
+          const curve = Curves.easeOutCubic; // Courbe fluide
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -308,15 +347,17 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
 
             // Section Système
             _buildSettingSection(
-              icon: Icons.info_outline_rounded,
+              icon: Icons.monitor_heart_outlined,
               title: 'Santé du système',
-              subtitle: 'Informations techniques sur votre installation actuelle',
+              subtitle: 'Diagnostic technique de votre installation',
               colorScheme: colorScheme,
               children: [
-                _buildSystemInfoItem('État de la version', '1.1.0 (Dernière mise à jour)', colorScheme),
-                _buildSystemInfoItem('Système d\'exploitation', Platform.operatingSystem.toUpperCase(), colorScheme),
-                _buildSystemInfoItem('Moteur graphique', 'Impeller/Skia (Optimisé)', colorScheme),
-                _buildSystemInfoItem('Connexion SQL', 'Active et sécurisée', colorScheme),
+                _buildSystemInfoItem('Version Application', 'v1.2.0 Stable', colorScheme),
+                _buildSystemInfoItem('Moteur de base de données', _dbVersion, colorScheme),
+                _buildSystemInfoItem('Mode de connexion SQL', _connMode, colorScheme),
+                _buildSystemInfoItem('Système d\'exploitation', '${Platform.operatingSystem.toUpperCase()} (${Platform.operatingSystemVersion.split(' ')[0]})', colorScheme),
+                _buildSystemInfoItem('Architecture processeur', Platform.localHostname, colorScheme, customValue: Platform.isLinux ? 'Linux Desktop' : 'Windows Desktop'),
+                _buildSystemInfoItem('Statut Serveur', 'Opérationnel', colorScheme, isSuccess: true),
               ],
             ),
             const SizedBox(height: 16),
@@ -333,60 +374,28 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                   icon: Icons.auto_stories_outlined,
                   title: 'Guide de démarrage rapide',
                   desc: 'Tout ce qu\'il faut savoir pour bien débuter avec vos premiers prospects.',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HelpDetailScreen(
-                        title: 'Démarrage Rapide',
-                        type: 'start',
-                      ),
-                    ),
-                  ),
+                  onTap: () => _navigateToHelp('Démarrage Rapide', 'start'),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.keyboard_alt_outlined,
                   title: 'Astuces clavier',
                   desc: 'Gagnez du temps au quotidien grâce aux raccourcis essentiels.',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HelpDetailScreen(
-                        title: 'Raccourcis Clavier',
-                        type: 'keyboard',
-                      ),
-                    ),
-                  ),
+                  onTap: () => _navigateToHelp('Raccourcis Clavier', 'keyboard'),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.verified_user_outlined,
                   title: 'Sécurité de vos données',
                   desc: 'Comprendre comment vos informations sont protégées localement.',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HelpDetailScreen(
-                        title: 'Sécurité & Confidentialité',
-                        type: 'security',
-                      ),
-                    ),
-                  ),
+                  onTap: () => _navigateToHelp('Sécurité & Confidentialité', 'security'),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.alternate_email_outlined,
                   title: 'Contacter l\'assistance',
                   desc: 'Une question ou une suggestion ? Notre équipe est à votre écoute.',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HelpDetailScreen(
-                        title: 'Support & Contact',
-                        type: 'support',
-                      ),
-                    ),
-                  ),
+                  onTap: () => _navigateToHelp('Support & Contact', 'support'),
                 ),
               ],
             ),
@@ -506,14 +515,29 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     );
   }
 
-  Widget _buildSystemInfoItem(String label, String value, ColorScheme colorScheme) {
+  Widget _buildSystemInfoItem(String label, String value, ColorScheme colorScheme, {bool isSuccess = false, String? customValue}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          Row(
+            children: [
+              if (isSuccess) ...[
+                const Icon(Icons.check_circle, color: Color(0xFF06CE70), size: 14),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                customValue ?? value, 
+                style: TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 13,
+                  color: isSuccess ? const Color(0xFF06CE70) : null,
+                )
+              ),
+            ],
+          ),
         ],
       ),
     );

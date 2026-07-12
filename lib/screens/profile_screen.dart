@@ -74,23 +74,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (user == null) return const Center(child: Text('Utilisateur non connecté'));
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
-                child: Column(
-                  children: [
-                    _buildAvatarSection(user, colorScheme),
-                    const SizedBox(height: 32),
-                    if (_successMessage != null) _buildStatusMessage(_successMessage!, Colors.green),
-                    if (_errorMessage != null) _buildStatusMessage(_errorMessage!, colorScheme.error),
-                    const SizedBox(height: 16),
-                    _buildProfileCard(user, colorScheme),
-                    const SizedBox(height: 32),
-                    _buildActionButtons(colorScheme),
-                  ],
+            child: Column(
+              children: [
+                _buildModernHeader(user, colorScheme),
+                const SizedBox(height: 50), // Espace pour l'avatar
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: Column(
+                        children: [
+                          if (_successMessage != null) _buildStatusMessage(_successMessage!, Colors.green),
+                          if (_errorMessage != null) _buildStatusMessage(_errorMessage!, colorScheme.error),
+                          const SizedBox(height: 10), // Espace avant la carte
+                          _buildProfileCard(user, colorScheme),
+                          const SizedBox(height: 32),
+                          _buildActionButtons(colorScheme),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           );
         },
@@ -98,24 +104,84 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildAvatarSection(dynamic user, ColorScheme colorScheme) {
-    return Column(
+  Widget _buildModernHeader(dynamic user, ColorScheme colorScheme) {
+    return Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
       children: [
-        CircleAvatar(
-          radius: 44,
-          backgroundColor: colorScheme.primaryContainer,
-          child: Text(
-            user.nom.isNotEmpty ? user.nom[0].toUpperCase() : '?',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: colorScheme.onPrimaryContainer),
+        // Fond bleu uni (pour correspondre à l'AppBar)
+        Container(
+          height: 180,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: colorScheme.primary,
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(48)),
           ),
         ),
-        const SizedBox(height: 16),
-        Text(user.fullName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: BorderRadius.circular(20)),
-          child: Text(user.typeCompte, style: TextStyle(color: colorScheme.onSecondaryContainer, fontWeight: FontWeight.bold, fontSize: 12)),
+        // Texte et Badge dans la zone bleue
+        Positioned(
+          top: 20,
+          child: Column(
+            children: [
+              Text(
+                user.fullName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                ),
+                child: Text(
+                  user.typeCompte.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Avatar circulaire "bien devant"
+        Positioned(
+          bottom: -45,
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                )
+              ],
+            ),
+            child: CircleAvatar(
+              radius: 54,
+              backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+              child: Text(
+                user.nom.isNotEmpty ? user.nom[0].toUpperCase() : '?',
+                style: TextStyle(
+                  fontSize: 44, 
+                  fontWeight: FontWeight.bold, 
+                  color: colorScheme.primary,
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -125,7 +191,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(top: 24),
       decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: color.withValues(alpha: 0.3))),
       child: Text(message, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
     );
@@ -134,17 +200,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileCard(dynamic user, ColorScheme colorScheme) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Informations Personnelles', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 20),
+            Row(
+              children: [
+                Icon(Icons.person_outline, color: colorScheme.primary, size: 20),
+                const SizedBox(width: 12),
+                const Text('Détails du compte', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+              ],
+            ),
+            const SizedBox(height: 24),
             _buildField('Nom', _nomController, _isEditing, colorScheme),
             _buildField('Prénom', _prenomController, _isEditing, colorScheme),
             _buildField('Email', _emailController, _isEditing, colorScheme, type: TextInputType.emailAddress),
-            _buildReadOnlyField('Nom d\'utilisateur', user.username, colorScheme),
-            _buildReadOnlyField('Membre depuis', '${user.dateCreation.day}/${user.dateCreation.month}/${user.dateCreation.year}', colorScheme),
+            const Divider(height: 32),
+            _buildReadOnlyField('Nom d\'utilisateur', user.username, colorScheme, Icons.alternate_email),
+            _buildReadOnlyField('Membre depuis', '${user.dateCreation.day}/${user.dateCreation.month}/${user.dateCreation.year}', colorScheme, Icons.calendar_today_outlined),
           ],
         ),
       ),
@@ -166,10 +239,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: const TextStyle(fontSize: 14),
             decoration: InputDecoration(
               filled: !enabled,
-              fillColor: enabled ? null : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-              disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5))),
+              fillColor: enabled ? null : colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
+              disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
             ),
           ),
         ],
@@ -177,23 +250,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildReadOnlyField(String label, String value, ColorScheme colorScheme) {
+  Widget _buildReadOnlyField(String label, String value, ColorScheme colorScheme, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant)),
-          const SizedBox(height: 6),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+          Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
+                Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              ],
             ),
-            child: Text(value, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7), fontSize: 14)),
           ),
         ],
       ),
@@ -204,12 +275,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_isEditing) {
       return Row(
         children: [
-          Expanded(child: OutlinedButton(onPressed: _isLoading ? null : () { _initializeControllers(); setState(() => _isEditing = false); }, child: const Text('Annuler'))),
+          Expanded(child: OutlinedButton(
+            onPressed: _isLoading ? null : () { _initializeControllers(); setState(() => _isEditing = false); }, 
+            style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            child: const Text('Annuler')
+          )),
           const SizedBox(width: 12),
           Expanded(
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleSaveChanges, 
-              style: ElevatedButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary), 
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary, 
+                foregroundColor: colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ), 
               child: _isLoading 
                 ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                 : const Text('Enregistrer')
@@ -222,23 +302,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         SizedBox(
           width: double.infinity,
-          height: 48,
+          height: 52,
           child: ElevatedButton.icon(
             onPressed: () => setState(() => _isEditing = true),
             icon: const Icon(Icons.edit_outlined, size: 18),
             label: const Text('Modifier le profil'),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06CE70), foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF06CE70), 
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+            ),
           ),
         ),
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
-          height: 48,
+          height: 52,
           child: OutlinedButton.icon(
             onPressed: _showChangePasswordDialog,
             icon: const Icon(Icons.lock_outline, size: 18),
-            label: const Text('Modifier le mot de passe'),
-            style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
+            label: const Text('Sécuriser mon mot de passe'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: colorScheme.primary,
+              side: BorderSide(color: colorScheme.primary),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           ),
         ),
       ],
