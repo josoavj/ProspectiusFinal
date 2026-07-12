@@ -36,7 +36,7 @@ class AboutScreen extends StatelessWidget {
                 constraints: const BoxConstraints(maxWidth: 800),
                 child: Column(
                   children: [
-                    _buildVisionSection(theme, colorScheme),
+                    _buildVisionSection(context, theme, colorScheme),
                     const SizedBox(height: 32),
                     _buildBenefitsSection(theme, colorScheme),
                     const SizedBox(height: 32),
@@ -132,7 +132,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildVisionSection(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildVisionSection(BuildContext context, ThemeData theme, ColorScheme colorScheme) {
     return Column(
       children: [
         Text(
@@ -165,7 +165,134 @@ class AboutScreen extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 16),
+        TextButton.icon(
+          onPressed: () => _showFeaturesDialog(context),
+          icon: const Icon(Icons.rocket_launch_outlined, size: 18),
+          label: const Text('Découvrir toutes les fonctionnalités'),
+          style: TextButton.styleFrom(
+            foregroundColor: colorScheme.primary,
+            textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+        ),
       ],
+    );
+  }
+
+  void _showFeaturesDialog(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600, maxHeight: 700),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.stars_rounded, color: Colors.white, size: 32),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Arsenal Prospectius', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                          Text('La puissance au service de vos ventes', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(24),
+                  children: [
+                    _buildFeatureGroup('Cœur de Métier', [
+                      _buildFeatureTile(Icons.people_alt_outlined, 'Gestion Prospect 360°', 'Multi-numéros, profil pro/perso et historique complet.'),
+                      _buildFeatureTile(Icons.view_kanban_outlined, 'Pipeline Kanban', 'Suivez visuellement l\'avancement de vos deals par glisser-déposer.'),
+                      _buildFeatureTile(Icons.search_rounded, 'Exploration Avancée', 'Moteur de recherche puissant et filtres multicritères intelligents.'),
+                    ]),
+                    const SizedBox(height: 24),
+                    _buildFeatureGroup('Sécurité & Data', [
+                      _buildFeatureTile(Icons.backup_outlined, 'Sauvegardes SQL', 'Export complet (Structure + Données) en un clic pour une sécurité totale.'),
+                      _buildFeatureTile(Icons.verified_user_outlined, 'Conformité RGPD', 'Suivi natif du consentement et purge automatique des données.'),
+                      _buildFeatureTile(Icons.lock_outline, 'Protection BCrypt', 'Chiffrement de niveau militaire pour tous les accès utilisateurs.'),
+                    ]),
+                    const SizedBox(height: 24),
+                    _buildFeatureGroup('Productivité', [
+                      _buildFeatureTile(Icons.keyboard_command_key, 'Raccourcis Clavier', 'Navigation ultra-rapide optimisée pour les experts Desktop.'),
+                      _buildFeatureTile(Icons.file_download_outlined, 'Export Excel Pro', 'Générez des rapports complets avec statistiques intégrées.'),
+                      _buildFeatureTile(Icons.history_edu_outlined, 'Journal d\'Audit', 'Traçabilité complète de toutes les actions sensibles effectuées.'),
+                    ]),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Compris, c\'est puissant !', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureGroup(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Colors.grey)),
+        const SizedBox(height: 12),
+        ...children,
+      ],
+    );
+  }
+
+  Widget _buildFeatureTile(IconData icon, String title, String desc) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.blueAccent, size: 20),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 2),
+                Text(desc, style: const TextStyle(color: Colors.grey, fontSize: 12, height: 1.3)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
