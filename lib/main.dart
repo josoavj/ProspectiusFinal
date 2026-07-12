@@ -204,9 +204,25 @@ class _AuthWrapperState extends State<AuthWrapper> {
         if (connected) {
           // Connecté avec succès
           if (authProvider.isAuthenticated) {
-            Navigator.of(context).pushReplacementNamed('/prospects');
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(milliseconds: 600),
+              ),
+            );
           } else {
-            Navigator.of(context).pushReplacementNamed('/login');
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(milliseconds: 600),
+              ),
+            );
           }
         } else {
           // Erreur de connexion, afficher la page de configuration
