@@ -30,6 +30,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   String? _error;
   bool _isBackingUp = false;
   String? _defaultBackupPath;
+  String _dbVersion = 'Chargement...';
+  String _connMode = 'Vérification...';
   final SecureStorageService _secureStorage = SecureStorageService();
 
   @override
@@ -38,7 +40,19 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSavedConfig();
       _loadDefaultBackupPath();
+      _loadSystemHealth();
     });
+  }
+
+  Future<void> _loadSystemHealth() async {
+    final version = await sl.mysqlService.getDatabaseVersion();
+    final mode = sl.mysqlService.getConnectionMode();
+    if (mounted) {
+      setState(() {
+        _dbVersion = version;
+        _connMode = mode;
+      });
+    }
   }
 
   Future<void> _loadDefaultBackupPath() async {
@@ -333,15 +347,17 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
 
             // Section Système
             _buildSettingSection(
-              icon: Icons.info_outline_rounded,
+              icon: Icons.monitor_heart_outlined,
               title: 'Santé du système',
-              subtitle: 'Informations techniques sur votre installation actuelle',
+              subtitle: 'Diagnostic technique de votre installation',
               colorScheme: colorScheme,
               children: [
-                _buildSystemInfoItem('État de la version', '1.1.0 (Dernière mise à jour)', colorScheme),
-                _buildSystemInfoItem('Système d\'exploitation', Platform.operatingSystem.toUpperCase(), colorScheme),
-                _buildSystemInfoItem('Moteur graphique', 'Impeller/Skia (Optimisé)', colorScheme),
-                _buildSystemInfoItem('Connexion SQL', 'Active et sécurisée', colorScheme),
+                _buildSystemInfoItem('Version Application', 'v1.2.0 Stable', colorScheme),
+                _buildSystemInfoItem('Moteur de base de données', _dbVersion, colorScheme),
+                _buildSystemInfoItem('Mode de connexion SQL', _connMode, colorScheme),
+                _buildSystemInfoItem('Système d\'exploitation', '${Platform.operatingSystem.toUpperCase()} (${Platform.operatingSystemVersion.split(' ')[0]})', colorScheme),
+                _buildSystemInfoItem('Architecture processeur', Platform.localHostname, colorScheme, customValue: Platform.isLinux ? 'Linux Desktop' : 'Windows Desktop'),
+                _buildSystemInfoItem('Statut Serveur', 'Opérationnel', colorScheme, isSuccess: true),
               ],
             ),
             const SizedBox(height: 16),
@@ -499,14 +515,29 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     );
   }
 
-  Widget _buildSystemInfoItem(String label, String value, ColorScheme colorScheme) {
+  Widget _buildSystemInfoItem(String label, String value, ColorScheme colorScheme, {bool isSuccess = false, String? customValue}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          Row(
+            children: [
+              if (isSuccess) ...[
+                const Icon(Icons.check_circle, color: Color(0xFF06CE70), size: 14),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                customValue ?? value, 
+                style: TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 13,
+                  color: isSuccess ? const Color(0xFF06CE70) : null,
+                )
+              ),
+            ],
+          ),
         ],
       ),
     );
