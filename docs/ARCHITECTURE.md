@@ -6,35 +6,33 @@ Ce document explique comment Prospectius est construit. Pour garantir que l'appl
 
 ## 🏛️ L'organisation en couches
 
-Imaginez Prospectius comme un restaurant bien organisé :
-
-### 🍽️ La Salle (Présentation) - `lib/presentation`
-C'est ce que vous voyez : le menu, les tables, la décoration. Dans l'application, ce sont les **Écrans** et les **Widgets**. Ils s'occupent d'afficher les données joliment et de réagir à vos clics.
-- **Le Maître d'Hôtel (Provider)** : Il fait le lien entre la salle et la cuisine. Il sait quel écran a besoin de quelle information.
+### 🍽️ La Salle (Présentation) - `lib/screens` & `lib/widgets`
+C'est l'interface utilisateur. Elle s'occupe d'afficher les données et de capturer les interactions (clics, glissements Kanban).
+- **Gestion d'État (Provider)** : Utilisation de `provider` pour une réactivité fluide. Chaque module (Prospects, Stats, Auth, Settings) possède son propre fournisseur de données.
 
 ### 📜 Les Recettes (Domaine) - `lib/domain`
-C'est le savoir-faire de l'application. Ici, on définit **ce que l'on peut faire** (créer un prospect, changer un statut) sans se soucier de savoir où sont stockées les données. C'est le cœur intelligent de Prospectius.
+Définit les entités métier (Prospect, Interaction) et les contrats de services (Interfaces des Repositories). C'est le code le plus stable, indépendant des technologies externes.
 
 ### 🍳 La Cuisine (Données) - `lib/data`
-C'est ici que l'on prépare réellement les plats. Cette couche s'occupe d'aller chercher les informations dans votre base de données **MySQL** ou dans les fichiers locaux. Elle transforme les données brutes en informations utilisables par l'application.
+Implémente l'accès aux données. Elle communique avec le serveur MySQL via des requêtes optimisées et gère la mise en cache locale pour des performances instantanées.
 
 ---
 
-## 🏗️ Pourquoi ce choix ?
+## 🏗️ Services Techniques Majeurs
 
-Cette organisation nous offre trois avantages majeurs :
-
-1. **Facilité d'entretien** : Si nous changeons la décoration (le design), la cuisine (la base de données) ne change pas.
-2. **Évolutivité** : Demain, si nous voulons que Prospectius fonctionne avec un serveur dans le cloud plutôt que MySQL local, il nous suffira de changer une seule pièce du puzzle.
-3. **Sécurité maximale** : Chaque couche a un rôle précis, ce qui limite les risques d'erreurs et facilite la protection de vos données.
+1. **MySQL Engine** : Gère les connexions persistantes, les pools de connexions et le diagnostic système.
+2. **Backup Service** : Moteur d'extraction SQL capable de reconstruire l'intégralité de la base de données.
+3. **Migration Service** : Met à jour automatiquement le schéma de la base de données lors du passage à une nouvelle version sans perte de données.
+4. **Auth Service** : Sécurise les sessions via BCrypt et le stockage d'identifiants sécurisé.
 
 ---
 
 ## 🔒 Innovations de la Version 1.2.0
 
-- **Résilience Database** : Implémentation d'une logique de répétition (retry) pour garantir la continuité de service en cas de micro-coupures réseau.
-- **Verrouillage Optimiste** : Système de versioning intégré pour empêcher tout conflit de données lors de travaux simultanés sur une même fiche.
-- **Conformité Native** : Architecture pensée pour le RGPD avec suivi du consentement et automatisation des purges de données.
+- **Assistant Wizard** : Navigation par étapes avec persistance temporaire de l'état du formulaire.
+- **Moteur Multi-phone** : Normalisation des numéros de téléphone (Stockage 10 chiffres vs Affichage formatté).
+- **Résilience Database** : Logique de répétition (retry) et reconnexion transparente.
+- **Verrouillage Optimiste** : Champ `version` incrémenté à chaque modification pour garantir l'intégrité en mode multi-utilisateur.
 
 ---
 
