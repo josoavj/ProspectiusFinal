@@ -2,6 +2,27 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [1.2.0] - 2025-02-12
+
+### Nouvelles Fonctionnalités
+- **Assistant d'Ajout (Wizard)** : Refonte totale de la création de prospect en 5 étapes structurées avec navigation fluide et effet de flou.
+- **Gestion Multi-numéros** : Support de **3 numéros de téléphone** par prospect avec formatage Malagasy automatique (+261).
+- **Cycle de Vie Simplifié** : Suppression du statut "Nouveau". Tout prospect débute désormais par défaut à **"Intéressé"**.
+- **Sauvegarde SQL Intégrée** : Option de sauvegarde complète (Structure + Données) avec choix du répertoire (Standard ou Personnalisé).
+- **Indicateur de Santé Système** : Nouveau tableau de bord de diagnostic technique (Version DB, Mode connexion, Statut serveur).
+- **Showcase de l'Arsenal** : Dialogue interactif "Arsenal Prospectius" présentant toutes les capacités de l'outil.
+
+### Sécurité & Données
+- **Consentement RGPD Dynamique** : Refonte de la section protection avec choix rapides (Tags) et pédagogie intégrée.
+- **Identité Professionnelle** : Harmonisation de l'affichage en **NOM Prénom** sur toute la plateforme.
+- **Nettoyage Automatique** : Amélioration de la purge des données supprimées avec sécurisation du contexte asynchrone.
+
+### Design & Expérience (UX)
+- **Transitions Premium** : Fluidification des changements d'écrans (Login, Splash, Aide) avec des animations de fondu et glissement.
+- **Profil Majestic** : Refonte de l'écran Profil avec en-tête bleu uni et avatar circulaire flottant.
+- **Page À Propos** : Nouvelle vitrine moderne avec présentation détaillée de l'équipe Core (Postes FullStack) et avatars GitHub.
+- **Navigation Optimisée** : Harmonisation des titres de l'AppBar et des boutons d'actualisation sur tous les écrans.
+
 ## [1.1.0] - 2025-01-20
 
 ### Nouvelles Fonctionnalités
