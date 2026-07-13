@@ -301,14 +301,6 @@ class _MainScreenState extends State<MainScreen> {
           appBar: AppBar(
             title: Text(_getTitleForIndex(_selectedIndex)),
             elevation: 0,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _onRefresh,
-                tooltip: 'Actualiser (F5)',
-              ),
-              const SizedBox(width: 8),
-            ],
           ),
           body: _getScreen(_selectedIndex),
         ),
