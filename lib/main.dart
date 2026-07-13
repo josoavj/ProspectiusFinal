@@ -47,6 +47,14 @@ class NewProspectIntent extends Intent {
   const NewProspectIntent();
 }
 
+class RefreshIntent extends Intent {
+  const RefreshIntent();
+}
+
+class CloseIntent extends Intent {
+  const CloseIntent();
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   
@@ -113,29 +121,11 @@ class MyApp extends StatelessWidget {
             ),
             themeMode: settings.themeMode,
             builder: (context, child) {
-              return Shortcuts(
-                shortcuts: <LogicalKeySet, Intent>{
-                  LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF): const SearchIntent(),
-                  LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyN): const NewProspectIntent(),
-                },
-                child: Actions(
-                  actions: <Type, Action<Intent>>{
-                    SearchIntent: CallbackAction<SearchIntent>(onInvoke: (intent) {
-                       // Logique pour naviguer vers Exploration ou focus search
-                       return null;
-                    }),
-                    NewProspectIntent: CallbackAction<NewProspectIntent>(onInvoke: (intent) {
-                      AddProspectScreen.show(context);
-                      return null;
-                    }),
-                  },
-                  child: MediaQuery(
-                    data: MediaQuery.of(context).copyWith(
-                      textScaler: TextScaler.linear(settings.fontSizeFactor),
-                    ),
-                    child: child!,
-                  ),
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.linear(settings.fontSizeFactor),
                 ),
+                child: child!,
               );
             },
             home: const AuthWrapper(),
@@ -251,22 +241,78 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
+  void _onRefresh() {
+    final auth = context.read<AuthProvider>();
+    final userId = auth.currentUser?.id;
+    final role = auth.currentUser?.typeCompte;
+
+    if (userId == null || role == null) return;
+
+    switch (_selectedIndex) {
+      case 0:
+      case 1:
+      case 2:
+      case 4:
+        context.read<ProspectProvider>().loadProspects(userId, role);
+        break;
+      case 3:
+        context.read<StatsProvider>().loadAllStats(userId, role);
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: SidebarNavigation(
-        selectedIndex: _selectedIndex,
-        onItemSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+    return Shortcuts(
+      shortcuts: <LogicalKeySet, Intent>{
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF): const SearchIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyN): const NewProspectIntent(),
+        LogicalKeySet(LogicalKeyboardKey.f5): const RefreshIntent(),
+        LogicalKeySet(LogicalKeyboardKey.escape): const CloseIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          SearchIntent: CallbackAction<SearchIntent>(onInvoke: (intent) {
+            setState(() => _selectedIndex = 2);
+            return null;
+          }),
+          NewProspectIntent: CallbackAction<NewProspectIntent>(onInvoke: (intent) {
+            AddProspectScreen.show(context);
+            return null;
+          }),
+          RefreshIntent: CallbackAction<RefreshIntent>(onInvoke: (intent) {
+            _onRefresh();
+            return null;
+          }),
+          CloseIntent: CallbackAction<CloseIntent>(onInvoke: (intent) {
+            Navigator.maybePop(context);
+            return null;
+          }),
         },
+        child: Scaffold(
+          drawer: SidebarNavigation(
+            selectedIndex: _selectedIndex,
+            onItemSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+          ),
+          appBar: AppBar(
+            title: Text(_getTitleForIndex(_selectedIndex)),
+            elevation: 0,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: _onRefresh,
+                tooltip: 'Actualiser (F5)',
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
+          body: _getScreen(_selectedIndex),
+        ),
       ),
-      appBar: AppBar(
-        title: Text(_getTitleForIndex(_selectedIndex)),
-        elevation: 0,
-      ),
-      body: _getScreen(_selectedIndex),
     );
   }
 
