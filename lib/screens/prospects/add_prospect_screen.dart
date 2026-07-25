@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
-import '../models/prospect.dart';
-import '../providers/auth_provider.dart';
-import '../providers/prospect_provider.dart';
-import '../utils/text_formatter.dart';
-import '../utils/app_snackbars.dart';
+import '../../models/prospect.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/prospect_provider.dart';
+import '../../utils/text_formatter.dart';
+import '../../utils/app_snackbars.dart';
 
 class AddProspectScreen extends StatefulWidget {
   final Prospect? prospect;

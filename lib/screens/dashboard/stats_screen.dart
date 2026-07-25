@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../core/theme/app_colors.dart';
-import '../models/stats.dart';
-import '../providers/auth_provider.dart';
-import '../providers/stats_provider.dart';
-import '../widgets/data_state_widget.dart';
-import '../utils/text_formatter.dart';
+import '../../core/theme/app_colors.dart';
+import '../../models/stats.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/stats_provider.dart';
+import '../../widgets/data_state_widget.dart';
+import '../../utils/text_formatter.dart';
+import 'widgets/stats_widgets.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -50,9 +51,10 @@ class _StatsScreenState extends State<StatsScreen> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildHeader(),
+                  _buildHeader(statsProvider),
                   const SizedBox(height: 24),
-                  _buildConversionCard(statsProvider),
+                  if (statsProvider.conversionStats != null)
+                    ConversionCard(stats: statsProvider.conversionStats!),
                   const SizedBox(height: 32),
                   _buildDistributionSection(statsProvider),
                   const SizedBox(height: 32),
@@ -66,9 +68,8 @@ class _StatsScreenState extends State<StatsScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(StatsProvider statsProvider) {
     final colorScheme = Theme.of(context).colorScheme;
-    final statsProvider = context.watch<StatsProvider>();
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -82,40 +83,6 @@ class _StatsScreenState extends State<StatsScreen> {
             foregroundColor: colorScheme.onPrimary,
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildConversionCard(StatsProvider statsProvider) {
-    if (statsProvider.conversionStats == null) return const SizedBox.shrink();
-    final stats = statsProvider.conversionStats!;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const Text('Taux de Conversion Client', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatItem('Prospects', stats.totalProspects.toString(), AppColors.azure),
-                _buildStatItem('Clients', stats.convertedClients.toString(), Colors.green),
-                _buildStatItem('Taux', '${(stats.conversionRate * 100).toStringAsFixed(1)}%', Colors.orange),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value, Color color) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-        Text(label, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
       ],
     );
   }
@@ -252,31 +219,24 @@ class _StatsScreenState extends State<StatsScreen> {
       children: [
         const Text('Performances Clés', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        _buildPerformanceMetric('Efficacité de Conversion', _calculateConversionRate(statsProvider), Colors.green),
+        PerformanceMetric(
+          label: 'Efficacité de Conversion', 
+          value: _calculateConversionRate(statsProvider), 
+          color: Colors.green
+        ),
         const SizedBox(height: 12),
-        _buildPerformanceMetric('Engagement Prospects', _calculateEngagementRate(statsProvider), AppColors.azure),
+        PerformanceMetric(
+          label: 'Engagement Prospects', 
+          value: _calculateEngagementRate(statsProvider), 
+          color: AppColors.azure
+        ),
         const SizedBox(height: 12),
-        _buildPerformanceMetric('Taux de Perte', _calculateLossRate(statsProvider), Colors.red),
+        PerformanceMetric(
+          label: 'Taux de Perte', 
+          value: _calculateLossRate(statsProvider), 
+          color: Colors.red
+        ),
       ],
-    );
-  }
-
-  Widget _buildPerformanceMetric(String label, double value, Color color) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface, 
-        borderRadius: BorderRadius.circular(12), 
-        border: Border.all(color: colorScheme.outlineVariant)
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text('${value.toStringAsFixed(1)}%', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
-        ],
-      ),
     );
   }
 

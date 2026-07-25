@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../utils/app_logger.dart';
-import '../utils/exception_handler.dart';
-import '../utils/validators.dart';
-import '../utils/app_snackbars.dart';
+import '../../providers/auth_provider.dart';
+import '../../utils/app_logger.dart';
+import '../../utils/exception_handler.dart';
+import '../../utils/validators.dart';
+import '../../utils/app_snackbars.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

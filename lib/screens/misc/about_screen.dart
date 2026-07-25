@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import '../utils/app_logger.dart';
+import '../../utils/app_logger.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});

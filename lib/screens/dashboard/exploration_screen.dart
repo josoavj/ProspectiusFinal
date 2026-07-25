@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/prospect.dart';
-import '../providers/prospect_provider.dart';
-import '../providers/auth_provider.dart';
-import '../utils/text_formatter.dart';
-import 'prospect_detail_screen.dart';
+import '../../models/prospect.dart';
+import '../../providers/prospect_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../utils/text_formatter.dart';
+import '../prospects/prospect_detail_screen.dart';
 
 class ExplorationScreen extends StatefulWidget {
   const ExplorationScreen({super.key});

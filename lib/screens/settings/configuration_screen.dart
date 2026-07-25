@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
-import '../services/mysql_service.dart';
+import '../../services/mysql_service.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../providers/prospect_provider.dart';
-import '../services/secure_storage_service.dart';
-import '../providers/settings_provider.dart';
-import '../services/excel_service.dart';
-import '../core/di/service_locator.dart';
-import '../utils/app_snackbars.dart';
-import 'help_detail_screen.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/prospect_provider.dart';
+import '../../services/secure_storage_service.dart';
+import '../../providers/settings_provider.dart';
+import '../../services/excel_service.dart';
+import '../../core/di/service_locator.dart';
+import '../../utils/app_snackbars.dart';
+import '../misc/help_detail_screen.dart';
 
 class ConfigurationScreen extends StatefulWidget {
   const ConfigurationScreen({super.key});

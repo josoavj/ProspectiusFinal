@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/prospect.dart';
-import '../providers/auth_provider.dart';
-import '../providers/prospect_provider.dart';
-import '../utils/text_formatter.dart';
-import '../widgets/data_state_widget.dart';
+import '../../models/prospect.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/prospect_provider.dart';
+import '../../utils/text_formatter.dart';
+import '../../widgets/data_state_widget.dart';
 import 'prospect_detail_screen.dart';
 
 class ClientsScreen extends StatefulWidget {

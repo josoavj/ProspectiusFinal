@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/logging_service.dart';
-import '../utils/app_logger.dart';
+import '../../services/logging_service.dart';
+import '../../utils/app_logger.dart';
 
 class LogsViewerScreen extends StatefulWidget {
   final String title;

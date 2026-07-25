@@ -4,10 +4,12 @@ Bienvenue dans **Prospectius** ! Nous sommes ravis de vous aider à simplifier v
 
 ## Quel est votre profil ?
 
-### 👤 Je suis un Utilisateur
+### Je suis un Utilisateur
+
 Vous voulez utiliser l'application pour gérer vos prospects sans toucher au code.
 
-### 👨‍💻 Je suis un Développeur
+### Je suis un Développeur
+
 Vous voulez explorer le code, le modifier ou compiler votre propre version personnalisée.
 
 ---
@@ -15,16 +17,20 @@ Vous voulez explorer le code, le modifier ou compiler votre propre version perso
 ## Guide pour les Utilisateurs (Installation Express)
 
 ### Étape 1 : Téléchargement
+
 Récupérez l'installeur correspondant à votre système :
 - **Windows :** `Prospectius_Setup_v1.2.0.exe`
 - **Linux :** Téléchargez l'exécutable `prospectius` (Donnez-lui les droits d'exécution).
 
 ### Étape 2 : Stockage (MySQL)
+
 Prospectius a besoin de MySQL ou MariaDB.
+
 1. Installez MariaDB sur votre PC ou serveur.
 2. Notez vos accès (Hôte, Utilisateur, Mot de passe).
 
 ### Étape 3 : Connexion
+
 Lancez l'application. Elle préparera votre base de données automatiquement lors de la première connexion à votre serveur MySQL.
 
 ---
@@ -41,24 +47,31 @@ Lancez l'application. Elle préparera votre base de données automatiquement lor
 ## Guide pour les Développeurs
 
 ### 1. Environnement
+
 - Flutter 3.16+
 - MariaDB / MySQL 10.0+
 
 ### 2. Installation
+
 ```bash
 git clone https://github.com/josoavj/ProspectiusFinal.git
 cd ProspectiusFinal
 flutter pub get
 ```
 
+### 3. Architecture pour les nouveaux écrans
+
+Lors de l'ajout d'une fonctionnalité, placez vos fichiers dans le dossier correspondant sous `lib/screens/` (ex: `lib/screens/billing/`). Extrayez vos widgets complexes dans un sous-dossier `widgets/` local à la fonctionnalité.
+
 ### 3. Lancement
+
 ```bash
 flutter run -d windows # ou linux
 ```
 
 ---
 
-## ❓ Un souci ? 
+## Un souci ? 
 
 ### "Je ne vois pas mes données"
 Vérifiez que le service MariaDB est bien lancé dans les paramètres de votre PC.

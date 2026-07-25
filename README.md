@@ -35,6 +35,7 @@ Prospectius transforme la gestion de vos prospects en une expérience fluide et 
 *   **Attribution (RBAC)** : Gérez les accès par rôle (Admin, Commercial) pour une collaboration sécurisée.
 
 ### ⚙️ Performance & Robustesse
+*   **Architecture Modulaire** : Une structure organisée par domaine métier pour une maintenance facilitée.
 *   **Diagnostic Système** : Tableau de bord de santé technique intégré pour surveiller votre serveur MySQL.
 *   **Résilience** : Connexion à la base de données auto-réparatrice (Retry logic).
 *   **Vitesse** : Navigation native fluide avec raccourcis clavier (`Ctrl+F`, `Ctrl+N`, `F5`).

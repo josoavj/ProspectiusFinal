@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/theme/app_colors.dart';
-import '../providers/auth_provider.dart';
-import '../services/mysql_service.dart';
-import '../services/secure_storage_service.dart';
+import '../../core/theme/app_colors.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/mysql_service.dart';
+import '../../services/secure_storage_service.dart';
 
 class DatabaseConfigScreen extends StatefulWidget {
   const DatabaseConfigScreen({super.key});

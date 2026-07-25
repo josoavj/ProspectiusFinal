@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/prospect.dart';
-import '../providers/auth_provider.dart';
-import '../providers/prospect_provider.dart';
-import '../widgets/data_state_widget.dart';
-import '../utils/text_formatter.dart';
-import '../core/theme/app_colors.dart';
-import 'prospect_detail_screen.dart';
+import '../../models/prospect.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/prospect_provider.dart';
+import '../../widgets/data_state_widget.dart';
+import '../../utils/text_formatter.dart';
+import '../../core/theme/app_colors.dart';
+import '../prospects/prospect_detail_screen.dart';
 import 'dart:ui';
 
 class PipelineScreen extends StatefulWidget {
