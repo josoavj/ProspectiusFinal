@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:prospectius/screens/dashboard/pipeline_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:prospectius/screens/pipeline_screen.dart';
 import 'package:prospectius/providers/prospect_provider.dart';
 import 'package:prospectius/providers/auth_provider.dart';
 import 'package:prospectius/models/prospect.dart';
