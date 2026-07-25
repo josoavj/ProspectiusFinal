@@ -1,0 +1,263 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../../core/theme/app_colors.dart';
+import '../../models/stats.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/stats_provider.dart';
+import '../../widgets/data_state_widget.dart';
+import '../../utils/text_formatter.dart';
+import 'widgets/stats_widgets.dart';
+
+class StatsScreen extends StatefulWidget {
+  const StatsScreen({super.key});
+
+  @override
+  State<StatsScreen> createState() => _StatsScreenState();
+}
+
+class _StatsScreenState extends State<StatsScreen> {
+  int _touchedIndex = -1;
+  String? _selectedStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadStats();
+    });
+  }
+
+  void _loadStats() {
+    final authProvider = context.read<AuthProvider>();
+    final statsProvider = context.read<StatsProvider>();
+    if (authProvider.currentUser != null) {
+      statsProvider.loadAllStats(
+        authProvider.currentUser!.id,
+        authProvider.currentUser!.typeCompte,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Consumer<StatsProvider>(
+        builder: (context, statsProvider, _) {
+          return SimpleStateBuilder(
+            isLoading: statsProvider.isLoading,
+            error: statsProvider.error,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildHeader(statsProvider),
+                  const SizedBox(height: 24),
+                  if (statsProvider.conversionStats != null)
+                    ConversionCard(stats: statsProvider.conversionStats!),
+                  const SizedBox(height: 32),
+                  _buildDistributionSection(statsProvider),
+                  const SizedBox(height: 32),
+                  _buildPerformanceSection(statsProvider),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildHeader(StatsProvider statsProvider) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        ElevatedButton.icon(
+          onPressed: statsProvider.isLoading ? null : _loadStats,
+          icon: const Icon(Icons.refresh),
+          label: const Text('Actualiser'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDistributionSection(StatsProvider statsProvider) {
+    if (statsProvider.prospectStats.isEmpty) return const SizedBox.shrink();
+    
+    final total = statsProvider.prospectStats.fold<int>(0, (sum, item) => sum + item.count);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Distribution par Statut', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 200,
+                  child: Stack(
+                    children: [
+                      PieChart(
+                        PieChartData(
+                          pieTouchData: PieTouchData(
+                            touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                              setState(() {
+                                if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
+                                  _touchedIndex = -1;
+                                  return;
+                                }
+                                _touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                                if (_touchedIndex != -1) {
+                                  _selectedStatus = statsProvider.prospectStats[_touchedIndex].status;
+                                }
+                              });
+                            },
+                          ),
+                          borderData: FlBorderData(show: false),
+                          sectionsSpace: 4,
+                          centerSpaceRadius: 60,
+                          sections: _buildPieSections(statsProvider),
+                        ),
+                      ),
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(total.toString(), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                            Text('TOTAL', style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant, letterSpacing: 1)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildSelectableStatusDetails(statsProvider, total),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<PieChartSectionData> _buildPieSections(StatsProvider statsProvider) {
+    final colors = {
+      'interesse': Colors.amber,
+      'negociation': Colors.orange,
+      'converti': Colors.green,
+      'perdu': Colors.red,
+    };
+
+    return List.generate(statsProvider.prospectStats.length, (i) {
+      final isTouched = i == _touchedIndex;
+      final stat = statsProvider.prospectStats[i];
+      final color = colors[stat.status] ?? Colors.grey;
+      
+      return PieChartSectionData(
+        color: color,
+        value: stat.count.toDouble(),
+        title: isTouched ? '${stat.count}' : '',
+        radius: isTouched ? 30 : 25,
+        titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+      );
+    });
+  }
+
+  Widget _buildSelectableStatusDetails(StatsProvider statsProvider, int total) {
+    final colors = {
+      'interesse': Colors.amber,
+      'negociation': Colors.orange,
+      'converti': Colors.green,
+      'perdu': Colors.red,
+    };
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      children: statsProvider.prospectStats.map((stat) {
+        final color = colors[stat.status] ?? Colors.grey;
+        final isSelected = _selectedStatus == stat.status;
+        final percent = total > 0 ? (stat.count / total * 100).toStringAsFixed(1) : '0';
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: isSelected ? color : Colors.transparent),
+          ),
+          child: Row(
+            children: [
+              Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+              const SizedBox(width: 12),
+              Expanded(child: Text(TextFormatter.formatStatus(stat.status), style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
+              Text('$percent%', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+              const SizedBox(width: 16),
+              Text(stat.count.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildPerformanceSection(StatsProvider statsProvider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Performances Clés', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        PerformanceMetric(
+          label: 'Efficacité de Conversion', 
+          value: _calculateConversionRate(statsProvider), 
+          color: Colors.green
+        ),
+        const SizedBox(height: 12),
+        PerformanceMetric(
+          label: 'Engagement Prospects', 
+          value: _calculateEngagementRate(statsProvider), 
+          color: AppColors.azure
+        ),
+        const SizedBox(height: 12),
+        PerformanceMetric(
+          label: 'Taux de Perte', 
+          value: _calculateLossRate(statsProvider), 
+          color: Colors.red
+        ),
+      ],
+    );
+  }
+
+  double _calculateConversionRate(StatsProvider statsProvider) {
+    final total = statsProvider.prospectStats.fold<int>(0, (sum, stat) => sum + stat.count);
+    if (total == 0) return 0;
+    final converted = statsProvider.prospectStats.firstWhere((s) => s.status == 'converti', orElse: () => ProspectStats(status: '', count: 0)).count;
+    return (converted / total) * 100;
+  }
+
+  double _calculateLossRate(StatsProvider statsProvider) {
+    final total = statsProvider.prospectStats.fold<int>(0, (sum, stat) => sum + stat.count);
+    if (total == 0) return 0;
+    final lost = statsProvider.prospectStats.firstWhere((s) => s.status == 'perdu', orElse: () => ProspectStats(status: '', count: 0)).count;
+    return (lost / total) * 100;
+  }
+
+  double _calculateEngagementRate(StatsProvider statsProvider) {
+    final total = statsProvider.prospectStats.fold<int>(0, (sum, stat) => sum + stat.count);
+    if (total == 0) return 0;
+    final engaged = statsProvider.prospectStats.where((s) => s.status == 'interesse' || s.status == 'negociation').fold<int>(0, (sum, s) => sum + s.count);
+    return (engaged / total) * 100;
+  }
+}
