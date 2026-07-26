@@ -17,8 +17,7 @@ void main() {
         ),
       );
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      expect(find.text('Chargement en cours...'), findsOneWidget);
+      expect(find.byType(SkeletonListLoader), findsOneWidget);
       expect(find.text('Success'), findsNothing);
     });
 

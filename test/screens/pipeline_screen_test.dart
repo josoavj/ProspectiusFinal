@@ -39,15 +39,16 @@ void main() {
       ),
     );
 
-    expect(find.text('NOUVEAU'), findsOneWidget);
-    expect(find.text('INTERESSE'), findsOneWidget);
-    expect(find.text('NEGOCIATION'), findsOneWidget);
+    expect(find.text('INTÉRESSÉ'), findsOneWidget);
+    expect(find.text('NÉGOCIATION'), findsOneWidget);
+    expect(find.text('CONVERTI'), findsOneWidget);
+    expect(find.text('PERDU'), findsOneWidget);
   });
 
   testWidgets('PipelineScreen should show prospect cards', (WidgetTester tester) async {
     final prospect = Prospect(
       id: 1, nom: 'Doe', prenom: 'John', email: '', telephone: '', adresse: '', 
-      type: 'particulier', status: 'nouveau', creation: DateTime.now(), dateUpdate: DateTime.now(), assignation: 1
+      type: 'particulier', status: 'interesse', creation: DateTime.now(), dateUpdate: DateTime.now(), assignation: 1
     );
 
     when(() => mockProspectProvider.prospects).thenReturn([prospect]);
@@ -62,6 +63,6 @@ void main() {
       ),
     );
 
-    expect(find.text('John Doe'), findsOneWidget);
+    expect(find.text('Doe John'), findsOneWidget);
   });
 }
