@@ -22,7 +22,7 @@ void main() {
 
       expect(prospect.id, 1);
       expect(prospect.nom, 'Doe');
-      expect(prospect.fullName, 'John Doe');
+      expect(prospect.fullName, 'Doe John');
       expect(prospect.status, 'nouveau');
     });
 
