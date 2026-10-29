@@ -120,8 +120,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const RecoverAccountScreen()),
+                    onPressed: () => AuthPageShell.pushRightPage(
+                      context,
+                      const RecoverAccountScreen(embedded: true),
                     ),
                     child: const Text('Mot de passe oublié ?'),
                   ),
@@ -134,11 +135,13 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Text(
                 'Pas encore de compte ?',
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
               TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                onPressed: () => AuthPageShell.pushRightPage(
+                  context,
+                  const RegisterScreen(embedded: true),
                 ),
                 child: const Text('Créer un compte'),
               ),
