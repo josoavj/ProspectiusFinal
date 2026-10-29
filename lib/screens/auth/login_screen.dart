@@ -4,6 +4,8 @@ import '../../providers/auth_provider.dart';
 import '../../utils/app_logger.dart';
 import 'register_screen.dart';
 import '../misc/splash_screen.dart';
+import 'widgets/auth_page_shell.dart';
+import 'recover_account_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +15,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -24,29 +27,25 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() async {
-    final username = _usernameController.text.trim();
+  Future<void> _handleLogin() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
     final authProvider = context.read<AuthProvider>();
-
     try {
-      final success = await authProvider.login(username, _passwordController.text);
+      final success = await authProvider.login(
+        _usernameController.text.trim(),
+        _passwordController.text,
+      );
 
-      if (!mounted) return;
-
-      if (success) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const SplashScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-            transitionDuration: const Duration(milliseconds: 600),
-          ),
-        );
-      }
+      if (!mounted || !success) return;
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const SplashScreen(),
+          transitionsBuilder: (_, animation, __, child) =>
+              FadeTransition(opacity: animation, child: child),
+          transitionDuration: const Duration(milliseconds: 600),
+        ),
+      );
     } catch (e) {
       AppLogger.error('Erreur lors de la connexion', e);
     }
@@ -54,125 +53,129 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: Image.asset(
-                      'assets/images/Logo Prospectius.png',
-                      height: 120,
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        return AuthPageShell(
+          form: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const AuthFormHeader(
+                  eyebrow: 'Connexion',
+                  title: 'Accéder à votre compte',
+                  subtitle: 'Saisissez vos identifiants pour continuer.',
+                ),
+                const SizedBox(height: 32),
+                AuthTextField(
+                  controller: _usernameController,
+                  label: 'Nom d’utilisateur',
+                  icon: Icons.person_outline_rounded,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Le nom d’utilisateur est obligatoire'
+                      : null,
+                ),
+                const SizedBox(height: 16),
+                AuthTextField(
+                  controller: _passwordController,
+                  label: 'Mot de passe',
+                  icon: Icons.lock_outline_rounded,
+                  obscureText: _obscurePassword,
+                  textInputAction: TextInputAction.done,
+                  suffixIcon: IconButton(
+                    tooltip: _obscurePassword
+                        ? 'Afficher le mot de passe'
+                        : 'Masquer le mot de passe',
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                     ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Prospectius',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Gestion de Prospects CRM',
-                    style: TextStyle(color: colorScheme.onSurfaceVariant),
-                  ),
-                  const SizedBox(height: 48),
-                  TextField(
-                    controller: _usernameController,
-                    decoration: InputDecoration(
-                      labelText: 'Nom d\'utilisateur',
-                      prefixIcon: const Icon(Icons.person_outline),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: 'Mot de passe',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                      ),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Consumer<AuthProvider>(
-                    builder: (context, authProvider, _) {
-                      if (authProvider.error != null) {
-                        return Container(
-                          padding: const EdgeInsets.all(12),
-                          margin: const EdgeInsets.only(bottom: 24),
-                          decoration: BoxDecoration(
-                            color: colorScheme.errorContainer,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: colorScheme.error),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error_outline, color: colorScheme.onErrorContainer),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  authProvider.error!,
-                                  style: TextStyle(color: colorScheme.onErrorContainer),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: context.watch<AuthProvider>().isLoading ? null : _handleLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: colorScheme.onPrimary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: context.watch<AuthProvider>().isLoading
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('Se connecter', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Pas encore de compte? ', style: TextStyle(color: colorScheme.onSurfaceVariant)),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                          );
-                        },
-                        child: const Text('S\'inscrire maintenant'),
-                      ),
-                    ],
-                  ),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Le mot de passe est obligatoire'
+                      : null,
+                ),
+                if (auth.error != null) ...[
+                  const SizedBox(height: 18),
+                  _AuthErrorMessage(message: auth.error!),
                 ],
-              ),
+                const SizedBox(height: 28),
+                SizedBox(
+                  height: 54,
+                  child: ElevatedButton(
+                    onPressed: auth.isLoading ? null : _handleLogin,
+                    child: auth.isLoading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Se connecter'),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const RecoverAccountScreen()),
+                    ),
+                    child: const Text('Mot de passe oublié ?'),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
+          footer: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Pas encore de compte ?',
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                ),
+                child: const Text('Créer un compte'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AuthErrorMessage extends StatelessWidget {
+  final String message;
+
+  const _AuthErrorMessage({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.error.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline_rounded, color: colors.error),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(color: colors.onErrorContainer),
+            ),
+          ),
+        ],
       ),
     );
   }
