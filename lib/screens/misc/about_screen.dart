@@ -29,7 +29,7 @@ class AboutScreen extends StatelessWidget {
         child: Column(
           children: [
             _buildModernHeader(colorScheme),
-            const SizedBox(height: 70), // Espace pour l'avatar qui dépasse
+            const SizedBox(height: 70),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ConstrainedBox(
@@ -66,7 +66,8 @@ class AboutScreen extends StatelessWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             color: colorScheme.primary,
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(48)),
+            borderRadius:
+                const BorderRadius.vertical(bottom: Radius.circular(48)),
           ),
         ),
         Positioned(
@@ -84,7 +85,8 @@ class AboutScreen extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
@@ -120,7 +122,7 @@ class AboutScreen extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(60),
               child: Image.asset(
-                'assets/images/Logo Prospectius.png',
+                'assets/images/icon.png',
                 height: 110,
                 width: 110,
                 fit: BoxFit.cover,
@@ -132,12 +134,14 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildVisionSection(BuildContext context, ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildVisionSection(
+      BuildContext context, ThemeData theme, ColorScheme colorScheme) {
     return Column(
       children: [
         Text(
           'Notre Vision',
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          style:
+              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Text(
@@ -172,7 +176,8 @@ class AboutScreen extends StatelessWidget {
           label: const Text('Découvrir toutes les fonctionnalités'),
           style: TextButton.styleFrom(
             foregroundColor: colorScheme.primary,
-            textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            textStyle:
+                const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           ),
         ),
       ],
@@ -193,18 +198,26 @@ class AboutScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(28)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.stars_rounded, color: Colors.white, size: 32),
+                    const Icon(Icons.stars_rounded,
+                        color: Colors.white, size: 32),
                     const SizedBox(width: 16),
                     const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Arsenal Prospectius', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                          Text('La puissance au service de vos ventes', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                          Text('Arsenal Prospectius',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold)),
+                          Text('La puissance au service de vos ventes',
+                              style: TextStyle(
+                                  color: Colors.white70, fontSize: 12)),
                         ],
                       ),
                     ),
@@ -220,21 +233,46 @@ class AboutScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   children: [
                     _buildFeatureGroup('Cœur de Métier', [
-                      _buildFeatureTile(Icons.people_alt_outlined, 'Gestion Prospect 360°', 'Multi-numéros, profil pro/perso et historique complet.'),
-                      _buildFeatureTile(Icons.view_kanban_outlined, 'Pipeline Kanban', 'Suivez visuellement l\'avancement de vos deals par glisser-déposer.'),
-                      _buildFeatureTile(Icons.search_rounded, 'Exploration Avancée', 'Moteur de recherche puissant et filtres multicritères intelligents.'),
+                      _buildFeatureTile(
+                          Icons.people_alt_outlined,
+                          'Gestion Prospect 360°',
+                          'Multi-numéros, profil pro/perso et historique complet.'),
+                      _buildFeatureTile(
+                          Icons.view_kanban_outlined,
+                          'Pipeline Kanban',
+                          'Suivez visuellement l\'avancement de vos deals par glisser-déposer.'),
+                      _buildFeatureTile(
+                          Icons.search_rounded,
+                          'Exploration Avancée',
+                          'Moteur de recherche puissant et filtres multicritères intelligents.'),
                     ]),
                     const SizedBox(height: 24),
                     _buildFeatureGroup('Sécurité & Data', [
-                      _buildFeatureTile(Icons.backup_outlined, 'Sauvegardes SQL', 'Export complet (Structure + Données) en un clic pour une sécurité totale.'),
-                      _buildFeatureTile(Icons.verified_user_outlined, 'Conformité RGPD', 'Suivi natif du consentement et purge automatique des données.'),
-                      _buildFeatureTile(Icons.lock_outline, 'Protection BCrypt', 'Chiffrement de niveau militaire pour tous les accès utilisateurs.'),
+                      _buildFeatureTile(
+                          Icons.backup_outlined,
+                          'Sauvegardes SQL',
+                          'Export complet (Structure + Données) en un clic pour une sécurité totale.'),
+                      _buildFeatureTile(
+                          Icons.verified_user_outlined,
+                          'Conformité RGPD',
+                          'Suivi natif du consentement et purge automatique des données.'),
+                      _buildFeatureTile(Icons.lock_outline, 'Protection BCrypt',
+                          'Chiffrement de niveau militaire pour tous les accès utilisateurs.'),
                     ]),
                     const SizedBox(height: 24),
                     _buildFeatureGroup('Productivité', [
-                      _buildFeatureTile(Icons.keyboard_command_key, 'Raccourcis Clavier', 'Navigation ultra-rapide optimisée pour les experts Desktop.'),
-                      _buildFeatureTile(Icons.file_download_outlined, 'Export Excel Pro', 'Générez des rapports complets avec statistiques intégrées.'),
-                      _buildFeatureTile(Icons.history_edu_outlined, 'Journal d\'Audit', 'Traçabilité complète de toutes les actions sensibles effectuées.'),
+                      _buildFeatureTile(
+                          Icons.keyboard_command_key,
+                          'Raccourcis Clavier',
+                          'Navigation ultra-rapide optimisée pour les experts Desktop.'),
+                      _buildFeatureTile(
+                          Icons.file_download_outlined,
+                          'Export Excel Pro',
+                          'Générez des rapports complets avec statistiques intégrées.'),
+                      _buildFeatureTile(
+                          Icons.history_edu_outlined,
+                          'Journal d\'Audit',
+                          'Traçabilité complète de toutes les actions sensibles effectuées.'),
                     ]),
                   ],
                 ),
@@ -249,9 +287,11 @@ class AboutScreen extends StatelessWidget {
                       backgroundColor: colorScheme.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Compris, c\'est puissant !', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text('Compris, c\'est puissant !',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
               ),
@@ -266,7 +306,12 @@ class AboutScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: Colors.grey)),
+        Text(title.toUpperCase(),
+            style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.5,
+                color: Colors.grey)),
         const SizedBox(height: 12),
         ...children,
       ],
@@ -285,9 +330,13 @@ class AboutScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14)),
                 const SizedBox(height: 2),
-                Text(desc, style: const TextStyle(color: Colors.grey, fontSize: 12, height: 1.3)),
+                Text(desc,
+                    style: const TextStyle(
+                        color: Colors.grey, fontSize: 12, height: 1.3)),
               ],
             ),
           ),
@@ -302,31 +351,39 @@ class AboutScreen extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.only(left: 8, bottom: 16),
-          child: Text('L\'impact Prospectius', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          child: Text('L\'impact Prospectius',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         ),
         _buildBenefitCard(
           icon: Icons.auto_graph_outlined,
           title: 'Zéro oubli, 100% de suivi',
-          desc: 'Centralisez vos contacts et ne laissez plus aucune opportunité s\'échapper.',
+          desc:
+              'Centralisez vos contacts et ne laissez plus aucune opportunité s\'échapper.',
           color: Colors.blue,
         ),
         _buildBenefitCard(
           icon: Icons.shield_outlined,
           title: 'Souveraineté des données',
-          desc: 'Vos données restent chez vous, sur votre serveur MySQL. Pas de cloud opaque.',
+          desc:
+              'Vos données restent chez vous, sur votre serveur MySQL. Pas de cloud opaque.',
           color: Colors.green,
         ),
         _buildBenefitCard(
           icon: Icons.bolt_outlined,
           title: 'Efficacité native',
-          desc: 'Une interface fluide optimisée pour Windows et Linux avec raccourcis clavier.',
+          desc:
+              'Une interface fluide optimisée pour Windows et Linux avec raccourcis clavier.',
           color: Colors.orange,
         ),
       ],
     );
   }
 
-  Widget _buildBenefitCard({required IconData icon, required String title, required String desc, required Color color}) {
+  Widget _buildBenefitCard(
+      {required IconData icon,
+      required String title,
+      required String desc,
+      required Color color}) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -346,9 +403,12 @@ class AboutScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  Text(title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15)),
                   const SizedBox(height: 2),
-                  Text(desc, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text(desc,
+                      style: const TextStyle(color: Colors.grey, fontSize: 13)),
                 ],
               ),
             ),
@@ -364,7 +424,8 @@ class AboutScreen extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.only(left: 8, bottom: 16),
-          child: Text('Organisation du projet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          child: Text('Organisation du projet',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         ),
         InkWell(
           onTap: () => _launchURL('https://github.com/APEXNovaLabs'),
@@ -391,12 +452,16 @@ class AboutScreen extends StatelessWidget {
                     children: [
                       const Text(
                         'APEXNova Labs',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Organisation GitHub associée au projet — cette mention ne constitue pas une désignation juridique',
-                        style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13, height: 1.4),
+                        style: TextStyle(
+                            color: colorScheme.onSurfaceVariant,
+                            fontSize: 13,
+                            height: 1.4),
                       ),
                     ],
                   ),
@@ -416,23 +481,16 @@ class AboutScreen extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.only(left: 8, bottom: 16),
-          child: Text('L\'Équipe Core', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          child: Text('L\'Équipe Core',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         ),
         _buildAuthorChip(
           name: 'Josoa VONJINIAINA',
           role: 'FullStack Developer',
-          desc: 'Expert en architecture Backend, passionné par l\'UI/UX et les performances système.',
+          desc:
+              'Expert en architecture Backend, passionné par l\'UI/UX et les performances système.',
           avatarUrl: 'https://github.com/josoavj.png',
           url: 'https://github.com/josoavj',
-          colorScheme: colorScheme,
-        ),
-        const SizedBox(height: 12),
-        _buildAuthorChip(
-          name: 'Maminirina ANDRIAMASINORO',
-          role: 'FullStack Developer',
-          desc: 'Spécialiste en intégration fluide des processus métiers avec le backend.',
-          avatarUrl: 'https://github.com/AinaMaminirina18.png',
-          url: 'https://github.com/AinaMaminirina18',
           colorScheme: colorScheme,
         ),
       ],
@@ -455,7 +513,8 @@ class AboutScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+          border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
@@ -479,16 +538,23 @@ class AboutScreen extends StatelessWidget {
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   Text(
                     role,
-                    style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 12),
+                    style: TextStyle(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     desc,
-                    style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12, height: 1.3),
+                    style: TextStyle(
+                        color: colorScheme.onSurfaceVariant,
+                        fontSize: 12,
+                        height: 1.3),
                   ),
                 ],
               ),
@@ -515,7 +581,8 @@ class AboutScreen extends StatelessWidget {
           width: radius * 2,
           height: radius * 2,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => Icon(fallbackIcon, color: colorScheme.primary, size: radius),
+          errorBuilder: (context, error, stackTrace) =>
+              Icon(fallbackIcon, color: colorScheme.primary, size: radius),
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return Center(
@@ -525,7 +592,8 @@ class AboutScreen extends StatelessWidget {
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
                       : null,
                 ),
               ),
@@ -545,8 +613,16 @@ class AboutScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildSocialIcon(Icons.language, 'Web', () {}, colorScheme),
-            _buildSocialIcon(Icons.code_rounded, 'GitHub', () => _launchURL('https://github.com/josoavj/ProspectiusFinal'), colorScheme),
-            _buildSocialIcon(Icons.email_outlined, 'Support', () => _launchURL('mailto:josoavonjiniaina13@gmail.com'), colorScheme),
+            _buildSocialIcon(
+                Icons.code_rounded,
+                'GitHub',
+                () => _launchURL('https://github.com/josoavj/ProspectiusFinal'),
+                colorScheme),
+            _buildSocialIcon(
+                Icons.email_outlined,
+                'Support',
+                () => _launchURL('mailto:josoavonjiniaina13@gmail.com'),
+                colorScheme),
           ],
         ),
         const SizedBox(height: 24),
@@ -557,13 +633,17 @@ class AboutScreen extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           'Fièrement propulsé par Flutter & MariaDB',
-          style: TextStyle(color: colorScheme.outline, fontSize: 11, fontStyle: FontStyle.italic),
+          style: TextStyle(
+              color: colorScheme.outline,
+              fontSize: 11,
+              fontStyle: FontStyle.italic),
         ),
       ],
     );
   }
 
-  Widget _buildSocialIcon(IconData icon, String label, VoidCallback onTap, ColorScheme colorScheme) {
+  Widget _buildSocialIcon(IconData icon, String label, VoidCallback onTap,
+      ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: InkWell(
@@ -572,7 +652,11 @@ class AboutScreen extends StatelessWidget {
           children: [
             Icon(icon, color: colorScheme.primary, size: 22),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(fontSize: 10, color: colorScheme.primary, fontWeight: FontWeight.bold)),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 10,
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
       ),
