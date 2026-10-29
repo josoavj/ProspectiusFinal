@@ -14,6 +14,7 @@ import '../misc/about_screen.dart';
 import '../settings/profile_screen.dart';
 import '../settings/configuration_screen.dart';
 import '../settings/logs_viewer_screen.dart';
+import '../settings/users_management_screen.dart';
 import '../prospects/add_prospect_screen.dart';
 import '../../widgets/sidebar_navigation.dart';
 
@@ -132,6 +133,8 @@ class _MainScreenState extends State<MainScreen> {
         return 'Paramètres';
       case 9:
         return 'Logs';
+      case 10:
+        return 'Utilisateurs';
       default:
         return 'Prospectius';
     }
@@ -162,6 +165,11 @@ class _MainScreenState extends State<MainScreen> {
       case 9:
         if (userRole == 'Administrateur') {
           return const LogsViewerScreen();
+        }
+        return const ProspectsScreen();
+      case 10:
+        if (userRole == 'Administrateur') {
+          return const UsersManagementScreen();
         }
         return const ProspectsScreen();
       default:
