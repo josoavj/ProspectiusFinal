@@ -65,7 +65,6 @@ Consultez notre [Guide de Démarrage Rapide](./docs/QUICKSTART.md) pour configur
 ## 👥 Équipe & Support
 
 - **Développement & Architecture** : [josoavj](https://github.com/josoavj) (FullStack Developer)
-- **UI/UX & Intégration Backend** : [Maminirina ANDRIAMASINORO](https://github.com/AinaMaminirina18) (FullStack Developer)
 
 ---
 *Réalisé avec passion par APEXNova Labs © 2025*
