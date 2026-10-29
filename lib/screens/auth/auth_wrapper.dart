@@ -6,6 +6,7 @@ import '../../services/secure_storage_service.dart';
 import '../../services/mysql_service.dart';
 import '../main/main_screen.dart';
 import 'login_screen.dart';
+import 'register_screen.dart';
 
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
@@ -55,7 +56,18 @@ class _AuthWrapperState extends State<AuthWrapper> {
         if (!mounted) return;
 
         if (connected) {
-          if (authProvider.isAuthenticated) {
+          if (!await authProvider.hasAccounts()) {
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const RegisterScreen(isBootstrap: true),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(milliseconds: 600),
+              ),
+            );
+          } else if (authProvider.isAuthenticated) {
             Navigator.of(context).pushReplacement(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
