@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2563EB">
+<title>Prospectius – Le CRM sécurisé, collaboratif et centré sur l’humain</title>
+<meta name="description" content="Prospectius : logiciel de gestion de prospects (CRM) pour Windows et Linux. Pipeline Kanban, données sur votre base MySQL, rôles Admin/Commercial, prêt pour le RGPD.">
+<meta property="og:title" content="Prospectius – CRM sécurisé et collaboratif">
+<meta property="og:description" content="Gérez vos prospects en glisser-déposer. Vos données restent sur votre base MySQL.">
+<meta property="og:image" content="https://opengraph.githubassets.com/cf29399392d705afae773512a9798908a20effccb9c17c4cd85ff454258ea418/josoavj/ProspectiusFinal">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F8FC; --surface:#fff; --ink:#0F172A; --muted:#5B677D; --line:#E3E8F2;
+  --blue:#2563EB; --blue-d:#1D4ED8; --tint:#EAF1FF; --navy:#0B1B3A;
+  --s-int:#2563EB; --s-neg:#F59E0B; --s-con:#10B981; --s-per:#94A3B8;
+  --font:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
+  --r:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16.5px/1.65 var(--font);-webkit-font-smoothing:antialiased}
+a{color:var(--blue-d)}
+:focus-visible{outline:3px solid #93B4F8;outline-offset:2px;border-radius:6px}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+h1,h2,h3{margin:0 0 .45em;line-height:1.12;letter-spacing:-.025em}
+h1{font-size:clamp(2.5rem,6vw,4.4rem);font-weight:800}
+h2{font-size:clamp(1.8rem,3.4vw,2.6rem);font-weight:800}
+h3{font-size:1.15rem;font-weight:700;letter-spacing:-.01em}
+p{margin:0 0 1em}
+.sub{color:var(--muted);font-size:1.15rem;max-width:58ch}
+section{padding:96px 0}
+.head{margin-bottom:48px}
+.head p{color:var(--muted);max-width:56ch;font-size:1.08rem}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(246,248,252,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav{display:flex;align-items:center;gap:28px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;color:var(--ink);text-decoration:none;margin-right:auto;letter-spacing:-.02em}
+.brand img{display:block;border-radius:8px}
+.menu{display:flex;gap:26px}
+.menu a{color:var(--muted);text-decoration:none;font-size:.94rem;font-weight:600}
+.menu a:hover{color:var(--ink)}
+.actions{display:flex;gap:10px}
+@media(max-width:860px){.menu{display:none}}
+@media(max-width:480px){.actions .ghost{display:none}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:12px;font:700 .95rem var(--font);text-decoration:none;border:1.5px solid transparent;transition:background .15s,border-color .15s,transform .15s;cursor:pointer}
+.btn.sm{padding:8px 16px;font-size:.88rem;border-radius:10px}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.primary:hover{background:var(--blue-d)}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--blue);color:var(--blue-d)}
+.btn.white{background:#fff;color:var(--navy)}
+.btn.white:hover{background:var(--tint)}
+
+/* hero */
+.hero{padding:80px 0 0;text-align:center}
+.hero h1{max-width:16ch;margin-inline:auto}
+.hero .sub{margin:0 auto 32px}
+.cta{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:28px}
+.badges{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;list-style:none;padding:0;margin:0 0 64px}
+.badges li{background:var(--tint);color:var(--blue-d);border-radius:99px;padding:4px 14px;font-size:.84rem;font-weight:600}
+
+/* app window */
+.win{background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden;text-align:left;box-shadow:0 40px 80px -40px rgba(15,23,42,.35)}
+.bar{display:flex;align-items:center;gap:7px;padding:12px 16px;border-bottom:1px solid var(--line);background:#FBFCFE}
+.bar i{width:11px;height:11px;border-radius:50%;background:#D5DCEA}
+.bar span{margin:0 auto;font-size:.82rem;font-weight:600;color:var(--muted);padding-right:40px}
+.app{display:grid;grid-template-columns:200px 1fr;min-height:420px}
+.side{border-right:1px solid var(--line);padding:16px 12px;background:#FBFCFE;display:flex;flex-direction:column;gap:2px;font-size:.88rem;font-weight:600;color:var(--muted)}
+.side b{font-weight:800;color:var(--ink);padding:4px 10px 14px;font-size:1rem}
+.side div{padding:8px 10px;border-radius:9px}
+.side .on{background:var(--tint);color:var(--blue-d)}
+.main{padding:20px;background:var(--surface)}
+.tool{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.tool h3{margin:0 auto 0 0;font-size:1.1rem}
+.search{border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:.82rem;color:var(--muted);background:var(--bg)}
+.hint{font-size:.78rem;color:var(--muted);margin:14px 0 0}
+.cols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.col{background:var(--bg);border-radius:14px;padding:10px;min-height:250px}
+.col h4{margin:2px 4px 10px;font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:7px}
+.col h4::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
+.card{display:block;width:100%;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:10px;padding:10px 12px;margin-bottom:8px;font:600 .85rem/1.3 var(--font);cursor:pointer;transition:border-color .15s,transform .15s}
+.card small{display:block;color:var(--muted);font-weight:500;font-size:.78rem;margin-top:3px}
+.card:hover{transform:translateY(-2px);border-color:var(--c)}
+@media(max-width:820px){.app{grid-template-columns:1fr}.side{display:none}.cols{grid-template-columns:repeat(2,1fr)}.search{display:none}}
+
+/* features */
+.features{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+@media(max-width:820px){.features{grid-template-columns:1fr}}
+.f{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:32px}
+.ico{width:46px;height:46px;border-radius:12px;background:var(--tint);color:var(--blue);display:grid;place-items:center;margin-bottom:18px}
+.ico svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.f ul{list-style:none;margin:18px 0 0;padding:0}
+.f li{padding:14px 0;border-top:1px solid var(--line);font-size:.96rem}
+.f li strong{display:block;font-weight:700}
+.f li span{color:var(--muted)}
+.keys{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:20px;font-size:.9rem;color:var(--muted)}
+kbd{font:600 .8em var(--font);background:var(--bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 7px;color:var(--ink)}
+code{font:500 .88em ui-monospace,Menlo,Consolas,monospace;background:var(--tint);color:var(--blue-d);border-radius:6px;padding:2px 7px}
+
+/* download */
+.dark{background:var(--navy);color:#fff}
+.dark .head p{color:#B6C3DD}
+.dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.os{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:var(--r);padding:28px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.os p{color:#B6C3DD;font-size:.95rem;margin-bottom:14px}
+.os .btn{margin-top:auto}
+.os.src .btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
+.os.src .btn:hover{border-color:#fff}
+.dark .note{margin:28px 0 0;color:#B6C3DD;font-size:.92rem}
+.dark .note a{color:#fff}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;list-style:none;padding:0;margin:0 0 20px;counter-reset:s}
+@media(max-width:820px){.steps{grid-template-columns:1fr}}
+.steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:28px}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;margin-bottom:16px}
+.steps p{color:var(--muted);margin:0;font-size:.96rem}
+.dev{background:var(--tint);border-radius:var(--r);padding:28px 32px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px}
+.dev h3{margin-bottom:.2em}
+.dev p{margin:0;color:var(--muted);max-width:60ch}
+
+/* resources + team */
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;list-style:none;padding:0;margin:0}
+.links a{display:block;height:100%;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;text-decoration:none;font-weight:700;color:var(--ink);transition:border-color .15s,transform .15s}
+.links a span{display:block;font-weight:500;font-size:.9rem;color:var(--muted);margin-top:2px}
+.links a:hover{border-color:var(--blue);transform:translateY(-2px)}
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.person{display:flex;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.av{flex:none;width:46px;height:46px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:800}
+.person h3{margin:0}
+.person p{margin:0;color:var(--muted);font-size:.92rem}
+.alt{background:var(--surface);border-block:1px solid var(--line)}
+.alt .links a,.alt .person{background:var(--bg)}
+footer{background:var(--navy);color:#B6C3DD;padding:36px 0;font-size:.92rem}
+footer a{color:#fff}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <nav aria-label="Navigation principale">
+      <a class="brand" href="#top">
+        <img src="assets/logo-mark.svg" width="28" height="28" alt="">
+        Prospectius
+      </a>
+      <div class="menu">
+        <a href="#forces">Fonctionnalités</a>
+        <a href="#telecharger">Télécharger</a>
+        <a href="#installation">Installation</a>
+        <a href="#ressources">Documentation</a>
+      </div>
+      <div class="actions">
+        <a class="btn sm ghost" href="https://github.com/josoavj/ProspectiusFinal" target="_blank" rel="noopener">GitHub</a>
+        <a class="btn sm primary" href="#telecharger">Télécharger</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap">
+      <h1>Vos prospects, vos données, chez vous.</h1>
+      <p class="sub">Prospectius est un CRM de bureau pour Windows et Linux : pipeline Kanban, historique partagé et stockage sur votre propre base MySQL.</p>
+      <div class="cta">
+        <a class="btn primary" href="#telecharger">Télécharger Prospectius</a>
+        <a class="btn ghost" href="https://github.com/josoavj/ProspectiusFinal" target="_blank" rel="noopener">Voir sur GitHub</a>
+      </div>
+      <ul class="badges" aria-label="Informations clés">
+        <li>Version 1.2.0</li>
+        <li>Flutter ≥ 3.16.0</li>
+        <li>Windows et Linux</li>
+        <li>Prêt pour le RGPD</li>
+      </ul>
+
+      <div class="win" aria-label="Aperçu de l’application">
+        <div class="bar"><i></i><i></i><i></i><span>Prospectius</span></div>
+        <div class="app">
+          <div class="side">
+            <b>Prospectius</b>
+            <div>Tableau de bord</div><div class="on">Prospects</div><div>Clients</div><div>Export</div><div>Journaux</div><div>Configuration</div>
+          </div>
+          <div class="main">
+            <div class="tool">
+              <h3>Pipeline commercial</h3>
+              <span class="search">Rechercher <kbd>Ctrl</kbd>+<kbd>F</kbd></span>
+              <span class="btn sm primary" aria-hidden="true">Nouveau prospect</span>
+            </div>
+            <div class="cols" id="cols"></div>
+            <p class="hint">Exemple illustratif : cliquez sur une carte pour la faire avancer d’un statut.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section id="forces">
+    <div class="wrap">
+      <div class="head">
+        <h2>Tout ce qu’il faut pour suivre vos prospects</h2>
+        <p>Prospectius allie la puissance d’un outil professionnel à la simplicité d’une interface moderne et intuitive.</p>
+      </div>
+      <div class="features">
+        <article class="f">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <h3>Sécurité et confidentialité</h3>
+          <ul>
+            <li><strong>Souveraineté des données</strong><span>Vos informations restent sur votre base MySQL. Aucun stockage cloud tiers.</span></li>
+            <li><strong>Protection des accès</strong><span>Mots de passe hachés avec BCrypt, identifiants stockés de façon sécurisée.</span></li>
+            <li><strong>Sauvegardes SQL</strong><span>Exportez toute votre base (structure et données) en un clic.</span></li>
+            <li><strong>Prêt pour le RGPD</strong><span>Suivi assisté du consentement et purge automatique des données anciennes.</span></li>
+          </ul>
+        </article>
+        <article class="f">
+          <div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg></div>
+          <h3>Pilotage visuel et productivité</h3>
+          <ul>
+            <li><strong>Pipeline Kanban</strong><span>Glissez-déposez vos prospects entre Intéressé, Négociation, Converti et Perdu.</span></li>
+            <li><strong>Assistant de création</strong><span>Un parcours en 5 étapes pour ne manquer aucun détail.</span></li>
+            <li><strong>Multi-téléphonie</strong><span>Jusqu’à 3 numéros par prospect, avec formatage automatique malgache (+261).</span></li>
+          </ul>
+        </article>
+        <article class="f">
+          <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>Mémoire collaborative</h3>
+          <ul>
+            <li><strong>Parcours du prospect</strong><span>Consultez l’historique complet des changements de statut.</span></li>
+            <li><strong>Suivi des échanges</strong><span>Gardez la trace de chaque appel, e-mail ou réunion.</span></li>
+            <li><strong>Accès par rôle (RBAC)</strong><span>Rôles Admin et Commercial pour collaborer en toute sécurité.</span></li>
+          </ul>
+        </article>
+        <article class="f">
+          <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 17a8 8 0 1116 0"/><path d="M12 17l4-6"/></svg></div>
+          <h3>Performance et robustesse</h3>
+          <ul>
+            <li><strong>Architecture modulaire</strong><span>Un code organisé par domaine métier, simple à maintenir.</span></li>
+            <li><strong>Diagnostic système</strong><span>Un tableau de bord de santé pour surveiller votre serveur MySQL.</span></li>
+            <li><strong>Connexion résiliente</strong><span>Reconnexion automatique à la base de données.</span></li>
+          </ul>
+          <div class="keys"><span><kbd>Ctrl</kbd>+<kbd>F</kbd> Rechercher</span><span><kbd>Ctrl</kbd>+<kbd>N</kbd> Nouveau</span><span><kbd>F5</kbd> Actualiser</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="telecharger" class="dark">
+    <div class="wrap">
+      <div class="head">
+        <h2>Télécharger Prospectius</h2>
+        <p>Les installateurs sont publiés dans les Releases du dépôt GitHub. Choisissez celui de votre système.</p>
+      </div>
+      <div class="dl">
+        <div class="os">
+          <h3>Windows</h3>
+          <p>Installateur <code>Prospectius_Setup.exe</code></p>
+          <a class="btn white" href="https://github.com/josoavj/ProspectiusFinal/releases/latest" target="_blank" rel="noopener">Télécharger pour Windows</a>
+        </div>
+        <div class="os">
+          <h3>Linux</h3>
+          <p>Exécutable Linux, à lancer directement.</p>
+          <a class="btn white" href="https://github.com/josoavj/ProspectiusFinal/releases/latest" target="_blank" rel="noopener">Télécharger pour Linux</a>
+        </div>
+        <div class="os src">
+          <h3>Code source</h3>
+          <p>Open source : explorez, clonez, contribuez.</p>
+          <a class="btn" href="https://github.com/josoavj/ProspectiusFinal" target="_blank" rel="noopener">Ouvrir le dépôt GitHub</a>
+        </div>
+      </div>
+      <p class="note">L’historique des versions est dans le <a href="https://github.com/josoavj/ProspectiusFinal/blob/master/CHANGELOG.md" target="_blank" rel="noopener">journal des modifications</a>.</p>
+    </div>
+  </section>
+
+  <section id="installation">
+    <div class="wrap">
+      <div class="head"><h2>Installation en trois étapes</h2><p>Pour les utilisateurs en production. Aucune configuration manuelle de la base : l’application la prépare au premier lancement.</p></div>
+      <ol class="steps">
+        <li><h3>Installez le serveur</h3><p>Installez MariaDB ou MySQL sur votre machine ou votre réseau.</p></li>
+        <li><h3>Lancez le logiciel</h3><p>Téléchargez et lancez <code>Prospectius_Setup.exe</code> (Windows) ou l’exécutable Linux.</p></li>
+        <li><h3>Connectez-vous</h3><p>Saisissez vos accès au premier lancement. La base de données est préparée automatiquement.</p></li>
+      </ol>
+      <div class="dev">
+        <div><h3>Vous êtes développeur ?</h3><p>Prospectius est open source, écrit avec Flutter. Le guide de démarrage rapide explique comment configurer votre environnement et contribuer.</p></div>
+        <a class="btn primary" href="https://github.com/josoavj/ProspectiusFinal/blob/master/docs/QUICKSTART.md" target="_blank" rel="noopener">Lire le démarrage rapide</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="ressources" class="alt">
+    <div class="wrap">
+      <div class="head"><h2>Documentation et ressources</h2></div>
+      <ul class="links">
+        <li><a href="https://github.com/josoavj/ProspectiusFinal/blob/master/docs/QUICKSTART.md" target="_blank" rel="noopener">Démarrage rapide<span>Configurer Flutter et lancer le projet</span></a></li>
+        <li><a href="https://github.com/josoavj/ProspectiusFinal/blob/master/docs/INSTALLATION.md" target="_blank" rel="noopener">Guide d’installation<span>La procédure détaillée, pas à pas</span></a></li>
+        <li><a href="https://github.com/josoavj/ProspectiusFinal/blob/master/docs/ARCHITECTURE.md" target="_blank" rel="noopener">Architecture technique<span>Organisation du code par domaine métier</span></a></li>
+        <li><a href="https://github.com/josoavj/ProspectiusFinal/blob/master/CHANGELOG.md" target="_blank" rel="noopener">Changelog<span>L’historique des versions</span></a></li>
+        <li><a href="https://github.com/josoavj/ProspectiusFinal/blob/master/CONTRIBUTING.md" target="_blank" rel="noopener">Contribuer<span>Les règles pour proposer des changements</span></a></li>
+        <li><a href="https://github.com/josoavj/ProspectiusFinal/blob/master/SECURITY.md" target="_blank" rel="noopener">Politique de sécurité<span>Signaler une vulnérabilité</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="equipe">
+    <div class="wrap">
+      <div class="head"><h2>Équipe et support</h2><p>Une question ou un bug ? <a href="https://github.com/josoavj/ProspectiusFinal/issues" target="_blank" rel="noopener">Ouvrez une issue sur GitHub</a>.</p></div>
+      <div class="team">
+        <div class="person"><div class="av" aria-hidden="true">J</div><div><h3><a href="https://github.com/josoavj" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">josoavj</a></h3><p>Développement et architecture, FullStack</p></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><img src="assets/logo-white.svg" height="26" alt="Prospectius" style="display:block;margin-bottom:8px"> Réalisé par APEXNova Labs © 2025</span>
+    <a href="https://github.com/josoavj/ProspectiusFinal" target="_blank" rel="noopener">github.com/josoavj/ProspectiusFinal</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var cols=[
+    {n:"Intéressé",c:"var(--s-int)"},
+    {n:"Négociation",c:"var(--s-neg)"},
+    {n:"Converti",c:"var(--s-con)"},
+    {n:"Perdu",c:"var(--s-per)"}
+  ];
+  var cards=[
+    {t:"Hôtel Lagon Bleu",s:"Appel le 12",i:0},
+    {t:"Agence Vanilla",s:"Devis envoyé",i:0},
+    {t:"Atelier Sakay",s:"Réunion planifiée",i:1},
+    {t:"Coopérative Zébu",s:"Contrat signé",i:2},
+    {t:"Boutique Rova",s:"Sans réponse",i:3}
+  ];
+  var root=document.getElementById("cols");
+  function render(){
+    root.innerHTML="";
+    cols.forEach(function(col,ci){
+      var d=document.createElement("div");
+      d.className="col";d.style.setProperty("--c",col.c);
+      d.innerHTML="<h4>"+col.n+"</h4>";
+      cards.forEach(function(k){
+        if(k.i!==ci)return;
+        var b=document.createElement("button");
+        b.type="button";b.className="card";b.style.setProperty("--c",col.c);
+        b.innerHTML=k.t+"<small>"+k.s+"</small>";
+        b.setAttribute("aria-label",k.t+", statut "+col.n+". Passer au statut suivant");
+        b.onclick=function(){k.i=(k.i+1)%cols.length;render();};
+        d.appendChild(b);
+      });
+      root.appendChild(d);
+    });
+  }
+  render();
+})();
+</script>
+</body>
+</html>

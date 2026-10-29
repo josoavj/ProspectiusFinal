@@ -4,16 +4,49 @@ import '../../../core/theme/app_colors.dart';
 class AuthPageShell extends StatelessWidget {
   final Widget form;
   final Widget? footer;
+  final bool showBrandPanel;
 
   const AuthPageShell({
     super.key,
     required this.form,
     this.footer,
+    this.showBrandPanel = true,
   });
+
+  static Future<T?> pushRightPage<T>(
+    BuildContext context,
+    Widget page,
+  ) {
+    return Navigator.of(context).push<T>(
+      PageRouteBuilder<T>(
+        opaque: false,
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, animation, __, child) {
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          );
+          return FadeTransition(
+            opacity: curved,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.04, 0),
+                end: Offset.zero,
+              ).animate(curved),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 350),
+        reverseTransitionDuration: const Duration(milliseconds: 250),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: showBrandPanel ? null : Colors.transparent,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 820;
@@ -48,10 +81,27 @@ class AuthPageShell extends StatelessWidget {
             );
           }
 
+          final rightPanel = Expanded(
+            flex: 6,
+            child: Material(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Center(child: content),
+            ),
+          );
+
+          if (!showBrandPanel) {
+            return Row(
+              children: [
+                const Expanded(flex: 5, child: SizedBox.shrink()),
+                rightPanel,
+              ],
+            );
+          }
+
           return Row(
             children: [
               const Expanded(flex: 5, child: _BrandPanel()),
-              Expanded(flex: 6, child: Center(child: content)),
+              rightPanel,
             ],
           );
         },
@@ -108,7 +158,7 @@ class _BrandHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logo = Image.asset(
-      'assets/images/Logo Prospectius.png',
+      'assets/images/icon.png',
       height: compact ? 48 : 64,
       errorBuilder: (_, __, ___) => Icon(
         Icons.insights_rounded,

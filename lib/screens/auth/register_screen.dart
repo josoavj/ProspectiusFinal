@@ -13,8 +13,13 @@ import '../legal/legal_document_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   final bool isBootstrap;
+  final bool embedded;
 
-  const RegisterScreen({super.key, this.isBootstrap = false});
+  const RegisterScreen({
+    super.key,
+    this.isBootstrap = false,
+    this.embedded = false,
+  });
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -82,7 +87,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _localError = null);
 
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    final passwordValidation = Validators.validatePassword(_passwordController.text);
+    final passwordValidation =
+        Validators.validatePassword(_passwordController.text);
     if (!passwordValidation.isValid) {
       setState(() => _localError = passwordValidation.error);
       return;
@@ -92,7 +98,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
     if (!_acceptedTerms || !_acceptedPrivacy) {
-      setState(() => _localError = 'Vous devez accepter les conditions d’utilisation et la politique de confidentialité');
+      setState(() => _localError =
+          'Vous devez accepter les conditions d’utilisation et la politique de confidentialité');
       return;
     }
 
@@ -111,7 +118,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             _emailController.text.trim(),
             _usernameController.text.trim(),
             _passwordController.text,
-          ) ? 'standard' : null);
+          )
+            ? 'standard'
+            : null);
 
     if (!mounted || recoveryCode == null) return;
     if (widget.isBootstrap) {
@@ -127,16 +136,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
             TextButton.icon(
               onPressed: () async {
                 try {
-                  final saved = await RecoveryCodeExportService.save(recoveryCode);
+                  final saved =
+                      await RecoveryCodeExportService.save(recoveryCode);
                   if (context.mounted && saved != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Code enregistré dans le fichier texte.')),
+                      const SnackBar(
+                          content:
+                              Text('Code enregistré dans le fichier texte.')),
                     );
                   }
                 } catch (error) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Impossible d’enregistrer le code : $error')),
+                      SnackBar(
+                          content: Text(
+                              'Impossible d’enregistrer le code : $error')),
                     );
                   }
                 }
@@ -152,10 +166,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
     }
-    AppSnackBars.showSuccess(context, 'Inscription réussie ! Vous pouvez maintenant vous connecter.');
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+    AppSnackBars.showSuccess(context,
+        'Inscription réussie ! Vous pouvez maintenant vous connecter.');
+    if (widget.embedded) {
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
   }
 
   @override
@@ -164,13 +183,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       builder: (context, auth, _) {
         final error = _localError ?? auth.error;
         return AuthPageShell(
+          showBrandPanel: !widget.embedded,
           form: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 AuthFormHeader(
-                  eyebrow: widget.isBootstrap ? 'Configuration initiale' : 'Inscription',
+                  eyebrow: widget.isBootstrap
+                      ? 'Configuration initiale'
+                      : 'Inscription',
                   title: widget.isBootstrap
                       ? 'Créer le premier administrateur'
                       : 'Créer votre compte',
@@ -210,7 +232,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   validator: (value) {
-                    final result = Validators.validateEmail(value?.trim() ?? '');
+                    final result =
+                        Validators.validateEmail(value?.trim() ?? '');
                     return result.isValid ? null : result.error;
                   },
                 ),
@@ -221,13 +244,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   icon: Icons.alternate_email_rounded,
                   textInputAction: TextInputAction.next,
                   validator: (value) {
-                    final result = Validators.validateUsername(value?.trim() ?? '');
+                    final result =
+                        Validators.validateUsername(value?.trim() ?? '');
                     return result.isValid ? null : result.error;
                   },
                 ),
                 const SizedBox(height: 16),
                 Focus(
-                  onFocusChange: (hasFocus) => setState(() => _showCriteria = hasFocus),
+                  onFocusChange: (hasFocus) =>
+                      setState(() => _showCriteria = hasFocus),
                   child: AuthTextField(
                     controller: _passwordController,
                     label: 'Mot de passe',
@@ -284,8 +309,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 _LegalAcceptance(
                   acceptedTerms: _acceptedTerms,
                   acceptedPrivacy: _acceptedPrivacy,
-                  onTermsChanged: (value) => setState(() => _acceptedTerms = value),
-                  onPrivacyChanged: (value) => setState(() => _acceptedPrivacy = value),
+                  onTermsChanged: (value) =>
+                      setState(() => _acceptedTerms = value),
+                  onPrivacyChanged: (value) =>
+                      setState(() => _acceptedPrivacy = value),
                 ),
                 if (error != null) ...[
                   const SizedBox(height: 18),
@@ -315,12 +342,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               Text(
                 'Vous avez déjà un compte ?',
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
               TextButton(
-                onPressed: () => Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                ),
+                onPressed: () {
+                  if (widget.embedded) {
+                    Navigator.of(context).pop();
+                  } else {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    );
+                  }
+                },
                 child: const Text('Se connecter'),
               ),
             ],
@@ -329,7 +363,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       },
     );
   }
-
 }
 
 class _LegalAcceptance extends StatelessWidget {
@@ -367,8 +400,10 @@ class _LegalAcceptance extends StatelessWidget {
               children: [
                 TextSpan(
                   text: 'Conditions d’utilisation',
-                  style: TextStyle(color: colors.primary, fontWeight: FontWeight.w700),
-                  recognizer: TapGestureRecognizer()..onTap = () => _open(context, LegalDocumentType.terms),
+                  style: TextStyle(
+                      color: colors.primary, fontWeight: FontWeight.w700),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () => _open(context, LegalDocumentType.terms),
                 ),
                 const TextSpan(text: '.'),
               ],
@@ -386,8 +421,10 @@ class _LegalAcceptance extends StatelessWidget {
               children: [
                 TextSpan(
                   text: 'Politique de confidentialité',
-                  style: TextStyle(color: colors.primary, fontWeight: FontWeight.w700),
-                  recognizer: TapGestureRecognizer()..onTap = () => _open(context, LegalDocumentType.privacy),
+                  style: TextStyle(
+                      color: colors.primary, fontWeight: FontWeight.w700),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () => _open(context, LegalDocumentType.privacy),
                 ),
                 const TextSpan(text: '.'),
               ],
@@ -419,7 +456,8 @@ class _AuthErrorMessage extends StatelessWidget {
           Icon(Icons.error_outline_rounded, color: colors.error),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(message, style: TextStyle(color: colors.onErrorContainer)),
+            child:
+                Text(message, style: TextStyle(color: colors.onErrorContainer)),
           ),
         ],
       ),

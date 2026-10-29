@@ -20,7 +20,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.0'
+          flutter-version: '3.32.0'
           channel: 'stable'
       
       - name: Get Flutter dependencies
@@ -38,6 +38,9 @@ jobs:
           mkdir -p release
           # Copier le build Windows
           Copy-Item -Path "build\windows\x64\runner\Release\*" -Destination "release\" -Recurse
+          # Inclure les scripts SQL nécessaires à l'installation
+          New-Item -ItemType Directory -Force -Path "release\Database" | Out-Null
+          Copy-Item -Path "scripts\Database\*" -Destination "release\Database\" -Recurse
           # Créer une archive ZIP
           Compress-Archive -Path "release\*" -DestinationPath "prospectius-windows-x64.zip"
       

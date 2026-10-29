@@ -53,17 +53,17 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
 
 flutter_launcher_icons:
-  image_path: "assets/images/Logo Prospectius.png"
+  image_path: "assets/images/icon.png"
   windows:
     generate: true
-    image_path: "assets/images/Logo Prospectius.png"
-    icon_size: 48
+    image_path: "assets/images/app_icon.ico"
+    icon_size: 256
   macos:
     generate: true
-    image_path: "assets/images/Logo Prospectius.png"
+    image_path: "assets/images/icon.png"
   linux:
     generate: true
-    image_path: "assets/images/Logo Prospectius.png"
+    image_path: "assets/images/icon.png"
 
 flutter:
   uses-material-design: true

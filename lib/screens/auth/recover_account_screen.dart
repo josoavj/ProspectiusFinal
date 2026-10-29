@@ -6,7 +6,12 @@ import 'login_screen.dart';
 import 'widgets/auth_page_shell.dart';
 
 class RecoverAccountScreen extends StatefulWidget {
-  const RecoverAccountScreen({super.key});
+  final bool embedded;
+
+  const RecoverAccountScreen({
+    super.key,
+    this.embedded = false,
+  });
 
   @override
   State<RecoverAccountScreen> createState() => _RecoverAccountScreenState();
@@ -33,7 +38,8 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final result = Validators.validatePassword(_passwordController.text);
     if (!result.isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.error!)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(result.error!)));
       return;
     }
 
@@ -48,7 +54,8 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Mot de passe réinitialisé'),
-        content: const Text('Votre nom d’utilisateur a été récupéré et votre nouveau mot de passe est actif.'),
+        content: const Text(
+            'Votre nom d’utilisateur a été récupéré et votre nouveau mot de passe est actif.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -69,6 +76,7 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) => AuthPageShell(
+        showBrandPanel: !widget.embedded,
         form: Form(
           key: _formKey,
           child: Column(
@@ -77,7 +85,8 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
               const AuthFormHeader(
                 eyebrow: 'Récupération sécurisée',
                 title: 'Récupérer votre compte',
-                subtitle: 'Utilisez le code remis lors de la création du premier administrateur.',
+                subtitle:
+                    'Utilisez le code remis lors de la création du premier administrateur.',
               ),
               const SizedBox(height: 16),
               _RecoveryInformationCard(
@@ -91,7 +100,8 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
                 label: 'Adresse e-mail de l’administrateur',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) => Validators.validateEmail(value?.trim() ?? '').error,
+                validator: (value) =>
+                    Validators.validateEmail(value?.trim() ?? '').error,
               ),
               const SizedBox(height: 16),
               AuthTextField(
@@ -112,10 +122,12 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
                   icon: Icon(_obscurePassword
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Le nouveau mot de passe est obligatoire' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Le nouveau mot de passe est obligatoire'
+                    : null,
               ),
               const SizedBox(height: 16),
               AuthTextField(
@@ -123,12 +135,15 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
                 label: 'Confirmer le nouveau mot de passe',
                 icon: Icons.lock_reset_outlined,
                 obscureText: _obscurePassword,
-                validator: (value) =>
-                    value != _passwordController.text ? 'Les mots de passe ne correspondent pas' : null,
+                validator: (value) => value != _passwordController.text
+                    ? 'Les mots de passe ne correspondent pas'
+                    : null,
               ),
               if (auth.error != null) ...[
                 const SizedBox(height: 18),
-                Text(auth.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                Text(auth.error!,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error)),
               ],
               const SizedBox(height: 26),
               SizedBox(
@@ -136,7 +151,10 @@ class _RecoverAccountScreenState extends State<RecoverAccountScreen> {
                 child: ElevatedButton(
                   onPressed: auth.isLoading ? null : _recover,
                   child: auth.isLoading
-                      ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2))
                       : const Text('Réinitialiser le mot de passe'),
                 ),
               ),
@@ -180,7 +198,8 @@ class _RecoveryInformationCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(title,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
                 Text(content, style: const TextStyle(height: 1.4)),
               ],
