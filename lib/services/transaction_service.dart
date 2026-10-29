@@ -36,6 +36,7 @@ class TransactionService {
 
     while (retryCount < maxRetries) {
       mysql.MySqlConnection? connection;
+      var connectionBroken = false;
       try {
         // Obtenir une connexion du pool
         connection = await _getConnection();
@@ -52,32 +53,35 @@ class TransactionService {
         AppLogger.success('Transaction commitée avec succès');
 
         return result;
-      } on DeadlockException catch (e) {
-        retryCount++;
-        if (connection != null) {
-          try {
-            await connection.query('ROLLBACK');
-            AppLogger.warning(
-                'Rollback après deadlock (tentative $retryCount)');
-          } catch (rollbackError) {
-            AppLogger.error('Erreur lors du rollback', rollbackError);
-          }
-        }
-
-        if (retryCount >= maxRetries) {
-          AppLogger.error('Deadlock après $maxRetries tentatives');
-          throw DatabaseException(
-            message:
-                'Deadlock détecté après $maxRetries tentatives: ${e.message}',
-            originalException: e,
-          );
-        }
-
-        // Attendre avant retry avec backoff exponentiel
-        await Future.delayed(retryDelay * retryCount);
-        AppLogger.warning(
-            'Retry transaction après deadlock (attente: ${retryDelay.inMilliseconds * retryCount}ms)');
       } catch (e, stackTrace) {
+        connectionBroken = e is mysql.MySqlException &&
+            const {2002, 2003, 2006, 2013}.contains(e.errorNumber);
+        final isRetryableLockError = e is DeadlockException ||
+            (e is mysql.MySqlException &&
+                (e.errorNumber == 1213 || e.errorNumber == 1205));
+        if (isRetryableLockError) {
+          retryCount++;
+          if (connection != null) {
+            try {
+              await connection.query('ROLLBACK');
+              AppLogger.warning(
+                  'Rollback après conflit de verrou (tentative $retryCount)');
+            } catch (rollbackError) {
+              AppLogger.error('Erreur lors du rollback', rollbackError);
+            }
+          }
+          if (retryCount >= maxRetries) {
+            throw DatabaseException(
+              message:
+                  'Conflit de verrou détecté après $maxRetries tentatives.',
+              originalException: e is Exception ? e : null,
+              stackTrace: stackTrace,
+            );
+          }
+          await Future.delayed(retryDelay * retryCount);
+          continue;
+        }
+
         // Rollback en cas d'erreur
         if (connection != null) {
           try {
@@ -97,13 +101,17 @@ class TransactionService {
 
         throw DatabaseException(
           message: 'Erreur lors de la transaction: $e',
-          originalException: e as Exception,
+          originalException: e is Exception ? e : null,
           stackTrace: stackTrace,
         );
       } finally {
         // Retourner la connexion au pool
         if (connection != null) {
-          await _releaseConnection(connection);
+          if (connectionBroken && _pool.isInitialized) {
+            await _pool.discardConnection(connection);
+          } else {
+            await _releaseConnection(connection);
+          }
         }
       }
     }
@@ -134,9 +142,42 @@ class TransactionService {
     Duration timeout = const Duration(seconds: 30),
   }) async {
     mysql.MySqlConnection? connection;
+    var transactionStarted = false;
+    var connectionBroken = false;
 
     try {
+      const allowedTables = {
+        'Account',
+        'AdminRecovery',
+        'Prospect',
+        'Interaction',
+        'StatusHistory',
+        'TransferHistory',
+        'taches',
+        'documents',
+      };
+      const allowedColumns = {
+        'id',
+        'id_compte',
+        'id_prospect',
+        'id_interaction',
+        'id_tache',
+        'id_document',
+      };
+      if (!allowedTables.contains(tableName) ||
+          !allowedColumns.contains(idColumn)) {
+        throw ValidationException(
+          message: 'Table ou colonne non autorisée pour un verrouillage.',
+          code: 'INVALID_LOCK_TARGET',
+        );
+      }
       connection = await _getConnection();
+      await connection.query('START TRANSACTION');
+      transactionStarted = true;
+      await connection.query(
+        'SET SESSION innodb_lock_wait_timeout = ?',
+        [timeout.inSeconds.clamp(1, 300)],
+      );
 
       // Verrouiller le record avec SELECT FOR UPDATE
       final results = await connection.query(
@@ -155,14 +196,29 @@ class TransactionService {
 
       // Exécuter le callback avec le record verrouillé
       final result = await callback(connection, record);
+      await connection.query('COMMIT');
+      transactionStarted = false;
 
       return result;
     } catch (e, stackTrace) {
+      connectionBroken = e is mysql.MySqlException &&
+          const {2002, 2003, 2006, 2013}.contains(e.errorNumber);
       AppLogger.error('Erreur lors de executeWithLock', e, stackTrace);
       rethrow;
     } finally {
+      if (transactionStarted && connection != null) {
+        try {
+          await connection.query('ROLLBACK');
+        } catch (rollbackError) {
+          AppLogger.error('Erreur lors du rollback du verrou', rollbackError);
+        }
+      }
       if (connection != null) {
-        await _releaseConnection(connection);
+        if (connectionBroken && _pool.isInitialized) {
+          await _pool.discardConnection(connection);
+        } else {
+          await _releaseConnection(connection);
+        }
       }
     }
   }
