@@ -38,6 +38,8 @@ class HelpDetailScreen extends StatelessWidget {
         return _buildSecurityInfo(context, colorScheme);
       case 'support':
         return _buildSupportInfo(context, colorScheme);
+      case 'account':
+        return _buildAccountInfo(context, colorScheme);
       default:
         return const Center(child: Text('Contenu non disponible'));
     }
@@ -161,6 +163,44 @@ class HelpDetailScreen extends StatelessWidget {
         _buildInfoCard(
           'Disponibilité',
           'L\'assistance est assurée du lundi au vendredi. Nous répondons généralement sous 24 à 48 heures.',
+          colorScheme,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAccountInfo(BuildContext context, ColorScheme colorScheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(Icons.manage_accounts_outlined, 'Comptes et récupération', colorScheme),
+        const SizedBox(height: 24),
+        _buildSectionTitle('Récupérer un compte administrateur'),
+        _buildParagraph(
+          'Depuis « Mot de passe oublié ? », saisissez l’adresse e-mail de l’administrateur, '
+          'le code de récupération et un nouveau mot de passe conforme aux règles de sécurité. '
+          'Le code est consommé après une récupération réussie et ne peut pas être réutilisé.',
+        ),
+        const SizedBox(height: 24),
+        _buildSectionTitle('Régénérer un code'),
+        _buildParagraph(
+          'Un administrateur connecté ouvre son profil, saisit son mot de passe actuel puis sélectionne '
+          '« Régénérer le code de récupération ». L’ancien code est alors invalidé et le nouveau code '
+          'est affiché une seule fois. Conservez-le dans un endroit sûr, hors de l’application.',
+        ),
+        const SizedBox(height: 24),
+        _buildSectionTitle('Gestion des utilisateurs'),
+        _buildParagraph(
+          'La page « Utilisateurs » permet à un administrateur de consulter les comptes, leurs coordonnées '
+          'de connexion, leur rôle et leur date de création. Les rôles peuvent être modifiés, avec un maximum '
+          'de trois administrateurs et l’interdiction de rétrograder le dernier administrateur.',
+        ),
+        const SizedBox(height: 24),
+        _buildInfoCard(
+          'Important',
+          'Si le code est perdu, qu’il n’existe aucun autre administrateur et que le mot de passe est oublié, '
+          'aucune récupération distante ou porte dérobée n’est prévue. Le propriétaire doit alors accéder directement '
+          'à la base MariaDB pour restaurer l’accès.',
           colorScheme,
         ),
       ],

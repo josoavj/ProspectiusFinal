@@ -392,6 +392,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                 ),
                 _buildDocumentationItem(
                   context,
+                  icon: Icons.manage_accounts_outlined,
+                  title: 'Comptes et récupération',
+                  desc: 'Comprendre la récupération administrateur et la gestion des rôles.',
+                  onTap: () => _navigateToHelp('Comptes & Récupération', 'account'),
+                ),
+                _buildDocumentationItem(
+                  context,
                   icon: Icons.alternate_email_outlined,
                   title: 'Contacter l\'assistance',
                   desc: 'Une question ou une suggestion ? Notre équipe est à votre écoute.',

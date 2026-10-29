@@ -96,15 +96,29 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Journaux système'),
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _isLoading ? null : _loadLogs),
-          IconButton(icon: const Icon(Icons.delete_outline), onPressed: _clearLogs),
-        ],
-      ),
       body: Column(
         children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: 'Actualiser les journaux',
+                    icon: const Icon(Icons.refresh),
+                    onPressed: _isLoading ? null : _loadLogs,
+                  ),
+                  IconButton(
+                    tooltip: 'Supprimer les anciens journaux',
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: _clearLogs,
+                  ),
+                ],
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: SegmentedButton<String>(

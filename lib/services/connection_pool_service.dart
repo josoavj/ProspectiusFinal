@@ -20,12 +20,14 @@ class ConnectionPoolService {
   MySQLConfig? _config;
   bool _isInitialized = false;
 
-  factory ConnectionPoolService({int poolSize = 5}) {
-    _instance._poolSize = poolSize;
+  factory ConnectionPoolService({int? poolSize}) {
+    if (poolSize != null && poolSize > 0) {
+      _instance._poolSize = poolSize;
+    }
     return _instance;
   }
 
-  ConnectionPoolService._internal() : _poolSize = 5;
+  ConnectionPoolService._internal() : _poolSize = 3;
 
   int get poolSize => _poolSize;
   bool get isInitialized => _isInitialized;
@@ -140,6 +142,37 @@ class ConnectionPoolService {
         'Connexion libérée (${_availableConnections.length} disponibles)');
   }
 
+  Future<void> discardConnection(mysql.MySqlConnection connection) async {
+    _availableConnections.remove(connection);
+    _allConnections.remove(connection);
+    try {
+      await connection.close();
+    } catch (e) {
+      AppLogger.warning(
+          'Erreur lors de la fermeture d’une connexion défectueuse: $e');
+    }
+    if (_config == null || !_isInitialized) {
+      if (_allConnections.isEmpty) _isInitialized = false;
+      return;
+    }
+
+    try {
+      final replacement = await mysql.MySqlConnection.connect(
+        _config!.toConnectionSettings(),
+      );
+      _allConnections.add(replacement);
+      if (_waitingRequests.isNotEmpty) {
+        final waitingRequest = _waitingRequests.removeAt(0);
+        waitingRequest.complete(replacement);
+      } else {
+        _availableConnections.add(replacement);
+      }
+    } catch (e) {
+      AppLogger.error('Impossible de remplacer une connexion défectueuse', e);
+      if (_allConnections.isEmpty) _isInitialized = false;
+    }
+  }
+
   /// Exécute une opération avec une connexion du pool
   Future<T> execute<T>(
     Future<T> Function(mysql.MySqlConnection connection) operation, {
@@ -151,9 +184,14 @@ class ConnectionPoolService {
       return await operation(connection);
     } catch (e) {
       AppLogger.error('Erreur lors de l\'opération sur le pool', e);
+      if (e is mysql.MySqlException) {
+        await discardConnection(connection);
+      }
       rethrow;
     } finally {
-      releaseConnection(connection);
+      if (_allConnections.contains(connection)) {
+        releaseConnection(connection);
+      }
     }
   }
 
@@ -165,8 +203,9 @@ class ConnectionPoolService {
       'availableConnections': _availableConnections.length,
       'waitingRequests': _waitingRequests.length,
       'poolSize': poolSize,
-      'utilizationRate':
-          ((_allConnections.length - _availableConnections.length) /
+      'utilizationRate': _allConnections.isEmpty
+          ? '0.00'
+          : ((_allConnections.length - _availableConnections.length) /
                   _allConnections.length *
                   100)
               .toStringAsFixed(2),
@@ -191,6 +230,16 @@ class ConnectionPoolService {
 
       _availableConnections.clear();
       _allConnections.clear();
+      for (final request in _waitingRequests) {
+        if (!request.isCompleted) {
+          request.completeError(
+            ConnectionException(
+              message: 'Le pool de connexions a été fermé.',
+              code: 'POOL_CLOSED',
+            ),
+          );
+        }
+      }
       _waitingRequests.clear();
       _isInitialized = false;
 

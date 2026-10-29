@@ -14,7 +14,9 @@ import 'screens/settings/database_config_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/auth_wrapper.dart';
 import 'screens/main/main_screen.dart';
+import 'screens/legal/legal_document_screen.dart';
 import 'core/theme/app_colors.dart';
+import 'core/theme/smooth_page_transitions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,17 +50,58 @@ class MyApp extends StatelessWidget {
             title: 'Prospectius',
             theme: ThemeData(
               useMaterial3: true,
+              pageTransitionsTheme: const PageTransitionsTheme(
+                builders: {
+                  TargetPlatform.linux: SmoothPageTransitionsBuilder(),
+                  TargetPlatform.macOS: SmoothPageTransitionsBuilder(),
+                  TargetPlatform.windows: SmoothPageTransitionsBuilder(),
+                },
+              ),
               colorScheme: ColorScheme.fromSeed(
                 seedColor: AppColors.azure,
                 primary: AppColors.azure,
                 brightness: Brightness.light,
               ),
+              scaffoldBackgroundColor: const Color(0xFFFAFBFF),
               appBarTheme: const AppBarTheme(
                 backgroundColor: AppColors.azure,
                 foregroundColor: Colors.white,
                 elevation: 0,
               ),
-              textTheme: GoogleFonts.lexendTextTheme(),
+              inputDecorationTheme: InputDecorationTheme(
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppColors.azure, width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Colors.red),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Colors.red, width: 2),
+                ),
+              ),
+              elevatedButtonTheme: ElevatedButtonThemeData(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.azure,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                ),
+              ),
               fontFamily: GoogleFonts.lexend().fontFamily,
               cardTheme: CardThemeData(
                 elevation: 0,
@@ -70,11 +113,17 @@ class MyApp extends StatelessWidget {
             ),
             darkTheme: ThemeData(
               useMaterial3: true,
+              pageTransitionsTheme: const PageTransitionsTheme(
+                builders: {
+                  TargetPlatform.linux: SmoothPageTransitionsBuilder(),
+                  TargetPlatform.macOS: SmoothPageTransitionsBuilder(),
+                  TargetPlatform.windows: SmoothPageTransitionsBuilder(),
+                },
+              ),
               colorScheme: ColorScheme.fromSeed(
                 seedColor: Colors.blue,
                 brightness: Brightness.dark,
               ),
-              textTheme: GoogleFonts.lexendTextTheme(ThemeData.dark().textTheme),
               fontFamily: GoogleFonts.lexend().fontFamily,
               cardTheme: CardThemeData(
                 elevation: 0,
@@ -84,6 +133,32 @@ class MyApp extends StatelessWidget {
                 ),
               ),
               scaffoldBackgroundColor: const Color(0xFF121212),
+              inputDecorationTheme: InputDecorationTheme(
+                filled: true,
+                fillColor: const Color(0xFF1E1E1E),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: Colors.grey.shade700),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: Colors.grey.shade700),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2),
+                ),
+              ),
+              elevatedButtonTheme: ElevatedButtonThemeData(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                ),
+              ),
               drawerTheme: const DrawerThemeData(
                 backgroundColor: Color(0xFF1E1E1E),
               ),
@@ -103,6 +178,8 @@ class MyApp extends StatelessWidget {
               '/config': (_) => const DatabaseConfigScreen(),
               '/login': (_) => const LoginScreen(),
               '/prospects': (_) => const MainScreen(),
+              '/terms': (_) => const LegalDocumentScreen(type: LegalDocumentType.terms),
+              '/privacy': (_) => const LegalDocumentScreen(type: LegalDocumentType.privacy),
             },
           );
         },

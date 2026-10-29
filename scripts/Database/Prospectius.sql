@@ -44,8 +44,13 @@ END$$
 
 CREATE TRIGGER avant_maj_compte BEFORE UPDATE ON Account FOR EACH ROW
 BEGIN
-    IF OLD.type_compte != NEW.type_compte THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Le type de compte ne peut pas être modifié.';
+    IF OLD.type_compte = 'Administrateur' AND NEW.type_compte <> 'Administrateur'
+       AND (SELECT COUNT(*) FROM Account WHERE type_compte = 'Administrateur') <= 1 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Le dernier administrateur ne peut pas être rétrogradé.';
+    END IF;
+    IF OLD.type_compte <> 'Administrateur' AND NEW.type_compte = 'Administrateur'
+       AND (SELECT COUNT(*) FROM Account WHERE type_compte = 'Administrateur') >= 3 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La limite de 3 comptes Administrateur est atteinte.';
     END IF;
     IF NEW.email NOT LIKE '%@%.%' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'L\'email doit contenir un "@" et un "."';

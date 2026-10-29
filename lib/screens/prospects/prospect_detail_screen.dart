@@ -867,13 +867,13 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
 
   void _handleAddDocument() async {
     try {
-      FilePickerResult? result = await FilePicker.pickFiles(
+      final files = await FilePicker.pickFiles(
         type: FileType.any,
       );
 
-      if (result == null || result.files.isEmpty) return;
+      if (files.isEmpty) return;
 
-      final pickedFile = result.files.first;
+      final pickedFile = files.first;
       if (pickedFile.path == null) return;
 
       final originalFile = File(pickedFile.path!);
@@ -889,7 +889,7 @@ class _ProspectDetailScreenState extends State<ProspectDetailScreen> with Single
       final String fileName = pickedFile.name;
       final String newPath = '${prospectDocsDir.path}$sep$fileName';
       await originalFile.copy(newPath);
-      final document = doc_model.Document(id: 0, idProspect: _currentProspect.id, name: fileName, filePath: newPath, mimeType: pickedFile.extension ?? 'unknown', size: pickedFile.size, createdAt: DateTime.now());
+      final document = doc_model.Document(id: 0, idProspect: _currentProspect.id, name: fileName, filePath: newPath, mimeType: pickedFile.extension ?? 'unknown', size: await originalFile.length(), createdAt: DateTime.now());
       if (mounted) {
         final success = await context.read<DocumentProvider>().addDocument(document);
         if (success && mounted) AppSnackBars.showSuccess(context, 'Document ajouté avec succès');

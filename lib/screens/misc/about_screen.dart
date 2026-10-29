@@ -364,7 +364,7 @@ class AboutScreen extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.only(left: 8, bottom: 16),
-          child: Text('Géré par', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          child: Text('Organisation du projet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         ),
         InkWell(
           onTap: () => _launchURL('https://github.com/APEXNovaLabs'),
@@ -395,7 +395,7 @@ class AboutScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Équipe de développement spécialisée dans les solutions logicielles et mobiles',
+                        'Organisation GitHub associée au projet — cette mention ne constitue pas une désignation juridique',
                         style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13, height: 1.4),
                       ),
                     ],

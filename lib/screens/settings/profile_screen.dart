@@ -5,6 +5,7 @@ import '../../utils/app_logger.dart';
 import '../../utils/exception_handler.dart';
 import '../../utils/validators.dart';
 import '../../utils/app_snackbars.dart';
+import '../../services/recovery_code_export_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -90,6 +91,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 10), // Espace avant la carte
                           _buildProfileCard(user, colorScheme),
                           const SizedBox(height: 32),
+                          if (user.typeCompte == 'Administrateur')
+                            _buildRecoveryInformation(colorScheme),
+                          if (user.typeCompte == 'Administrateur')
+                            const SizedBox(height: 16),
                           _buildActionButtons(colorScheme),
                         ],
                       ),
@@ -271,6 +276,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildRecoveryInformation(ColorScheme colorScheme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.tertiaryContainer.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: colorScheme.tertiary.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.key_outlined, color: colorScheme.tertiary),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'Récupération administrateur : le bouton ci-dessous demande votre mot de passe actuel, '
+              'invalide immédiatement l’ancien code et affiche le nouveau une seule fois. '
+              'Conservez-le hors de l’application. Sans ce code et sans autre administrateur, '
+              'la récupération nécessite un accès direct à la base de données.',
+              style: TextStyle(height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildActionButtons(ColorScheme colorScheme) {
     if (_isEditing) {
       return Row(
@@ -298,6 +331,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       );
     }
+
     return Column(
       children: [
         SizedBox(
@@ -330,7 +364,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
+        if (context.read<AuthProvider>().currentUser?.typeCompte == 'Administrateur') ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: OutlinedButton.icon(
+              onPressed: _showRegenerateRecoveryCodeDialog,
+              icon: const Icon(Icons.key_outlined, size: 18),
+              label: const Text('Régénérer le code de récupération'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colorScheme.tertiary,
+                side: BorderSide(color: colorScheme.tertiary),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ],
       ],
+    );
+  }
+
+  Future<void> _showRegenerateRecoveryCodeDialog() async {
+    final passwordController = TextEditingController();
+    final auth = context.read<AuthProvider>();
+    final password = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Régénérer le code'),
+        content: TextField(
+          controller: passwordController,
+          obscureText: true,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Mot de passe administrateur',
+            prefixIcon: Icon(Icons.lock_outline),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, passwordController.text),
+            child: const Text('Continuer'),
+          ),
+        ],
+      ),
+    );
+    passwordController.dispose();
+    if (!mounted || password == null || password.isEmpty) return;
+
+    final code = await auth.regenerateAdminRecoveryCode(password);
+    if (!mounted || code == null) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Nouveau code de récupération'),
+        content: SelectableText(
+          'L’ancien code est maintenant invalidé.\n\n'
+          'Conservez ce nouveau code hors de l’application :\n\n$code',
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () async {
+              try {
+                final saved = await RecoveryCodeExportService.save(code);
+                if (context.mounted && saved != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Code enregistré dans le fichier texte.')),
+                  );
+                }
+              } catch (error) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Impossible d’enregistrer le code : $error')),
+                  );
+                }
+              }
+            },
+            icon: const Icon(Icons.download_outlined),
+            label: const Text('Télécharger en .txt'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('J’ai conservé le code'),
+          ),
+        ],
+      ),
     );
   }
 

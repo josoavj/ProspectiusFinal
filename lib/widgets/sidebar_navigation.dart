@@ -101,7 +101,12 @@ class SidebarNavigation extends StatelessWidget {
                 Consumer<AuthProvider>(
                   builder: (context, auth, _) {
                     if (auth.currentUser?.typeCompte == 'Administrateur') {
-                      return _buildNavItem(context, Icons.description, 'Logs', 9);
+                      return Column(
+                        children: [
+                          _buildNavItem(context, Icons.description, 'Logs', 9),
+                          _buildNavItem(context, Icons.manage_accounts, 'Utilisateurs', 10),
+                        ],
+                      );
                     }
                     return const SizedBox.shrink();
                   },
