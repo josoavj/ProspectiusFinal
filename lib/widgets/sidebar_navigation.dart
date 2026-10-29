@@ -34,7 +34,7 @@ class SidebarNavigation extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.asset(
-                          'assets/images/Logo Prospectius.png',
+                          'assets/images/icon.png',
                           height: 40,
                         ),
                       ),
@@ -67,7 +67,8 @@ class SidebarNavigation extends StatelessWidget {
                           Text(
                             authProvider.currentUser?.email ?? '',
                             style: TextStyle(
-                              color: colorScheme.onPrimary.withValues(alpha: 0.8),
+                              color:
+                                  colorScheme.onPrimary.withValues(alpha: 0.8),
                               fontSize: 13,
                             ),
                           ),
@@ -92,7 +93,8 @@ class SidebarNavigation extends StatelessWidget {
                 _buildNavItem(context, Icons.check_circle, 'Clients', 4),
                 _buildNavItem(context, Icons.download, 'Exporter', 5),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Divider(color: colorScheme.outlineVariant),
                 ),
                 _buildNavItem(context, Icons.person, 'Profil', 7),
@@ -104,7 +106,8 @@ class SidebarNavigation extends StatelessWidget {
                       return Column(
                         children: [
                           _buildNavItem(context, Icons.description, 'Logs', 9),
-                          _buildNavItem(context, Icons.manage_accounts, 'Utilisateurs', 10),
+                          _buildNavItem(context, Icons.manage_accounts,
+                              'Utilisateurs', 10),
                         ],
                       );
                     }
@@ -146,7 +149,8 @@ class SidebarNavigation extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, IconData icon, String label, int index) {
+  Widget _buildNavItem(
+      BuildContext context, IconData icon, String label, int index) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isSelected = selectedIndex == index;
@@ -166,16 +170,21 @@ class SidebarNavigation extends StatelessWidget {
             visualDensity: VisualDensity.compact,
             leading: Icon(
               icon,
-              color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurfaceVariant,
+              color: isSelected
+                  ? colorScheme.onPrimaryContainer
+                  : colorScheme.onSurfaceVariant,
             ),
             title: Text(
               label,
               style: TextStyle(
-                color: isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
+                color: isSelected
+                    ? colorScheme.onPrimaryContainer
+                    : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ),
@@ -199,7 +208,8 @@ class SidebarNavigation extends StatelessWidget {
               authProvider.logout();
               Navigator.of(context).pushReplacementNamed('/login');
             },
-            child: Text('Déconnexion', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            child: Text('Déconnexion',
+                style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
         ],
       ),
