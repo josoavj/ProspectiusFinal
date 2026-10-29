@@ -1,0 +1,73 @@
+name: Build and Release Linux
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (for example v1.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: stable
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            cmake \
+            ninja-build \
+            pkg-config \
+            libgtk-3-dev
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build Linux bundle
+        run: flutter build linux --release
+
+      - name: Create Linux archive
+        run: |
+          mkdir -p release/bundle release/Database
+          cp -R build/linux/x64/release/bundle/. release/bundle/
+          cp -R scripts/Database/. release/Database/
+          tar -czf prospectius-linux-x64.tar.gz \
+            -C release bundle Database
+
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: prospectius-linux-x64.tar.gz
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload manual release artifact
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          files: prospectius-linux-x64.tar.gz
+          tag_name: ${{ inputs.version }}
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
