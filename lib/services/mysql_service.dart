@@ -1,5 +1,6 @@
 import 'package:mysql1/mysql1.dart' as mysql;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 import 'dart:convert';
 import '../utils/exception_handler.dart';
 import '../utils/app_logger.dart';
@@ -73,6 +74,7 @@ class MySQLService {
   MigrationService? _migrationService;
   final ConnectionPoolService _pool = ConnectionPoolService();
   bool _usePool = false;
+  Future<void>? _connectOperation;
   final SecureStorageService _secureStorage = SecureStorageService();
 
   factory MySQLService() {
@@ -103,6 +105,20 @@ class MySQLService {
     bool persistConfig = true,
   }) async {
     AppLogger.info('Connexion à MySQL: ${config.host}:${config.port}');
+    if (_pool.isInitialized) {
+      await _pool.closeAll();
+    }
+    final previousConnection = _connection;
+    _connection = null;
+    _isConnected = false;
+    if (previousConnection != null) {
+      try {
+        await previousConnection.close();
+      } catch (e) {
+        AppLogger.warning(
+            'Erreur lors de la fermeture de l’ancienne connexion: $e');
+      }
+    }
     _config = config;
     _connection = await mysql.MySqlConnection.connect(
       config.toConnectionSettings(),
@@ -122,7 +138,9 @@ class MySQLService {
       try {
         await _migrationService!.runPendingMigrations();
       } catch (e) {
-        AppLogger.warning('Erreur lors de l\'exécution des migrations: $e');
+        AppLogger.error('Erreur lors de l\'exécution des migrations', e);
+        await disconnect();
+        rethrow;
       }
     }
 
@@ -138,12 +156,25 @@ class MySQLService {
   }
 
   Future<void> _reconnect() async {
-    await _connectInternal(
+    final ongoing = _connectOperation;
+    if (ongoing != null) {
+      await ongoing;
+      return;
+    }
+    final operation = _connectInternal(
       _config,
       runMigrations: false,
       initPool: false,
       persistConfig: false,
     );
+    _connectOperation = operation;
+    try {
+      await operation;
+    } finally {
+      if (identical(_connectOperation, operation)) {
+        _connectOperation = null;
+      }
+    }
 
     if (_pool.isInitialized) {
       try {
@@ -206,8 +237,15 @@ class MySQLService {
   }
 
   Future<bool> connect(MySQLConfig config) async {
+    final ongoing = _connectOperation;
+    if (ongoing != null) {
+      await ongoing;
+      return _isConnected;
+    }
+    final operation = _connectInternal(config);
+    _connectOperation = operation;
     try {
-      await _connectInternal(config);
+      await operation;
       AppLogger.success('Connexion MySQL établie');
       return true;
     } on ConnectionException {
@@ -219,9 +257,13 @@ class MySQLService {
       AppLogger.error('Erreur lors de la connexion MySQL', e, stackTrace);
       throw ConnectionException(
         message: 'Impossible de se connecter à la base de données: $e',
-        originalException: e as Exception,
+        originalException: e is Exception ? e : null,
         stackTrace: stackTrace,
       );
+    } finally {
+      if (identical(_connectOperation, operation)) {
+        _connectOperation = null;
+      }
     }
   }
 
@@ -243,7 +285,8 @@ class MySQLService {
     }
   }
 
-  Future<mysql.Results> query(String sql, [List<dynamic> values = const []]) async {
+  Future<mysql.Results> query(String sql,
+      [List<dynamic> values = const []]) async {
     int retryCount = 0;
     const maxRetries = 3;
 
@@ -261,27 +304,70 @@ class MySQLService {
             return results;
           });
         }
-        
+
         final results = await _connection!.query(sql, values);
         AppLogger.debug('SQL Execute: $sql | Rows: ${results.length}');
         return results;
       } catch (e, stackTrace) {
         retryCount++;
-        AppLogger.warning('Échec de la requête (tentative $retryCount/$maxRetries): $e');
-        LoggingService().logError('Erreur SQL (tentative $retryCount): $e', stackTrace);
-        _isConnected = false;
-        
-        if (retryCount >= maxRetries) {
+        AppLogger.warning(
+            'Échec de la requête (tentative $retryCount/$maxRetries): $e');
+        LoggingService()
+            .logError('Erreur SQL (tentative $retryCount): $e', stackTrace);
+        final canRetry = _isReadOnly(sql) && _isConnectionFailure(e);
+        if (!canRetry) {
           throw DatabaseException(
-            message: 'Erreur réseau persistante avec la base de données. Vérifiez votre connexion.',
-            originalException: e as Exception,
+            message: 'Erreur SQL: $e',
+            originalException: e is Exception ? e : null,
+            stackTrace: stackTrace,
           );
         }
+        _isConnected = false;
+
+        if (retryCount >= maxRetries) {
+          throw DatabaseException(
+            message:
+                'Erreur réseau persistante avec la base de données. Vérifiez votre connexion.',
+            originalException: e is Exception ? e : null,
+          );
+        }
+
         // Attendre un peu avant de réessayer
         await Future.delayed(Duration(milliseconds: 500 * retryCount));
       }
     }
     throw Exception('Erreur fatale de connexion');
+  }
+
+  bool _isReadOnly(String sql) {
+    final normalized = sql.trimLeft().toLowerCase();
+    return normalized.startsWith('select ') ||
+        normalized.startsWith('show ') ||
+        normalized.startsWith('describe ') ||
+        normalized.startsWith('explain ');
+  }
+
+  bool _isConnectionFailure(Object error) {
+    if (error is mysql.MySqlException) {
+      return const {
+        1040,
+        1042,
+        1047,
+        1080,
+        1129,
+        1158,
+        1159,
+        1160,
+        1161,
+        1205,
+        1213,
+        2002,
+        2003,
+        2006,
+        2013,
+      }.contains(error.errorNumber);
+    }
+    return error is ConnectionException || error is TimeoutException;
   }
 
   Future<void> close() async {
