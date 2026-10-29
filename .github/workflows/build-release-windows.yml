@@ -9,6 +9,10 @@ on:
       version:
         description: 'Version to release'
         required: true
+        type: string
+
+permissions:
+  contents: write
 
 jobs:
   build-windows:
@@ -35,7 +39,7 @@ jobs:
       - name: Create Release Artifact
         run: |
           # Créer un dossier pour les artifacts
-          mkdir -p release
+          New-Item -ItemType Directory -Force -Path "release" | Out-Null
           # Copier le build Windows
           Copy-Item -Path "build\windows\x64\runner\Release\*" -Destination "release\" -Recurse
           # Inclure les scripts SQL nécessaires à l'installation
@@ -45,7 +49,7 @@ jobs:
           Compress-Archive -Path "release\*" -DestinationPath "prospectius-windows-x64.zip"
       
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: prospectius-windows-x64.zip
@@ -56,7 +60,7 @@ jobs:
       
       - name: Manual Release Upload
         if: github.event_name == 'workflow_dispatch'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: prospectius-windows-x64.zip
           tag_name: ${{ github.event.inputs.version }}
