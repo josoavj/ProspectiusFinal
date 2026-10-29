@@ -14,6 +14,7 @@ class SchemaInitializationService {
       AppLogger.info('Initialisation du schéma de la base de données...');
 
       await _createAccountsTable();
+      await _createAdminRecoveryTable();
       await _createAccountTriggers();
       await _createProspectsTable();
       await _createInteractionsTable();
@@ -30,6 +31,19 @@ class SchemaInitializationService {
           'Erreur lors de l\'initialisation du schéma', e, stackTrace);
       rethrow;
     }
+
+  }
+
+  Future<void> _createAdminRecoveryTable() async {
+    await _connection.query('''
+      CREATE TABLE IF NOT EXISTS AdminRecovery (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(100) NOT NULL UNIQUE,
+        code_hash VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        used_at TIMESTAMP NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ''');
   }
 
   /// Crée la table accounts
@@ -59,9 +73,27 @@ class SchemaInitializationService {
   /// Crée les triggers pour la table Account (validation et limites)
   Future<void> _createAccountTriggers() async {
     try {
+      await _connection.query('DROP TRIGGER IF EXISTS avant_maj_compte');
+      await _connection.query('DROP TRIGGER IF EXISTS avant_ajout_compte_admin');
+      await _connection.query('DROP TRIGGER IF EXISTS validation_email_insert');
+
+      await _connection.query('''
+        CREATE TRIGGER avant_maj_compte BEFORE UPDATE ON Account FOR EACH ROW
+        BEGIN
+          IF OLD.type_compte = 'Administrateur' AND NEW.type_compte <> 'Administrateur'
+             AND (SELECT COUNT(*) FROM Account WHERE type_compte = 'Administrateur') <= 1 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Le dernier administrateur ne peut pas être rétrogradé.';
+          END IF;
+          IF OLD.type_compte <> 'Administrateur' AND NEW.type_compte = 'Administrateur'
+             AND (SELECT COUNT(*) FROM Account WHERE type_compte = 'Administrateur') >= 3 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La limite de 3 comptes Administrateur est atteinte.';
+          END IF;
+        END
+      ''');
+
       // Trigger pour limiter à 3 administrateurs
       await _connection.query('''
-        CREATE TRIGGER IF NOT EXISTS avant_ajout_compte_admin BEFORE INSERT ON Account FOR EACH ROW
+        CREATE TRIGGER avant_ajout_compte_admin BEFORE INSERT ON Account FOR EACH ROW
         BEGIN
             IF NEW.type_compte = 'Administrateur' AND (SELECT COUNT(*) FROM Account WHERE type_compte = 'Administrateur') >= 3 THEN
                 SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La limite de 3 comptes Administrateur est atteinte.';
@@ -71,18 +103,22 @@ class SchemaInitializationService {
 
       // Trigger pour validation email simple
       await _connection.query('''
-        CREATE TRIGGER IF NOT EXISTS validation_email_insert BEFORE INSERT ON Account FOR EACH ROW
+        CREATE TRIGGER validation_email_insert BEFORE INSERT ON Account FOR EACH ROW
         BEGIN
             IF NEW.email NOT LIKE '%@%.%' THEN
-                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Format d'email invalide.';
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Format email invalide.';
             END IF;
         END
       ''');
 
       AppLogger.success('Triggers Account créés/vérifiés');
-    } catch (e) {
-      // Certains serveurs MySQL ne supportent pas IF NOT EXISTS sur les triggers
-      AppLogger.warning('Note: Création des triggers (déjà existants ou non supportés)');
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Erreur lors de la création des triggers Account',
+        e,
+        stackTrace,
+      );
+      rethrow;
     }
   }
 
