@@ -186,8 +186,17 @@ class _DatabaseConfigScreenState extends State<DatabaseConfigScreen> {
         ),
         const SizedBox(height: 8),
         const Text(
-          'Configurez votre connexion MySQL',
+          'Configurez votre base locale MariaDB (recommandée) ou MySQL',
           style: TextStyle(color: Colors.grey),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Vos données restent dans la base de données que vous configurez. Prospectius ne les envoie pas vers un stockage cloud centralisé.',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontSize: 12,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 40),
