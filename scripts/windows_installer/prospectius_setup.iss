@@ -37,12 +37,14 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; Les chemins sont relatifs à l'emplacement de ce fichier .iss
 Source: "..\..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\Database\*"; DestDir: "{app}\Database"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\VC_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 [Icons]
 Name: "{group}\Prospectius"; Filename: "{app}\prospectius.exe"
 Name: "{commondesktop}\Prospectius"; Filename: "{app}\prospectius.exe"; Tasks: desktopicon
 
 [Run]
+Filename: "{tmp}\VC_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installation du runtime Visual C++..."; Flags: waituntilterminated runhidden skipifdoesntexist
 Filename: "{app}\prospectius.exe"; Description: "{cm:LaunchProgram,Prospectius}"; Flags: nowait postinstall skipifsilent
 
 [Code]
