@@ -39,6 +39,13 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup --no-progress --yes
 
+      - name: Download Visual C++ runtime
+        shell: pwsh
+        run: |
+          Invoke-WebRequest `
+            -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" `
+            -OutFile "VC_redist.x64.exe"
+
       - name: Build Windows installer
         shell: pwsh
         env:
