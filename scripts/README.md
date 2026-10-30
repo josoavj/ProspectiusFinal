@@ -2,22 +2,42 @@
 
 Ce répertoire contient tous les scripts d'automatisation pour configurer Prospectius sur les différentes plateformes.
 
-## 📋 Vue d'ensemble
+## Vue d'ensemble
 
 | Script | OS | Type | Description |
 |--------|----|----|-------------|
-| `setup.sh` | Toutes | Shell | 🚀 **Recommandé**: Détecte l'OS et lance l'installateur approprié |
+| `setup.sh` | Toutes | Shell | **Recommandé** : détecte l'OS et lance l'installateur approprié |
 | `install-linux.sh` | Linux | Shell | Configure Prospectius sur Linux (Ubuntu, Debian, Fedora, Arch) |
 | `install-macos.sh` | macOS | Shell | Configure Prospectius sur macOS avec Homebrew |
-| `install-windows.ps1` | Windows | PowerShell | 📥 Télécharge automatiquement `prospectius.exe` et configure la base de données |
-| `install-windows.bat` | Windows | Batch | 📥 Télécharge automatiquement `prospectius.exe` et configure la base de données |
+| `install-windows.ps1` | Windows | PowerShell | Télécharge l'archive Windows complète et configure la base de données |
+| `install-windows.bat` | Windows | Batch | Lance l'installation Windows PowerShell |
 | `download-sql.sh` | Toutes | Shell | Télécharge le schéma SQL du dépôt ProspectiusFinal |
 | `validate.sh` | Toutes | Shell | Valide l'installation et affiche un diagnostic |
 | `clean.sh` | Toutes | Shell | Nettoie les caches et réinstalle les dépendances |
 
+Les workflows publient plusieurs formats :
+
+- Windows : `Prospectius_Setup_v<version>.exe` (installateur complet) et
+  `prospectius-windows-x64.zip` (version portable).
+- Linux : `prospectius_<version>_amd64.deb` (installation Debian/Ubuntu) et
+  `prospectius-linux-x64.tar.gz` (version portable).
+
+Le schéma est inclus dans les archives sous `Database/Prospectius.sql`.
+
+Les paramètres de connexion peuvent être fournis par variables d’environnement :
+`PROSPECTIUS_DB_USER`, `PROSPECTIUS_DB_PASSWORD`, `PROSPECTIUS_DB_HOST` et
+`PROSPECTIUS_DB_PORT`. Le mot de passe n’est plus défini dans les scripts.
+
+L’installateur Windows `.exe` ne télécharge pas MariaDB automatiquement. Il vérifie
+si MariaDB/MySQL est présent et propose d’ouvrir la page officielle de MariaDB s’il
+est absent. S’il est présent, l’installateur demande l’hôte, le port, l’utilisateur
+et le mot de passe, puis importe automatiquement `Database/Prospectius.sql` uniquement
+si la base `Prospectius` n’existe pas encore. Le fichier `Database/SuppressionDB.sql`
+est livré comme outil manuel et n’est jamais exécuté automatiquement.
+
 ---
 
-## 🚀 Démarrage Rapide
+## Démarrage rapide
 
 ### Option 1: Installation Automatique (Recommandé)
 
@@ -29,7 +49,7 @@ Ce script détecte automatiquement votre OS et exécute le bon installateur.
 
 **Windows:** Vous pouvez aussi directement utiliser les fichiers téléchargés depuis la [latest release](https://github.com/josoavj/ProspectiusFinal/releases/latest) :
 
-- Double-cliquez sur `prospectius.exe`
+- Extrayez `prospectius-windows-x64.zip`, puis lancez `prospectius.exe`
 - Lancez `install-windows.ps1` ou `install-windows.bat` pour configurer la base de données
 
 ### Option 2: Installation Manuelle
@@ -66,7 +86,7 @@ install-windows.bat
 
 ---
 
-## 📝 Description Détaillée
+## Description détaillée
 
 ### setup.sh
 **Rôle:** Script maître de détection automatique
@@ -126,7 +146,7 @@ powershell -ExecutionPolicy Bypass -File install-windows.ps1
 
 **Fonctionnalités:**
 
-- Télécharge automatiquement `prospectius.exe` et `Prospectius.sql` depuis la latest release GitHub
+- Télécharge `prospectius-windows-x64.zip`, l'extrait et importe `Database/Prospectius.sql`
 - Vérifie l'installation de MariaDB
 - Teste la connexion MySQL
 - Importe le schéma de base de données
@@ -150,7 +170,7 @@ install-windows.bat
 
 **Fonctionnalités:**
 
-- Télécharge automatiquement `prospectius.exe` et `Prospectius.sql` depuis la latest release GitHub
+- Télécharge `prospectius-windows-x64.zip`, l'extrait et importe `Database/Prospectius.sql`
 - Vérifie l'installation de MariaDB
 - Importe le schéma de base de données
 - Lance l'application
@@ -171,9 +191,9 @@ bash download-sql.sh
 
 **Fonctionnalités:**
 
-- Télécharge `Prospectius.sql` depuis la latest release ProspectiusFinal
+- Télécharge `scripts/Database/Prospectius.sql` depuis le dépôt ProspectiusFinal
 - Utilise curl ou wget (auto-détection)
-- Sauvegarde dans `scripts/prospectius.sql`
+- Sauvegarde dans `scripts/Database/Prospectius.sql`
 
 **Utilité:**
 
@@ -253,7 +273,7 @@ bash clean.sh
    - Sur Windows, PowerShell doit autoriser l'exécution
 
 3. **SQL Script:**
-   - Les scripts Windows téléchargent automatiquement `Prospectius.sql` depuis la release
+   - Les scripts Windows extraient `Database/Prospectius.sql` depuis l'archive de release
    - Pour Linux/macOS, utilisez `scripts/download-sql.sh` ou placez le fichier manuellement
    - Vous pouvez télécharger manuellement depuis la [latest release](https://github.com/josoavj/ProspectiusFinal/releases/latest)
 
@@ -295,7 +315,7 @@ DB_PASSWORD="votre_mot_de_passe"
 bash download-sql.sh
 
 # Importer manuellement
-mysql -u root -proot < scripts/prospectius.sql
+mysql -u root < scripts/Database/Prospectius.sql
 ```
 
 ### Désactiver Certaines Vérifications
@@ -373,7 +393,7 @@ powershell -ExecutionPolicy Bypass -File scripts/install-windows.ps1
 3. **Sauvegarder la base de données:**
 
    ```bash
-   mysqldump -u root -proot Prospectius > backup.sql
+   mysqldump -u root Prospectius > backup.sql
    ```
 
 4. **Nettoyer en cas de problèmes:**

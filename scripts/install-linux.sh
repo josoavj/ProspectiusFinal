@@ -1,149 +1,69 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Script d'installation de Prospectius sur Linux
-# Télécharge l'exécutable Linux et le schéma SQL depuis la latest release GitHub
+set -euo pipefail
 
-set -e  # Quitter si une erreur se produit
+REPOSITORY="josoavj/ProspectiusFinal"
+DOWNLOAD_DIR="${PROSPECTIUS_DOWNLOAD_DIR:-$PWD/prospectius}"
+ARCHIVE="$DOWNLOAD_DIR/prospectius-linux-x64.tar.gz"
+DATABASE_SCRIPT="$DOWNLOAD_DIR/Database/Prospectius.sql"
+DB_USER="${PROSPECTIUS_DB_USER:-root}"
+DB_PASSWORD="${PROSPECTIUS_DB_PASSWORD:-}"
+DB_HOST="${PROSPECTIUS_DB_HOST:-localhost}"
+DB_PORT="${PROSPECTIUS_DB_PORT:-3306}"
 
 echo "================================"
 echo "Installation de Prospectius"
 echo "================================"
-echo ""
 
-# Créer le dossier de destination
-mkdir -p temp_download
-
-# Télécharger les fichiers depuis la latest release GitHub
-echo "Téléchargement des fichiers depuis GitHub..."
-echo ""
-
-# Déterminer l'outil de téléchargement
-DOWNLOAD_CMD=""
-if command -v curl &> /dev/null; then
-    DOWNLOAD_CMD="curl -L -o"
-elif command -v wget &> /dev/null; then
-    DOWNLOAD_CMD="wget -O"
-else
-    echo "⚠️  curl ou wget n'est pas installé"
-    exit 1
-fi
-
-# Télécharger les URLs depuis l'API GitHub
-echo "  Récupération des informations de la release..."
-RELEASE_INFO=$(curl -s https://api.github.com/repos/josoavj/ProspectiusFinal/releases/latest)
-
-# Télécharger prospectius
-EXE_URL=$(echo "$RELEASE_INFO" | grep -o '"browser_download_url":"[^"]*prospectius[^"]*"' | grep -v ".exe" | head -1 | cut -d'"' -f4)
-if [ -n "$EXE_URL" ]; then
-    echo "  Téléchargement de prospectius..."
-    $DOWNLOAD_CMD temp_download/prospectius "$EXE_URL"
-    chmod +x temp_download/prospectius
-    echo "  ✓ prospectius téléchargé"
-else
-    echo "  ⚠️  prospectius non trouvé dans la release"
-fi
-
-# Télécharger Prospectius.sql
-SQL_URL=$(echo "$RELEASE_INFO" | grep -o '"browser_download_url":"[^"]*Prospectius.sql[^"]*"' | head -1 | cut -d'"' -f4)
-if [ -n "$SQL_URL" ]; then
-    echo "  Téléchargement de Prospectius.sql..."
-    $DOWNLOAD_CMD temp_download/Prospectius.sql "$SQL_URL"
-    echo "  ✓ Prospectius.sql téléchargé"
-else
-    echo "  ⚠️  Prospectius.sql non trouvé dans la release"
-    exit 1
-fi
-
-echo "✓ Fichiers téléchargés avec succès"
-echo ""
-
-# Vérifier si MariaDB est installé
-if ! command -v mariadb &> /dev/null; then
-    echo "⚠️  MariaDB n'est pas installé"
-    echo ""
-    echo "Installation des dépendances:"
-    echo ""
-    
-    # Déterminer la distribution Linux
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        if [ "$ID" = "ubuntu" ] || [ "$ID" = "debian" ]; then
-            echo "Exécutez sur Ubuntu/Debian:"
-            echo "  sudo apt update"
-            echo "  sudo apt install mariadb-server mariadb-client"
-        elif [ "$ID" = "fedora" ] || [ "$ID" = "rhel" ] || [ "$ID" = "centos" ]; then
-            echo "Exécutez sur Fedora/RHEL/CentOS:"
-            echo "  sudo dnf install mariadb mariadb-common mariadb-server"
-        elif [ "$ID" = "arch" ]; then
-            echo "Exécutez sur Arch Linux:"
-            echo "  sudo pacman -S mariadb"
-        fi
-    fi
-    exit 1
-fi
-
-echo "✓ MariaDB détecté"
-echo ""
-
-# Démarrer MariaDB s'il n'est pas en cours d'exécution
-if ! pgrep -x "mariadb" > /dev/null; then
-    echo "Démarrage de MariaDB..."
-    sudo systemctl start mariadb || true
-    sleep 2
-fi
-
-echo "✓ MariaDB actif"
-echo ""
-
-# Importer la base de données
-echo "Configuration de la base de données Prospectius..."
-echo ""
-
-# Vérifier si le script SQL existe
-if [ ! -f "temp_download/Prospectius.sql" ]; then
-    echo "⚠️  Script SQL n'a pas pu être téléchargé"
-    echo ""
-    echo "Vérifiez votre connexion Internet et réessayez"
-    exit 1
-fi
-
-# Importer le script SQL
-mysql -u root -proot < temp_download/Prospectius.sql 2>/dev/null || {
-    echo "⚠️  Importation échouée avec l'utilisateur root:root"
-    echo ""
-    echo "Vérifiez que MariaDB est bien en cours d'exécution et que:"
-    echo "  - L'utilisateur root existe"
-    echo "  - Le mot de passe est 'root'"
-    echo ""
-    echo "Vous pouvez réessayer manuellement avec:"
-    echo "  mysql -u root -proot < temp_download/Prospectius.sql"
-    exit 1
+command -v curl >/dev/null 2>&1 || {
+  echo "Erreur : curl est requis."
+  exit 1
+}
+command -v tar >/dev/null 2>&1 || {
+  echo "Erreur : tar est requis."
+  exit 1
 }
 
-echo "✓ Base de données configurée"
-echo ""
+mkdir -p "$DOWNLOAD_DIR"
+echo "Téléchargement de la dernière release Linux..."
+curl -fL "https://github.com/$REPOSITORY/releases/latest/download/prospectius-linux-x64.tar.gz" -o "$ARCHIVE"
+tar -xzf "$ARCHIVE" -C "$DOWNLOAD_DIR"
+chmod +x "$DOWNLOAD_DIR/bundle/prospectius"
 
-echo "================================"
-echo "✓ Installation terminée!"
-echo "================================"
+if ! command -v mysql >/dev/null 2>&1 && ! command -v mariadb >/dev/null 2>&1; then
+  echo "Erreur : MariaDB/MySQL n'est pas installé."
+  exit 1
+fi
+
+if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files mariadb.service >/dev/null 2>&1; then
+  if ! systemctl is-active --quiet mariadb; then
+    echo "Démarrage de MariaDB..."
+    sudo systemctl start mariadb
+  fi
+fi
+
+if [ ! -f "$DATABASE_SCRIPT" ]; then
+  echo "Erreur : le script SQL est absent de l'archive."
+  exit 1
+fi
+
+MYSQL_COMMAND="${MYSQL_COMMAND:-}"
+if command -v mariadb >/dev/null 2>&1; then
+  MYSQL_COMMAND="mariadb"
+elif command -v mysql >/dev/null 2>&1; then
+  MYSQL_COMMAND="mysql"
+fi
+
+MYSQL_ARGS=(-h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER")
+if [ -n "$DB_PASSWORD" ]; then
+  MYSQL_ARGS+=("-p$DB_PASSWORD")
+fi
+
+echo "Importation du schéma Prospectius..."
+"$MYSQL_COMMAND" "${MYSQL_ARGS[@]}" < "$DATABASE_SCRIPT"
+
 echo ""
-echo "Fichiers téléchargés:"
-echo "  Exécutable: temp_download/prospectius"
-echo "  Dossier de téléchargement: temp_download/"
-echo ""
-echo "Prochaines étapes:"
-echo ""
-echo "1. Lancez l'application:"
-echo "   ./temp_download/prospectius"
-echo ""
-echo "2. À la première exécution, configurez la base de données:"
-echo "   Host: localhost"
-echo "   Port: 3306"
-echo "   User: root"
-echo "   Password: root"
-echo "   Database: Prospectius"
-echo ""
-echo "3. Créez votre compte:"
-echo "   Cliquez sur 'S'inscrire' pour créer un nouveau compte"
-echo "   Remplissez le formulaire avec vos informations"
-echo ""
+echo "Installation terminée."
+echo "Application : $DOWNLOAD_DIR/bundle/prospectius"
+echo "Base : $DB_HOST:$DB_PORT/$DB_USER"
+echo "Lancement : $DOWNLOAD_DIR/bundle/prospectius"

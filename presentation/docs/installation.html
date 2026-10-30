@@ -1,0 +1,26 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Installation | Prospectius</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../presentation.css"><link rel="stylesheet" href="docs.css"></head><body><header><div class="wrap"><nav aria-label="Navigation principale"><a class="brand" href="../index.html"><img src="../assets/logo-mark.svg" width="28" height="28" alt="">Prospectius</a><div class="menu"><a href="index.html">Documentation</a><a href="../index.html#telecharger">Télécharger</a><a href="../index.html#ressources">Ressources</a></div><div class="actions"><a class="btn sm ghost" href="https://github.com/josoavj/ProspectiusFinal" target="_blank" rel="noopener">GitHub</a><a class="btn sm primary" href="../index.html">Accueil</a></div></nav></div></header><main class="doc-main"><article><p class="meta">Guide d’installation</p><h1>Préparer votre environnement</h1><p class="lead">L’application nécessite une base MariaDB ou une installation MySQL compatible, ainsi qu’un poste Windows ou Linux.</p><h2>Installer MariaDB</h2><h3>Windows</h3><p>Téléchargez MariaDB depuis <a href="https://mariadb.org/download/" target="_blank" rel="noopener">mariadb.org</a>, suivez l’assistant et conservez le mot de passe administrateur.</p><h3>Linux</h3><pre>sudo apt update
+sudo apt install mariadb-server
+sudo systemctl enable --now mariadb</pre><h2>Initialiser la base</h2><p>Les releases contiennent le dossier <code>Database</code> avec les scripts SQL. Vous pouvez importer le schéma avec :</p><pre>mysql -u root -p &lt; Database/Prospectius.sql</pre><p>L’application peut également préparer le schéma lors de la première connexion selon les droits du compte utilisé.</p><h2>Configurer Prospectius</h2><ol><li>Lancez l’application.</li><li>Indiquez l’hôte, le port <code>3306</code>, l’utilisateur, le mot de passe et la base.</li><li>Testez la connexion puis enregistrez la configuration.</li></ol><h2>Développement</h2><pre>flutter pub get
+flutter run -d windows
+flutter run -d linux</pre><p>Pour supprimer le schéma de test, utilisez uniquement <code>Database/SuppressionDB.sql</code> après avoir effectué une sauvegarde.</p></article></main><footer>
+<div class="wrap">
+  <div class="footer-brand">
+    <img src="../assets/logo-white.svg" height="30" alt="Prospectius">
+    <p>Un CRM desktop moderne pour garder le contrôle de vos prospects et de vos données.</p>
+    <small>© 2025 APEXNova Labs · Prospectius</small>
+  </div>
+  <div class="footer-links">
+    <div>
+      <strong>Documentation</strong>
+      <a href="index.html">Centre de documentation</a>
+      <a href="../index.html">Page principale</a>
+      <a href="../index.html#telecharger">Téléchargements</a>
+    </div>
+    <div>
+      <strong>Projet</strong>
+      <a href="https://github.com/josoavj/ProspectiusFinal/issues" target="_blank" rel="noopener">Support et signalement</a>
+      <a class="footer-github" href="https://github.com/josoavj/ProspectiusFinal" target="_blank" rel="noopener"><span aria-hidden="true">↗</span> Voir le projet sur GitHub</a>
+    </div>
+  </div>
+</div>
+</footer></body></html>

@@ -3,6 +3,15 @@
 
 set -e
 
+DB_USER="${PROSPECTIUS_DB_USER:-root}"
+DB_PASSWORD="${PROSPECTIUS_DB_PASSWORD:-}"
+DB_HOST="${PROSPECTIUS_DB_HOST:-localhost}"
+DB_PORT="${PROSPECTIUS_DB_PORT:-3306}"
+MYSQL_ARGS=(-h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER")
+if [ -n "$DB_PASSWORD" ]; then
+    MYSQL_ARGS+=("-p$DB_PASSWORD")
+fi
+
 echo "================================"
 echo "Validation de Prospectius"
 echo "================================"
@@ -27,17 +36,17 @@ if command -v mysql &> /dev/null; then
     echo "✓ MySQL: $MYSQL_VERSION"
     
     # Tester la connexion
-    if mysql -u root -proot -e "SELECT 1" &> /dev/null; then
+    if mysql "${MYSQL_ARGS[@]}" -e "SELECT 1" &> /dev/null; then
         echo "✓ Connexion MySQL fonctionnelle"
         
         # Vérifier la base Prospectius
-        if mysql -u root -proot -e "USE Prospectius; SHOW TABLES;" &> /dev/null; then
+        if mysql "${MYSQL_ARGS[@]}" -e "USE Prospectius; SHOW TABLES;" &> /dev/null; then
             echo "✓ Base Prospectius trouvée"
         else
             echo "⚠ Base Prospectius non trouvée (peut être importée via install-*.sh)"
         fi
     else
-        echo "❌ Impossible de se connecter à MySQL (user: root, password: root)"
+        echo "❌ Impossible de se connecter à MySQL ($DB_USER@$DB_HOST:$DB_PORT)"
         ERRORS=$((ERRORS + 1))
     fi
 else

@@ -6,6 +6,15 @@ set -e
 echo "================================"
 echo "Prospectius: Cleanup & Diagnostic"
 echo "================================"
+DB_USER="${PROSPECTIUS_DB_USER:-root}"
+DB_PASSWORD="${PROSPECTIUS_DB_PASSWORD:-}"
+DB_HOST="${PROSPECTIUS_DB_HOST:-localhost}"
+DB_PORT="${PROSPECTIUS_DB_PORT:-3306}"
+MYSQL_ARGS=(-h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER")
+if [ -n "$DB_PASSWORD" ]; then
+    MYSQL_ARGS+=("-p$DB_PASSWORD")
+fi
+
 echo ""
 
 # Détecter le répertoire du projet
@@ -84,10 +93,10 @@ echo "  - scripts/: $(ls -1 scripts/ 2>/dev/null | wc -l) scripts"
 echo ""
 echo "Status de la base de données:"
 if command -v mysql &> /dev/null; then
-    if mysql -u root -proot -e "SELECT 1" &> /dev/null; then
+    if mysql "${MYSQL_ARGS[@]}" -e "SELECT 1" &> /dev/null; then
         echo "  ✓ MySQL connecté"
         
-        TABLES=$(mysql -u root -proot -e "USE Prospectius; SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='Prospectius';" 2>/dev/null | tail -n 1)
+        TABLES=$(mysql "${MYSQL_ARGS[@]}" -e "USE Prospectius; SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='Prospectius';" 2>/dev/null | tail -n 1)
         if [ ! -z "$TABLES" ]; then
             echo "  ✓ Base Prospectius trouvée ($TABLES tables)"
         else
