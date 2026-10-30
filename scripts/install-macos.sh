@@ -70,7 +70,7 @@ echo ""
 echo "Téléchargement du script SQL depuis GitHub..."
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-GITHUB_URL="https://raw.githubusercontent.com/josoavj/dbProspectius/master/scriptSQL/Prospectius.sql"
+GITHUB_URL="https://raw.githubusercontent.com/josoavj/ProspectiusFinal/master/scripts/Database/Prospectius.sql"
 
 if command -v curl &> /dev/null; then
     curl -f -o "/tmp/Prospectius.sql" "$GITHUB_URL"
@@ -92,13 +92,22 @@ fi
 # Importer le script SQL
 echo "Importation du schéma de base de données..."
 
-if mysql -u root < /tmp/Prospectius.sql; then
+DB_USER="${PROSPECTIUS_DB_USER:-root}"
+DB_PASSWORD="${PROSPECTIUS_DB_PASSWORD:-}"
+DB_HOST="${PROSPECTIUS_DB_HOST:-localhost}"
+DB_PORT="${PROSPECTIUS_DB_PORT:-3306}"
+MYSQL_ARGS=(-h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER")
+if [ -n "$DB_PASSWORD" ]; then
+    MYSQL_ARGS+=("-p$DB_PASSWORD")
+fi
+
+if mysql "${MYSQL_ARGS[@]}" < /tmp/Prospectius.sql; then
     echo "✓ Base de données configurée"
 else
     echo "⚠ Impossible d'importer la base de données"
     echo ""
     echo "Vous pouvez essayer manuellement:"
-    echo "  mysql -u root < /tmp/Prospectius.sql"
+    echo "  mysql -h $DB_HOST -P $DB_PORT -u $DB_USER < /tmp/Prospectius.sql"
     exit 1
 fi
 
@@ -125,11 +134,6 @@ echo ""
 echo "Configuration de la base de données au premier lancement:"
 echo "  Host: localhost"
 echo "  Port: 3306"
-echo "  User: root"
-echo "  Password: (laissez vide)"
+echo "  User: $DB_USER"
 echo "  Database: Prospectius"
-echo ""
-echo "Connexion par défaut:"
-echo "  Utilisateur: admin"
-echo "  Mot de passe: admin"
 echo ""
