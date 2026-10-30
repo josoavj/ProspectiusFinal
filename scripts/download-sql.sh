@@ -1,30 +1,22 @@
-#!/bin/bash
-# Télécharger le script SQL du dépôt dbProspectius
+#!/usr/bin/env bash
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-OUTPUT_FILE="$SCRIPT_DIR/prospectius.sql"
-GITHUB_URL="https://raw.githubusercontent.com/josoavj/dbProspectius/master/scriptSQL/Prospectius.sql"
+set -euo pipefail
 
-echo "Téléchargement du schéma de base de données..."
-echo "Source: $GITHUB_URL"
-echo "Destination: $OUTPUT_FILE"
-echo ""
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OUTPUT_FILE="${1:-$SCRIPT_DIR/Database/Prospectius.sql}"
+REPOSITORY="josoavj/ProspectiusFinal"
+ARCHIVE="$(mktemp)"
+trap 'rm -f "$ARCHIVE"' EXIT
 
-if command -v curl &> /dev/null; then
-    curl -f -o "$OUTPUT_FILE" "$GITHUB_URL"
-elif command -v wget &> /dev/null; then
-    wget -O "$OUTPUT_FILE" "$GITHUB_URL"
-else
-    echo "❌ Erreur: curl ou wget est requis"
-    exit 1
-fi
+command -v curl >/dev/null 2>&1 || {
+  echo "Erreur : curl est requis."
+  exit 1
+}
 
-if [ $? -eq 0 ]; then
-    echo "✓ Téléchargement réussi"
-    echo ""
-    echo "Pour importer le schéma:"
-    echo "  mysql -u root -proot < $OUTPUT_FILE"
-else
-    echo "❌ Erreur lors du téléchargement"
-    exit 1
-fi
+echo "Téléchargement du schéma SQL depuis la dernière release..."
+curl -fL "https://github.com/$REPOSITORY/releases/latest/download/prospectius-linux-x64.tar.gz" -o "$ARCHIVE"
+mkdir -p "$(dirname "$OUTPUT_FILE")"
+tar -xOzf "$ARCHIVE" "Database/Prospectius.sql" > "$OUTPUT_FILE"
+
+echo "Schéma téléchargé : $OUTPUT_FILE"
+echo "Attention : ce script SQL recrée la base Prospectius."
