@@ -46,18 +46,54 @@ jobs:
         run: flutter build linux --release
 
       - name: Create Linux archive
+        env:
+          VERSION_INPUT: ${{ inputs.version || github.ref_name }}
         run: |
+          VERSION="${VERSION_INPUT#v}"
           mkdir -p release/bundle release/Database
           cp -R build/linux/x64/release/bundle/. release/bundle/
           cp -R scripts/Database/. release/Database/
           tar -czf prospectius-linux-x64.tar.gz \
             -C release bundle Database
 
+          mkdir -p package/DEBIAN package/opt/prospectius \
+            package/usr/bin package/usr/share/applications \
+            package/usr/share/icons/hicolor/256x256/apps \
+            package/usr/share/prospectius/Database
+          cp -R build/linux/x64/release/bundle/. package/opt/prospectius/
+          cp -R scripts/Database/. package/usr/share/prospectius/Database/
+          cp assets/images/icon.png package/usr/share/icons/hicolor/256x256/apps/prospectius.png
+          ln -s /opt/prospectius/prospectius package/usr/bin/prospectius
+          cat > package/usr/share/applications/prospectius.desktop <<'EOF'
+          [Desktop Entry]
+          Name=Prospectius
+          Comment=CRM desktop de gestion de prospects
+          Exec=prospectius
+          Icon=prospectius
+          Terminal=false
+          Type=Application
+          Categories=Office;ContactManagement;
+          EOF
+          cat > package/DEBIAN/control <<EOF
+          Package: prospectius
+          Version: ${VERSION}
+          Section: office
+          Priority: optional
+          Architecture: amd64
+          Maintainer: APEXNova Labs <josoavonjiniaina13@gmail.com>
+          Depends: libgtk-3-0, libsecret-1-0, libc6, libstdc++6
+          Description: CRM desktop Prospectius
+           Gestion de prospects, pipeline commercial et suivi des interactions.
+          EOF
+          dpkg-deb --build --root-owner-group package "prospectius_${VERSION}_amd64.deb"
+
       - name: Create or update GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: prospectius-linux-x64.tar.gz
+          files: |
+            prospectius-linux-x64.tar.gz
+            prospectius_*_amd64.deb
           draft: false
           prerelease: false
         env:
@@ -67,7 +103,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.event_name == 'workflow_dispatch'
         with:
-          files: prospectius-linux-x64.tar.gz
+          files: |
+            prospectius-linux-x64.tar.gz
+            prospectius_*_amd64.deb
           tag_name: ${{ inputs.version }}
           draft: true
         env:
