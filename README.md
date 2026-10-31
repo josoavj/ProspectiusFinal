@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="https://github.com/josoavj/ProspectiusFinal/blob/master/assets/images/logo-mark.svg" alt="Prospectius Logo" width="150"/>
+</p>
 
 <h1 align="center">Prospectius</h1>
 
@@ -6,6 +9,8 @@
 </p>
 
 <p align="center">
+  
+  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-blue?style=for-the-badge" alt="Desktop Platforms">
   <img src="https://img.shields.io/badge/version-1.2.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/flutter-%3E%3D3.16.0-blue" alt="Flutter">
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue" alt="Platform">
