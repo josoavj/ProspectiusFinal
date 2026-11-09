@@ -32,7 +32,9 @@ class ProspectListItem extends StatelessWidget {
                   radius: 24,
                   backgroundColor: colorScheme.primaryContainer,
                   child: Text(
-                    prospect.prenom.isNotEmpty ? prospect.prenom[0].toUpperCase() : '?',
+                    prospect.prenom.isNotEmpty
+                        ? prospect.prenom[0].toUpperCase()
+                        : '?',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -47,12 +49,14 @@ class ProspectListItem extends StatelessWidget {
                     children: [
                       Text(
                         TextFormatter.capitalize(prospect.fullName),
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         prospect.email.isEmpty ? 'Aucun email' : prospect.email,
-                        style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                            fontSize: 13, color: colorScheme.onSurfaceVariant),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
