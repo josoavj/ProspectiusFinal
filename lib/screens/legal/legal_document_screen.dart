@@ -14,7 +14,9 @@ class LegalDocumentScreen extends StatelessWidget {
     final isPrivacy = type == LegalDocumentType.privacy;
     return Scaffold(
       appBar: AppBar(
-        title: Text(isPrivacy ? 'Politique de confidentialité' : 'Conditions d’utilisation'),
+        title: Text(isPrivacy
+            ? 'Politique de confidentialité'
+            : 'Conditions d’utilisation'),
       ),
       body: SelectionArea(
         child: ListView(
@@ -24,7 +26,9 @@ class LegalDocumentScreen extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 860),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: isPrivacy ? _privacySections(context) : _termsSections(context),
+                children: isPrivacy
+                    ? _privacySections(context)
+                    : _termsSections(context),
               ),
             ),
           ],
@@ -263,7 +267,9 @@ class _Section extends StatelessWidget {
                 ),
                 child: Text(
                   number.replaceAll('.', ''),
-                  style: TextStyle(color: colors.onPrimaryContainer, fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                      color: colors.onPrimaryContainer,
+                      fontWeight: FontWeight.w800),
                 ),
               ),
               const SizedBox(width: 12),
@@ -272,7 +278,10 @@ class _Section extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     heading,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                 ),
               ),
@@ -308,9 +317,14 @@ class _ContactSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Contact', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+          Text('Contact',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
-          const Text('Toute question relative à ces documents ou à vos données peut être envoyée à :'),
+          const Text(
+              'Toute question relative à ces documents ou à vos données peut être envoyée à :'),
           const SizedBox(height: 6),
           const _DocumentLink(
             label: 'Écrire à APEXNova Labs',
@@ -335,7 +349,10 @@ class _ProjectLinkCard extends StatelessWidget {
       margin: const EdgeInsets.only(top: 6, bottom: 14),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(16),
       ),
       child: const _DocumentLink(
@@ -377,7 +394,8 @@ class _DocumentLink extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+              Icon(icon,
+                  size: 18, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
