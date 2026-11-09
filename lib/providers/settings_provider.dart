@@ -16,17 +16,17 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     // Load Theme
     final themeIndex = prefs.getInt('theme_mode') ?? 0;
     _themeMode = ThemeMode.values[themeIndex];
-    
+
     // Load Notifications
     _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-    
+
     // Load Font Size
     _fontSizeFactor = prefs.getDouble('font_size_factor') ?? 1.0;
-    
+
     notifyListeners();
   }
 
