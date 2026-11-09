@@ -50,7 +50,7 @@ class DatabaseService {
         );
       }
 
-      final user = Account.fromJson(row.fields);
+      final user = Account.fromJson(row.toColumnMap());
 
       AppLogger.success('Authentification réussie pour ${user.fullName}');
       return user;
