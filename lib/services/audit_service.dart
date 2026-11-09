@@ -230,7 +230,7 @@ class AuditService {
         [daysOld],
       );
 
-      final affectedRows = result.affectedRows ?? 0;
+      final affectedRows = result.affectedRows;
       AppLogger.info(
           'Nettoyage: $affectedRows logs d\'audit anciens supprimés');
 
