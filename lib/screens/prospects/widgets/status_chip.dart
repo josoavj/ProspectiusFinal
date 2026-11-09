@@ -10,13 +10,22 @@ class StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     Color chipColor;
-    
+
     switch (status.toLowerCase()) {
-      case 'interesse': chipColor = Colors.amber; break;
-      case 'negociation': chipColor = Colors.orange; break;
-      case 'converti': chipColor = const Color(0xFF06CE70); break;
-      case 'perdu': chipColor = Colors.red; break;
-      default: chipColor = colorScheme.outline;
+      case 'interesse':
+        chipColor = Colors.amber;
+        break;
+      case 'negociation':
+        chipColor = Colors.orange;
+        break;
+      case 'converti':
+        chipColor = const Color(0xFF06CE70);
+        break;
+      case 'perdu':
+        chipColor = Colors.red;
+        break;
+      default:
+        chipColor = colorScheme.outline;
     }
 
     return Container(
