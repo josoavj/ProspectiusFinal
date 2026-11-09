@@ -42,7 +42,7 @@ class BackupService {
       // 1. Lister les tables
       final tablesResult = await _mysqlService.query('SHOW TABLES');
       final tables = tablesResult
-          .map((row) => row.fields.values.first.toString())
+          .map((row) => row.toColumnMap().values.first.toString())
           .toList();
 
       for (var table in tables) {
@@ -51,7 +51,7 @@ class BackupService {
         // 2. Structure de la table
         final createResult =
             await _mysqlService.query('SHOW CREATE TABLE $table');
-        final createSql = createResult.first.fields['Create Table'];
+        final createSql = createResult.first.toColumnMap()['Create Table'];
 
         buffer.writeln('-- Structure for table `$table`');
         buffer.writeln('DROP TABLE IF EXISTS `$table`;');
@@ -62,8 +62,9 @@ class BackupService {
         if (dataResult.isNotEmpty) {
           buffer.writeln('-- Data for table `$table`');
           for (var row in dataResult) {
-            final columns = row.fields.keys.map((k) => '`$k`').join(', ');
-            final values = row.fields.values.map((v) {
+            final columns =
+                row.toColumnMap().keys.map((k) => '`$k`').join(', ');
+            final values = row.toColumnMap().values.map((v) {
               if (v == null) return 'NULL';
               if (v is num || v is bool) return v.toString();
               return "'${v.toString().replaceAll("'", "''")}'";
