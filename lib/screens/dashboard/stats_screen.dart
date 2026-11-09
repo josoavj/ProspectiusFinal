@@ -89,14 +89,16 @@ class _StatsScreenState extends State<StatsScreen> {
 
   Widget _buildDistributionSection(StatsProvider statsProvider) {
     if (statsProvider.prospectStats.isEmpty) return const SizedBox.shrink();
-    
-    final total = statsProvider.prospectStats.fold<int>(0, (sum, item) => sum + item.count);
+
+    final total = statsProvider.prospectStats
+        .fold<int>(0, (sum, item) => sum + item.count);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Distribution par Statut', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text('Distribution par Statut',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
         Card(
           child: Padding(
@@ -110,15 +112,20 @@ class _StatsScreenState extends State<StatsScreen> {
                       PieChart(
                         PieChartData(
                           pieTouchData: PieTouchData(
-                            touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                            touchCallback:
+                                (FlTouchEvent event, pieTouchResponse) {
                               setState(() {
-                                if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
+                                if (!event.isInterestedForInteractions ||
+                                    pieTouchResponse == null ||
+                                    pieTouchResponse.touchedSection == null) {
                                   _touchedIndex = -1;
                                   return;
                                 }
-                                _touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                                _touchedIndex = pieTouchResponse
+                                    .touchedSection!.touchedSectionIndex;
                                 if (_touchedIndex != -1) {
-                                  _selectedStatus = statsProvider.prospectStats[_touchedIndex].status;
+                                  _selectedStatus = statsProvider
+                                      .prospectStats[_touchedIndex].status;
                                 }
                               });
                             },
@@ -133,8 +140,14 @@ class _StatsScreenState extends State<StatsScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(total.toString(), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                            Text('TOTAL', style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant, letterSpacing: 1)),
+                            Text(total.toString(),
+                                style: const TextStyle(
+                                    fontSize: 28, fontWeight: FontWeight.bold)),
+                            Text('TOTAL',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: colorScheme.onSurfaceVariant,
+                                    letterSpacing: 1)),
                           ],
                         ),
                       ),
@@ -163,13 +176,14 @@ class _StatsScreenState extends State<StatsScreen> {
       final isTouched = i == _touchedIndex;
       final stat = statsProvider.prospectStats[i];
       final color = colors[stat.status] ?? Colors.grey;
-      
+
       return PieChartSectionData(
         color: color,
         value: stat.count.toDouble(),
         title: isTouched ? '${stat.count}' : '',
         radius: isTouched ? 30 : 25,
-        titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+        titleStyle: const TextStyle(
+            fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
       );
     });
   }
@@ -187,25 +201,39 @@ class _StatsScreenState extends State<StatsScreen> {
       children: statsProvider.prospectStats.map((stat) {
         final color = colors[stat.status] ?? Colors.grey;
         final isSelected = _selectedStatus == stat.status;
-        final percent = total > 0 ? (stat.count / total * 100).toStringAsFixed(1) : '0';
+        final percent =
+            total > 0 ? (stat.count / total * 100).toStringAsFixed(1) : '0';
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
+            color:
+                isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: isSelected ? color : Colors.transparent),
           ),
           child: Row(
             children: [
-              Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+              Container(
+                  width: 12,
+                  height: 12,
+                  decoration:
+                      BoxDecoration(color: color, shape: BoxShape.circle)),
               const SizedBox(width: 12),
-              Expanded(child: Text(TextFormatter.formatStatus(stat.status), style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
-              Text('$percent%', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+              Expanded(
+                  child: Text(TextFormatter.formatStatus(stat.status),
+                      style: TextStyle(
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal))),
+              Text('$percent%',
+                  style: TextStyle(
+                      color: colorScheme.onSurfaceVariant, fontSize: 12)),
               const SizedBox(width: 16),
-              Text(stat.count.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(stat.count.toString(),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
         );
@@ -217,47 +245,56 @@ class _StatsScreenState extends State<StatsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Performances Clés', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text('Performances Clés',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
         PerformanceMetric(
-          label: 'Efficacité de Conversion', 
-          value: _calculateConversionRate(statsProvider), 
-          color: Colors.green
-        ),
+            label: 'Efficacité de Conversion',
+            value: _calculateConversionRate(statsProvider),
+            color: Colors.green),
         const SizedBox(height: 12),
         PerformanceMetric(
-          label: 'Engagement Prospects', 
-          value: _calculateEngagementRate(statsProvider), 
-          color: AppColors.azure
-        ),
+            label: 'Engagement Prospects',
+            value: _calculateEngagementRate(statsProvider),
+            color: AppColors.azure),
         const SizedBox(height: 12),
         PerformanceMetric(
-          label: 'Taux de Perte', 
-          value: _calculateLossRate(statsProvider), 
-          color: Colors.red
-        ),
+            label: 'Taux de Perte',
+            value: _calculateLossRate(statsProvider),
+            color: Colors.red),
       ],
     );
   }
 
   double _calculateConversionRate(StatsProvider statsProvider) {
-    final total = statsProvider.prospectStats.fold<int>(0, (sum, stat) => sum + stat.count);
+    final total = statsProvider.prospectStats
+        .fold<int>(0, (sum, stat) => sum + stat.count);
     if (total == 0) return 0;
-    final converted = statsProvider.prospectStats.firstWhere((s) => s.status == 'converti', orElse: () => ProspectStats(status: '', count: 0)).count;
+    final converted = statsProvider.prospectStats
+        .firstWhere((s) => s.status == 'converti',
+            orElse: () => ProspectStats(status: '', count: 0))
+        .count;
     return (converted / total) * 100;
   }
 
   double _calculateLossRate(StatsProvider statsProvider) {
-    final total = statsProvider.prospectStats.fold<int>(0, (sum, stat) => sum + stat.count);
+    final total = statsProvider.prospectStats
+        .fold<int>(0, (sum, stat) => sum + stat.count);
     if (total == 0) return 0;
-    final lost = statsProvider.prospectStats.firstWhere((s) => s.status == 'perdu', orElse: () => ProspectStats(status: '', count: 0)).count;
+    final lost = statsProvider.prospectStats
+        .firstWhere((s) => s.status == 'perdu',
+            orElse: () => ProspectStats(status: '', count: 0))
+        .count;
     return (lost / total) * 100;
   }
 
   double _calculateEngagementRate(StatsProvider statsProvider) {
-    final total = statsProvider.prospectStats.fold<int>(0, (sum, stat) => sum + stat.count);
+    final total = statsProvider.prospectStats
+        .fold<int>(0, (sum, stat) => sum + stat.count);
     if (total == 0) return 0;
-    final engaged = statsProvider.prospectStats.where((s) => s.status == 'interesse' || s.status == 'negociation').fold<int>(0, (sum, s) => sum + s.count);
+    final engaged = statsProvider.prospectStats
+        .where((s) => s.status == 'interesse' || s.status == 'negociation')
+        .fold<int>(0, (sum, s) => sum + s.count);
     return (engaged / total) * 100;
   }
 }
