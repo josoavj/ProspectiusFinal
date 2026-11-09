@@ -6,7 +6,7 @@ import '../core/di/service_locator.dart';
 
 class CustomFieldProvider extends ChangeNotifier {
   final ICustomFieldRepository _repository;
-  
+
   List<CustomField> _fields = [];
   final Map<int, List<CustomFieldValue>> _prospectValues = {};
   bool _isLoading = false;
@@ -16,7 +16,7 @@ class CustomFieldProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  CustomFieldProvider({ICustomFieldRepository? repository}) 
+  CustomFieldProvider({ICustomFieldRepository? repository})
       : _repository = repository ?? sl.customFieldRepository;
 
   Future<void> loadFields() async {
@@ -43,7 +43,8 @@ class CustomFieldProvider extends ChangeNotifier {
     }
   }
 
-  List<CustomFieldValue> getValues(int prospectId) => _prospectValues[prospectId] ?? [];
+  List<CustomFieldValue> getValues(int prospectId) =>
+      _prospectValues[prospectId] ?? [];
 
   Future<bool> saveValue(int prospectId, int fieldId, String value) async {
     try {
