@@ -13,7 +13,8 @@ class ExcelService {
     String? directoryPath,
   }) async {
     try {
-      AppLogger.info('Démarrage de l\'export Excel: ${prospects.length} prospects');
+      AppLogger.info(
+          'Démarrage de l\'export Excel: ${prospects.length} prospects');
 
       // Créer un nouveau classeur
       final excel = Excel.createExcel();
@@ -162,12 +163,7 @@ class ExcelService {
       statusMap[prospect.status] = (statusMap[prospect.status] ?? 0) + 1;
     }
 
-    for (final status in [
-      'interesse',
-      'negociation',
-      'converti',
-      'perdu'
-    ]) {
+    for (final status in ['interesse', 'negociation', 'converti', 'perdu']) {
       if (statusMap.containsKey(status)) {
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row))
@@ -486,7 +482,8 @@ End If
   }
 
   /// Importe les prospects depuis un fichier Excel
-  Future<List<Map<String, dynamic>>> importProspectsFromExcel(String filePath) async {
+  Future<List<Map<String, dynamic>>> importProspectsFromExcel(
+      String filePath) async {
     try {
       final bytes = File(filePath).readAsBytesSync();
       final excel = Excel.decodeBytes(bytes);
@@ -508,7 +505,9 @@ End If
             'email': row.length > 2 ? row[2]?.value?.toString() ?? '' : '',
             'telephone': row.length > 3 ? row[3]?.value?.toString() ?? '' : '',
             'adresse': row.length > 4 ? row[4]?.value?.toString() ?? '' : '',
-            'type': row.length > 5 ? row[5]?.value?.toString() ?? 'particulier' : 'particulier',
+            'type': row.length > 5
+                ? row[5]?.value?.toString() ?? 'particulier'
+                : 'particulier',
           });
         }
         break; // On ne lit que la première feuille
@@ -524,7 +523,11 @@ End If
   Future<String?> pickImportFile() async {
     try {
       if (Platform.isLinux) {
-        final result = await Process.run('zenity', ['--file-selection', '--title=Choisir le fichier Excel à importer', '--file-filter=*.xlsx']);
+        final result = await Process.run('zenity', [
+          '--file-selection',
+          '--title=Choisir le fichier Excel à importer',
+          '--file-filter=*.xlsx'
+        ]);
         if (result.exitCode == 0) return result.stdout.toString().trim();
       } else if (Platform.isWindows) {
         final result = await Process.run('powershell', [
