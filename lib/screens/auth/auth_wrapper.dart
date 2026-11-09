@@ -56,7 +56,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
         if (!mounted) return;
 
         if (connected) {
-          if (!await authProvider.hasAccounts()) {
+          final hasAccounts = await authProvider.hasAccounts();
+
+          if (!mounted) return;
+
+          if (!hasAccounts) {
             Navigator.of(context).pushReplacement(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
