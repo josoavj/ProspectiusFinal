@@ -43,16 +43,22 @@ class PasswordCriteriaWidget extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            isMet ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            isMet
+                ? Icons.check_circle_rounded
+                : Icons.radio_button_unchecked_rounded,
             size: 16,
-            color: isMet ? const Color(0xFF06CE70) : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            color: isMet
+                ? const Color(0xFF06CE70)
+                : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           const SizedBox(width: 8),
           Text(
             label,
             style: TextStyle(
               fontSize: 12,
-              color: isMet ? colorScheme.onSurface : colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              color: isMet
+                  ? colorScheme.onSurface
+                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
               fontWeight: isMet ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
