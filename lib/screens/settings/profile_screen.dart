@@ -49,16 +49,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _handleSaveChanges() async {
-    setState(() { _isLoading = true; _successMessage = null; _errorMessage = null; });
+    setState(() {
+      _isLoading = true;
+      _successMessage = null;
+      _errorMessage = null;
+    });
     try {
-      if (_nomController.text.isEmpty || _prenomController.text.isEmpty || _emailController.text.isEmpty) {
-        throw ValidationException(message: 'Veuillez remplir tous les champs', code: 'INVALID_INPUT');
+      if (_nomController.text.isEmpty ||
+          _prenomController.text.isEmpty ||
+          _emailController.text.isEmpty) {
+        throw ValidationException(
+            message: 'Veuillez remplir tous les champs', code: 'INVALID_INPUT');
       }
       AppLogger.success('Profil mis à jour');
-      setState(() { _successMessage = 'Profil mis à jour avec succès'; _isEditing = false; });
+      setState(() {
+        _successMessage = 'Profil mis à jour avec succès';
+        _isEditing = false;
+      });
     } catch (e) {
       AppLogger.error('Erreur mise à jour profil', e);
-      setState(() { _errorMessage = 'Erreur: $e'; });
+      setState(() {
+        _errorMessage = 'Erreur: $e';
+      });
     } finally {
       setState(() => _isLoading = false);
     }
@@ -72,7 +84,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, _) {
           final user = authProvider.currentUser;
-          if (user == null) return const Center(child: Text('Utilisateur non connecté'));
+          if (user == null) {
+            return const Center(child: Text('Utilisateur non connecté'));
+          }
 
           return SingleChildScrollView(
             child: Column(
@@ -86,8 +100,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       constraints: const BoxConstraints(maxWidth: 600),
                       child: Column(
                         children: [
-                          if (_successMessage != null) _buildStatusMessage(_successMessage!, Colors.green),
-                          if (_errorMessage != null) _buildStatusMessage(_errorMessage!, colorScheme.error),
+                          if (_successMessage != null)
+                            _buildStatusMessage(_successMessage!, Colors.green),
+                          if (_errorMessage != null)
+                            _buildStatusMessage(
+                                _errorMessage!, colorScheme.error),
                           const SizedBox(height: 10), // Espace avant la carte
                           _buildProfileCard(user, colorScheme),
                           const SizedBox(height: 32),
@@ -120,7 +137,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: double.infinity,
           decoration: BoxDecoration(
             color: colorScheme.primary,
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(48)),
+            borderRadius:
+                const BorderRadius.vertical(bottom: Radius.circular(48)),
           ),
         ),
         // Texte et Badge dans la zone bleue
@@ -139,11 +157,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 ),
                 child: Text(
                   user.typeCompte.toUpperCase(),
@@ -180,8 +200,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text(
                 user.nom.isNotEmpty ? user.nom[0].toUpperCase() : '?',
                 style: TextStyle(
-                  fontSize: 44, 
-                  fontWeight: FontWeight.bold, 
+                  fontSize: 44,
+                  fontWeight: FontWeight.bold,
                   color: colorScheme.primary,
                 ),
               ),
@@ -197,8 +217,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(top: 24),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: color.withValues(alpha: 0.3))),
-      child: Text(message, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3))),
+      child: Text(message,
+          style: TextStyle(
+              color: color, fontSize: 13, fontWeight: FontWeight.w500),
+          textAlign: TextAlign.center),
     );
   }
 
@@ -211,31 +237,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.person_outline, color: colorScheme.primary, size: 20),
+                Icon(Icons.person_outline,
+                    color: colorScheme.primary, size: 20),
                 const SizedBox(width: 12),
-                const Text('Détails du compte', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                const Text('Détails du compte',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
               ],
             ),
             const SizedBox(height: 24),
             _buildField('Nom', _nomController, _isEditing, colorScheme),
             _buildField('Prénom', _prenomController, _isEditing, colorScheme),
-            _buildField('Email', _emailController, _isEditing, colorScheme, type: TextInputType.emailAddress),
+            _buildField('Email', _emailController, _isEditing, colorScheme,
+                type: TextInputType.emailAddress),
             const Divider(height: 32),
-            _buildReadOnlyField('Nom d\'utilisateur', user.username, colorScheme, Icons.alternate_email),
-            _buildReadOnlyField('Membre depuis', '${user.dateCreation.day}/${user.dateCreation.month}/${user.dateCreation.year}', colorScheme, Icons.calendar_today_outlined),
+            _buildReadOnlyField('Nom d\'utilisateur', user.username,
+                colorScheme, Icons.alternate_email),
+            _buildReadOnlyField(
+                'Membre depuis',
+                '${user.dateCreation.day}/${user.dateCreation.month}/${user.dateCreation.year}',
+                colorScheme,
+                Icons.calendar_today_outlined),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildField(String label, TextEditingController controller, bool enabled, ColorScheme colorScheme, {TextInputType type = TextInputType.text}) {
+  Widget _buildField(String label, TextEditingController controller,
+      bool enabled, ColorScheme colorScheme,
+      {TextInputType type = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant)),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurfaceVariant)),
           const SizedBox(height: 6),
           TextField(
             controller: controller,
@@ -244,10 +285,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: const TextStyle(fontSize: 14),
             decoration: InputDecoration(
               filled: !enabled,
-              fillColor: enabled ? null : colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant)),
-              disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3))),
+              fillColor: enabled
+                  ? null
+                  : colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: colorScheme.outlineVariant)),
+              disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                      color:
+                          colorScheme.outlineVariant.withValues(alpha: 0.3))),
             ),
           ),
         ],
@@ -255,7 +305,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildReadOnlyField(String label, String value, ColorScheme colorScheme, IconData icon) {
+  Widget _buildReadOnlyField(
+      String label, String value, ColorScheme colorScheme, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -266,8 +317,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant)),
-                Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 11, color: colorScheme.onSurfaceVariant)),
+                Text(value,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 14)),
               ],
             ),
           ),
@@ -308,26 +363,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_isEditing) {
       return Row(
         children: [
-          Expanded(child: OutlinedButton(
-            onPressed: _isLoading ? null : () { _initializeControllers(); setState(() => _isEditing = false); }, 
-            style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: const Text('Annuler')
-          )),
+          Expanded(
+              child: OutlinedButton(
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          _initializeControllers();
+                          setState(() => _isEditing = false);
+                        },
+                  style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12))),
+                  child: const Text('Annuler'))),
           const SizedBox(width: 12),
           Expanded(
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _handleSaveChanges, 
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.primary, 
-                foregroundColor: colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ), 
-              child: _isLoading 
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Enregistrer')
-            )
-          ),
+              child: ElevatedButton(
+                  onPressed: _isLoading ? null : _handleSaveChanges,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : const Text('Enregistrer'))),
         ],
       );
     }
@@ -342,9 +408,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: const Icon(Icons.edit_outlined, size: 18),
             label: const Text('Modifier le profil'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF06CE70), 
+              backgroundColor: const Color(0xFF06CE70),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               elevation: 0,
             ),
           ),
@@ -360,11 +427,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: OutlinedButton.styleFrom(
               foregroundColor: colorScheme.primary,
               side: BorderSide(color: colorScheme.primary),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ),
-        if (context.read<AuthProvider>().currentUser?.typeCompte == 'Administrateur') ...[
+        if (context.read<AuthProvider>().currentUser?.typeCompte ==
+            'Administrateur') ...[
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -376,7 +445,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: colorScheme.tertiary,
                 side: BorderSide(color: colorScheme.tertiary),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ),
@@ -434,13 +504,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 final saved = await RecoveryCodeExportService.save(code);
                 if (context.mounted && saved != null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Code enregistré dans le fichier texte.')),
+                    const SnackBar(
+                        content:
+                            Text('Code enregistré dans le fichier texte.')),
                   );
                 }
               } catch (error) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Impossible d’enregistrer le code : $error')),
+                    SnackBar(
+                        content:
+                            Text('Impossible d’enregistrer le code : $error')),
                   );
                 }
               }
@@ -461,7 +535,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final currentPasswordController = TextEditingController();
     final passwordController = TextEditingController();
     final confirmController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => _PasswordChangeDialog(
@@ -574,11 +648,14 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
           transitionBuilder: (child, animation) => FadeTransition(
             opacity: animation,
             child: SlideTransition(
-              position: animation.drive(Tween(begin: const Offset(0.1, 0), end: Offset.zero)),
+              position: animation
+                  .drive(Tween(begin: const Offset(0.1, 0), end: Offset.zero)),
               child: child,
             ),
           ),
-          child: _currentStep == 1 ? _buildStep1(colorScheme) : _buildStep2(colorScheme),
+          child: _currentStep == 1
+              ? _buildStep1(colorScheme)
+              : _buildStep2(colorScheme),
         ),
       ),
       actions: [
@@ -592,10 +669,15 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
             style: ElevatedButton.styleFrom(
               backgroundColor: colorScheme.primary,
               foregroundColor: colorScheme.onPrimary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             child: _isValidating
-                ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white))
                 : const Text('Suivant'),
           )
         else
@@ -604,10 +686,15 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF06CE70),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             child: _isValidating
-                ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white))
                 : const Text('Confirmer'),
           ),
       ],
@@ -618,7 +705,12 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
     return Row(
       children: [
         _buildStepCircle(1, _currentStep >= 1, colorScheme),
-        Container(width: 20, height: 2, color: _currentStep == 2 ? colorScheme.primary : colorScheme.outlineVariant),
+        Container(
+            width: 20,
+            height: 2,
+            color: _currentStep == 2
+                ? colorScheme.primary
+                : colorScheme.outlineVariant),
         _buildStepCircle(2, _currentStep == 2, colorScheme),
       ],
     );
@@ -631,7 +723,8 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
       decoration: BoxDecoration(
         color: isActive ? colorScheme.primary : colorScheme.surface,
         shape: BoxShape.circle,
-        border: Border.all(color: isActive ? colorScheme.primary : colorScheme.outlineVariant),
+        border: Border.all(
+            color: isActive ? colorScheme.primary : colorScheme.outlineVariant),
       ),
       child: Center(
         child: Text(
@@ -639,7 +732,8 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: isActive ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+            color:
+                isActive ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
           ),
         ),
       ),
@@ -672,8 +766,10 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
             labelText: 'Mot de passe actuel',
             prefixIcon: const Icon(Icons.lock_person_outlined),
             suffixIcon: IconButton(
-              icon: Icon(_obscureCurrent ? Icons.visibility_off : Icons.visibility),
-              onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
+              icon: Icon(
+                  _obscureCurrent ? Icons.visibility_off : Icons.visibility),
+              onPressed: () =>
+                  setState(() => _obscureCurrent = !_obscureCurrent),
             ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -709,19 +805,23 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
               labelText: 'Nouveau mot de passe',
               prefixIcon: const Icon(Icons.lock_outline),
               suffixIcon: IconButton(
-                icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility),
+                icon:
+                    Icon(_obscureNew ? Icons.visibility_off : Icons.visibility),
                 onPressed: () => setState(() => _obscureNew = !_obscureNew),
               ),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
-          child: _showCriteria ? Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: _buildLiveCriteria(colorScheme),
-          ) : const SizedBox.shrink(),
+          child: _showCriteria
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: _buildLiveCriteria(colorScheme),
+                )
+              : const SizedBox.shrink(),
         ),
         const SizedBox(height: 16),
         TextField(
@@ -753,7 +853,10 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
         children: [
           Icon(Icons.error_outline, size: 18, color: colorScheme.error),
           const SizedBox(width: 12),
-          Expanded(child: Text(_error!, style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13))),
+          Expanded(
+              child: Text(_error!,
+                  style: TextStyle(
+                      color: colorScheme.onErrorContainer, fontSize: 13))),
         ],
       ),
     );
@@ -781,9 +884,10 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
 
     final auth = context.read<AuthProvider>();
     final current = widget.currentPasswordController.text;
-    
-    final success = await auth.changePassword(auth.currentUser!.id, current, password);
-    
+
+    final success =
+        await auth.changePassword(auth.currentUser!.id, current, password);
+
     if (mounted) {
       setState(() => _isValidating = false);
       if (success) {
@@ -805,7 +909,8 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
       ),
       child: Column(
         children: [
-          _buildCriteriaItem('8 caractères minimum', _hasMinLength, colorScheme),
+          _buildCriteriaItem(
+              '8 caractères minimum', _hasMinLength, colorScheme),
           _buildCriteriaItem('Une majuscule (A-Z)', _hasUppercase, colorScheme),
           _buildCriteriaItem('Une minuscule (a-z)', _hasLowercase, colorScheme),
           _buildCriteriaItem('Un chiffre (0-9)', _hasDigits, colorScheme),
@@ -816,7 +921,7 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
 
   Widget _buildMatchIndicator(ColorScheme colorScheme) {
     if (widget.confirmController.text.isEmpty) return const SizedBox.shrink();
-    
+
     return Padding(
       padding: const EdgeInsets.only(top: 8, left: 4),
       child: Row(
@@ -828,7 +933,9 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
           ),
           const SizedBox(width: 8),
           Text(
-            _passwordsMatch ? 'Les mots de passe correspondent' : 'Les mots de passe sont différents',
+            _passwordsMatch
+                ? 'Les mots de passe correspondent'
+                : 'Les mots de passe sont différents',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w500,
@@ -846,16 +953,22 @@ class _PasswordChangeDialogState extends State<_PasswordChangeDialog> {
       child: Row(
         children: [
           Icon(
-            isMet ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            isMet
+                ? Icons.check_circle_rounded
+                : Icons.radio_button_unchecked_rounded,
             size: 14,
-            color: isMet ? const Color(0xFF06CE70) : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            color: isMet
+                ? const Color(0xFF06CE70)
+                : colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           const SizedBox(width: 8),
           Text(
             label,
             style: TextStyle(
               fontSize: 11,
-              color: isMet ? colorScheme.onSurface : colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              color: isMet
+                  ? colorScheme.onSurface
+                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
             ),
           ),
         ],
