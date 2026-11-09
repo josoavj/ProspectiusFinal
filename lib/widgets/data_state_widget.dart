@@ -53,12 +53,21 @@ class DataStateWidget<T> extends StatelessWidget {
           children: [
             Icon(Icons.error_outline, size: 48, color: Colors.red[600]),
             const SizedBox(height: 16),
-            Text('Erreur', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.red[600])),
+            Text('Erreur',
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall
+                    ?.copyWith(color: Colors.red[600])),
             const SizedBox(height: 8),
-            Text(error, textAlign: TextAlign.center, style: TextStyle(color: Colors.red[700])),
+            Text(error,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.red[700])),
             const SizedBox(height: 24),
             if (onRetry != null)
-              ElevatedButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('Réessayer')),
+              ElevatedButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Réessayer')),
           ],
         ),
       ),
@@ -72,7 +81,11 @@ class DataStateWidget<T> extends StatelessWidget {
         children: [
           Icon(Icons.inbox, size: 48, color: Colors.grey[400]),
           const SizedBox(height: 16),
-          Text(emptyMessage, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey[600])),
+          Text(emptyMessage,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.copyWith(color: Colors.grey[600])),
         ],
       ),
     );
@@ -108,18 +121,23 @@ class SimpleStateBuilder extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.warning_amber_rounded, size: 56, color: colorScheme.error),
+              Icon(Icons.warning_amber_rounded,
+                  size: 56, color: colorScheme.error),
               const SizedBox(height: 16),
-              Text('Une erreur s\'est produite', style: Theme.of(context).textTheme.headlineSmall),
+              Text('Une erreur s\'est produite',
+                  style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: colorScheme.errorContainer,
-                  border: Border.all(color: colorScheme.error.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: colorScheme.error.withValues(alpha: 0.3)),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(error!, style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13)),
+                child: Text(error!,
+                    style: TextStyle(
+                        color: colorScheme.onErrorContainer, fontSize: 13)),
               ),
             ],
           ),
@@ -150,13 +168,21 @@ class SkeletonListLoader extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(width: 48, height: 48, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12))),
+              Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12))),
               const Padding(padding: EdgeInsets.symmetric(horizontal: 8.0)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(width: double.infinity, height: 14.0, color: Colors.white),
+                    Container(
+                        width: double.infinity,
+                        height: 14.0,
+                        color: Colors.white),
                     const Padding(padding: EdgeInsets.symmetric(vertical: 4.0)),
                     Container(width: 150.0, height: 10.0, color: Colors.white),
                   ],
@@ -180,15 +206,17 @@ class SkeletonKanbanLoader extends StatelessWidget {
       baseColor: isDark ? Colors.grey[850]! : Colors.grey[300]!,
       highlightColor: isDark ? Colors.grey[800]! : Colors.grey[100]!,
       child: Row(
-        children: List.generate(3, (index) => Expanded(
-          child: Container(
-            margin: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
-        )),
+        children: List.generate(
+            3,
+            (index) => Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                )),
       ),
     );
   }
