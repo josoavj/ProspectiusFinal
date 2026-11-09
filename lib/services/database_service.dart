@@ -111,7 +111,8 @@ class DatabaseService {
       // Hacher le mot de passe avec bcrypt
       final passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
 
-      const sql = '''INSERT INTO Account (nom, prenom, email, username, password, type_compte, date_creation)
+      const sql =
+          '''INSERT INTO Account (nom, prenom, email, username, password, type_compte, date_creation)
            VALUES (?, ?, ?, ?, ?, ?, NOW())''';
 
       AppLogger.logRequest(
@@ -121,7 +122,8 @@ class DatabaseService {
       );
 
       // Insérer le nouvel utilisateur
-      await _mysqlService.query(sql, [nom, prenom, email, username, passwordHash, 'Utilisateur']);
+      await _mysqlService.query(
+          sql, [nom, prenom, email, username, passwordHash, 'Utilisateur']);
 
       AppLogger.success('Compte créé avec succès pour $username');
     } on AppException {
@@ -211,7 +213,9 @@ class DatabaseService {
         userId,
       ]);
 
-      await _mysqlService.query(sql, [
+      await _mysqlService.query(
+        sql,
+        [
           nom,
           prenom,
           email,
@@ -293,12 +297,14 @@ class DatabaseService {
   Future<void> deleteProspect(int prospectId) async {
     try {
       // Soft delete d'abord les interactions liées au prospect
-      const sqlInteractions = 'UPDATE Interaction SET deleted_at = NOW() WHERE id_prospect = ? AND deleted_at IS NULL';
+      const sqlInteractions =
+          'UPDATE Interaction SET deleted_at = NOW() WHERE id_prospect = ? AND deleted_at IS NULL';
       AppLogger.logRequest('DELETE_PROSPECT', sqlInteractions, [prospectId]);
       await _mysqlService.query(sqlInteractions, [prospectId]);
 
       // Puis soft delete le prospect
-      const sqlProspect = 'UPDATE Prospect SET deleted_at = NOW(), date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL';
+      const sqlProspect =
+          'UPDATE Prospect SET deleted_at = NOW(), date_update = NOW() WHERE id_prospect = ? AND deleted_at IS NULL';
       AppLogger.logRequest('DELETE_PROSPECT', sqlProspect, [prospectId]);
       await _mysqlService.query(sqlProspect, [prospectId]);
 
@@ -382,7 +388,8 @@ class DatabaseService {
         dateInteraction,
       ]);
 
-      await _mysqlService.query(sql, [prospectId, userId, type, note, dateInteraction]);
+      await _mysqlService
+          .query(sql, [prospectId, userId, type, note, dateInteraction]);
 
       AppLogger.success('Interaction créée pour le prospect #$prospectId');
     } on AppException {
@@ -400,13 +407,14 @@ class DatabaseService {
 
   // === STATISTIQUES ===
 
-  Future<List<ProspectStats>> getProspectStats(int userId, String userRole) async {
+  Future<List<ProspectStats>> getProspectStats(
+      int userId, String userRole) async {
     try {
       const sql = '''SELECT status, COUNT(*) as count 
            FROM Prospect 
            WHERE (assignation = ? OR ? = 'Administrateur') AND deleted_at IS NULL
            GROUP BY status''';
-      
+
       AppLogger.logRequest('STATS', sql, [userId, userRole]);
 
       final results = await _mysqlService.query(sql, [userId, userRole]);
@@ -432,7 +440,8 @@ class DatabaseService {
     }
   }
 
-  Future<ConversionStats> getConversionStats(int userId, String userRole) async {
+  Future<ConversionStats> getConversionStats(
+      int userId, String userRole) async {
     try {
       const sql = '''SELECT 
              COUNT(*) as total,
