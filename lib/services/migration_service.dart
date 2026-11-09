@@ -78,7 +78,8 @@ class MigrationService {
       await recordMigration(migrationName);
       AppLogger.success('Soft delete ajouté à la table Prospect');
     } catch (e, stackTrace) {
-      if (e.toString().contains('Duplicate column') || e.toString().contains('1060')) {
+      if (e.toString().contains('Duplicate column') ||
+          e.toString().contains('1060')) {
         AppLogger.warning('Colonne deleted_at déjà présente dans Prospect');
         await recordMigration(migrationName);
         return;
@@ -108,7 +109,8 @@ class MigrationService {
       await recordMigration(migrationName);
       AppLogger.success('Soft delete ajouté à la table Interaction');
     } catch (e, stackTrace) {
-      if (e.toString().contains('Duplicate column') || e.toString().contains('1060')) {
+      if (e.toString().contains('Duplicate column') ||
+          e.toString().contains('1060')) {
         AppLogger.warning('Colonne deleted_at déjà présente dans Interaction');
         await recordMigration(migrationName);
         return;
@@ -259,7 +261,8 @@ class MigrationService {
       await recordMigration(migrationName);
       AppLogger.success('Champs CRM ajoutés à la table Prospect');
     } catch (e, stackTrace) {
-      if (e.toString().contains('Duplicate column') || e.toString().contains('1060')) {
+      if (e.toString().contains('Duplicate column') ||
+          e.toString().contains('1060')) {
         AppLogger.warning('Certains champs CRM existent déjà');
         await recordMigration(migrationName);
         return;
@@ -287,9 +290,11 @@ class MigrationService {
       ''');
 
       await recordMigration(migrationName);
-      AppLogger.success('Champs de suivi et assignation ajoutés aux interactions');
+      AppLogger.success(
+          'Champs de suivi et assignation ajoutés aux interactions');
     } catch (e, stackTrace) {
-      if (e.toString().contains('Duplicate column') || e.toString().contains('1060')) {
+      if (e.toString().contains('Duplicate column') ||
+          e.toString().contains('1060')) {
         await recordMigration(migrationName);
         return;
       }
