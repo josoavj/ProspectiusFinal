@@ -24,7 +24,8 @@ class CustomFieldRepositoryImpl implements ICustomFieldRepository {
   }
 
   @override
-  Future<void> saveCustomFieldValue(int prospectId, int fieldId, String value) async {
+  Future<void> saveCustomFieldValue(
+      int prospectId, int fieldId, String value) async {
     await _mysqlService.query(
       SqlQueries.upsertCustomFieldValue,
       [prospectId, fieldId, value],
@@ -35,12 +36,19 @@ class CustomFieldRepositoryImpl implements ICustomFieldRepository {
   Future<void> createCustomField(String name, CustomFieldType type) async {
     String typeStr;
     switch (type) {
-      case CustomFieldType.number: typeStr = 'nombre'; break;
-      case CustomFieldType.date: typeStr = 'date'; break;
-      case CustomFieldType.boolean: typeStr = 'booleen'; break;
-      default: typeStr = 'texte';
+      case CustomFieldType.number:
+        typeStr = 'nombre';
+        break;
+      case CustomFieldType.date:
+        typeStr = 'date';
+        break;
+      case CustomFieldType.boolean:
+        typeStr = 'booleen';
+        break;
+      default:
+        typeStr = 'texte';
     }
-    
+
     await _mysqlService.query(
       'INSERT INTO champs_personnalises (nom, type_donnee) VALUES (?, ?)',
       [name, typeStr],
