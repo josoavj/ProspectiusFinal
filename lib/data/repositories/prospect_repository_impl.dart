@@ -31,7 +31,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
     );
 
     final prospects =
-        results.map((row) => Prospect.fromJson(row.fields)).toList();
+        results.map((row) => Prospect.fromJson(row.toColumnMap())).toList();
 
     // Mise en cache si c'est la première page et pas admin
     if (offset == 0 && userRole != 'Administrateur') {
@@ -219,7 +219,9 @@ class ProspectRepositoryImpl implements IProspectRepository {
       [prospectId],
     );
 
-    return results.map((row) => Interaction.fromJson(row.fields)).toList();
+    return results
+        .map((row) => Interaction.fromJson(row.toColumnMap()))
+        .toList();
   }
 
   @override
@@ -282,7 +284,9 @@ class ProspectRepositoryImpl implements IProspectRepository {
       [prospectId],
     );
 
-    return results.map((row) => StatusHistory.fromJson(row.fields)).toList();
+    return results
+        .map((row) => StatusHistory.fromJson(row.toColumnMap()))
+        .toList();
   }
 
   @override
