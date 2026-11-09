@@ -15,7 +15,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       [prospectId],
     );
 
-    return results.map((row) => Task.fromJson(row.fields)).toList();
+    return results.map((row) => Task.fromJson(row.toColumnMap())).toList();
   }
 
   @override
