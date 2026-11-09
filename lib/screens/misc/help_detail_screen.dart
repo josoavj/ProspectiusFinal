@@ -49,7 +49,8 @@ class HelpDetailScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(Icons.auto_stories_outlined, 'Démarrer avec Prospectius', colorScheme),
+        _buildHeader(Icons.auto_stories_outlined, 'Démarrer avec Prospectius',
+            colorScheme),
         const SizedBox(height: 24),
         _buildStep(
           '1',
@@ -85,21 +86,39 @@ class HelpDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildKeyboardShortcuts(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildKeyboardShortcuts(
+      BuildContext context, ColorScheme colorScheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(Icons.keyboard_alt_outlined, 'Raccourcis de productivité', colorScheme),
+        _buildHeader(Icons.keyboard_alt_outlined, 'Raccourcis de productivité',
+            colorScheme),
         const SizedBox(height: 24),
         const Text(
           'Maîtrisez Prospectius du bout des doigts grâce aux combinaisons de touches système.',
           style: TextStyle(fontSize: 15, height: 1.5),
         ),
         const SizedBox(height: 32),
-        _buildShortcutRow('Ctrl + N', 'Nouveau Prospect', 'Ouvre instantanément l\'assistant d\'ajout en 5 étapes.', colorScheme),
-        _buildShortcutRow('Ctrl + F', 'Recherche Globale', 'Active le moteur d\'exploration pour filtrer vos contacts.', colorScheme),
-        _buildShortcutRow('Échap', 'Fermer / Annuler', 'Quitte une fenêtre surgissante ou l\'assistant en cours sans enregistrer.', colorScheme),
-        _buildShortcutRow('F5', 'Actualisation', 'Force la synchronisation des données avec votre base MySQL.', colorScheme),
+        _buildShortcutRow(
+            'Ctrl + N',
+            'Nouveau Prospect',
+            'Ouvre instantanément l\'assistant d\'ajout en 5 étapes.',
+            colorScheme),
+        _buildShortcutRow(
+            'Ctrl + F',
+            'Recherche Globale',
+            'Active le moteur d\'exploration pour filtrer vos contacts.',
+            colorScheme),
+        _buildShortcutRow(
+            'Échap',
+            'Fermer / Annuler',
+            'Quitte une fenêtre surgissante ou l\'assistant en cours sans enregistrer.',
+            colorScheme),
+        _buildShortcutRow(
+            'F5',
+            'Actualisation',
+            'Force la synchronisation des données avec votre base MySQL.',
+            colorScheme),
         const SizedBox(height: 32),
         _buildInfoCard(
           'Astuce expert',
@@ -114,16 +133,20 @@ class HelpDetailScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(Icons.verified_user_outlined, 'Sécurité de niveau militaire', colorScheme),
+        _buildHeader(Icons.verified_user_outlined,
+            'Sécurité de niveau militaire', colorScheme),
         const SizedBox(height: 24),
         _buildSectionTitle('Souveraineté des données'),
-        _buildParagraph('Vos prospects restent CHEZ VOUS. L\'application communique directement avec votre serveur MySQL local. Aucune donnée ne transite par un cloud tiers.'),
+        _buildParagraph(
+            'Vos prospects restent CHEZ VOUS. L\'application communique directement avec votre serveur MySQL local. Aucune donnée ne transite par un cloud tiers.'),
         const SizedBox(height: 24),
         _buildSectionTitle('Chiffrement BCrypt'),
-        _buildParagraph('Les mots de passe des utilisateurs sont hachés avec l\'algorithme BCrypt, garantissant une protection maximale contre les tentatives d\'intrusion.'),
+        _buildParagraph(
+            'Les mots de passe des utilisateurs sont hachés avec l\'algorithme BCrypt, garantissant une protection maximale contre les tentatives d\'intrusion.'),
         const SizedBox(height: 24),
         _buildSectionTitle('Stratégie de Sauvegarde'),
-        _buildParagraph('Deux options s\'offrent à vous dans les paramètres : la sauvegarde Standard (automatique) et la sauvegarde Personnalisée (pour clé USB ou disque externe).'),
+        _buildParagraph(
+            'Deux options s\'offrent à vous dans les paramètres : la sauvegarde Standard (automatique) et la sauvegarde Personnalisée (pour clé USB ou disque externe).'),
         const SizedBox(height: 32),
         _buildInfoCard(
           'Intégrité',
@@ -138,7 +161,8 @@ class HelpDetailScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(Icons.alternate_email_outlined, 'Assistance APEXNova Labs', colorScheme),
+        _buildHeader(Icons.alternate_email_outlined, 'Assistance APEXNova Labs',
+            colorScheme),
         const SizedBox(height: 24),
         const Text(
           'Notre équipe technique est à votre disposition pour garantir la pérennité de votre installation.',
@@ -149,7 +173,8 @@ class HelpDetailScreen extends StatelessWidget {
           Icons.bug_report_outlined,
           'Support Technique',
           'Signaler un bug ou une erreur de connexion SQL via notre dépôt GitHub.',
-          () => _launchURL('https://github.com/josoavj/ProspectiusFinal/issues'),
+          () =>
+              _launchURL('https://github.com/josoavj/ProspectiusFinal/issues'),
           colorScheme,
         ),
         _buildContactItem(
@@ -173,7 +198,8 @@ class HelpDetailScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(Icons.manage_accounts_outlined, 'Comptes et récupération', colorScheme),
+        _buildHeader(Icons.manage_accounts_outlined, 'Comptes et récupération',
+            colorScheme),
         const SizedBox(height: 24),
         _buildSectionTitle('Récupérer un compte administrateur'),
         _buildParagraph(
@@ -199,8 +225,8 @@ class HelpDetailScreen extends StatelessWidget {
         _buildInfoCard(
           'Important',
           'Si le code est perdu, qu’il n’existe aucun autre administrateur et que le mot de passe est oublié, '
-          'aucune récupération distante ou porte dérobée n’est prévue. Le propriétaire doit alors accéder directement '
-          'à la base MariaDB pour restaurer l’accès.',
+              'aucune récupération distante ou porte dérobée n’est prévue. Le propriétaire doit alors accéder directement '
+              'à la base MariaDB pour restaurer l’accès.',
           colorScheme,
         ),
       ],
@@ -231,7 +257,8 @@ class HelpDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStep(String number, String title, String desc, ColorScheme colorScheme) {
+  Widget _buildStep(
+      String number, String title, String desc, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Row(
@@ -247,7 +274,10 @@ class HelpDetailScreen extends StatelessWidget {
             child: Center(
               child: Text(
                 number,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12),
               ),
             ),
           ),
@@ -256,9 +286,13 @@ class HelpDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 6),
-                Text(desc, style: TextStyle(color: colorScheme.onSurfaceVariant, height: 1.4)),
+                Text(desc,
+                    style: TextStyle(
+                        color: colorScheme.onSurfaceVariant, height: 1.4)),
               ],
             ),
           ),
@@ -267,7 +301,8 @@ class HelpDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildShortcutRow(String keys, String action, String desc, ColorScheme colorScheme) {
+  Widget _buildShortcutRow(
+      String keys, String action, String desc, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -294,8 +329,11 @@ class HelpDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(action, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(desc, style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant)),
+                Text(action,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(desc,
+                    style: TextStyle(
+                        fontSize: 12, color: colorScheme.onSurfaceVariant)),
               ],
             ),
           ),
@@ -304,14 +342,16 @@ class HelpDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactItem(IconData icon, String title, String desc, VoidCallback onTap, ColorScheme colorScheme) {
+  Widget _buildContactItem(IconData icon, String title, String desc,
+      VoidCallback onTap, ColorScheme colorScheme) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
       color: colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+        side: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: ListTile(
         onTap: onTap,
@@ -352,7 +392,9 @@ class HelpDetailScreen extends StatelessWidget {
             children: [
               Icon(Icons.info_outline, size: 18, color: colorScheme.primary),
               const SizedBox(width: 10),
-              Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary)),
+              Text(title,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: colorScheme.primary)),
             ],
           ),
           const SizedBox(height: 10),
