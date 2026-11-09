@@ -9,7 +9,7 @@ import '../core/di/service_locator.dart';
 class AuthProvider extends ChangeNotifier {
   final IAuthRepository _authRepository;
   final MySQLService _mysqlService;
-  
+
   Account? _currentUser;
   bool _isLoading = false;
   String? _error;
@@ -77,7 +77,6 @@ class AuthProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
-
   }
 
   Future<bool> hasAccounts() => _authRepository.hasAccounts();
@@ -258,17 +257,23 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> changePassword(int userId, String currentPassword, String newPassword) async {
+  Future<bool> changePassword(
+      int userId, String currentPassword, String newPassword) async {
     _setLoading(true);
     _error = null;
     try {
       // 1. Vérifier le mot de passe actuel
-      if (_currentUser == null) throw AuthException(message: 'Non authentifié', code: 'UNAUTHORIZED');
-      
+      if (_currentUser == null) {
+        throw AuthException(message: 'Non authentifié', code: 'UNAUTHORIZED');
+      }
+
       try {
-        await _authRepository.authenticate(_currentUser!.username, currentPassword);
+        await _authRepository.authenticate(
+            _currentUser!.username, currentPassword);
       } catch (e) {
-        throw AuthException(message: 'Le mot de passe actuel est incorrect', code: 'INVALID_CURRENT_PASSWORD');
+        throw AuthException(
+            message: 'Le mot de passe actuel est incorrect',
+            code: 'INVALID_CURRENT_PASSWORD');
       }
 
       // 2. Mettre à jour avec le nouveau
