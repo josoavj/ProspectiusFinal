@@ -78,7 +78,7 @@ class AuthRepositoryImpl implements IAuthRepository {
           message: 'Mot de passe incorrect', code: 'INVALID_PASSWORD');
     }
 
-    return Account.fromJson(row.fields);
+    return Account.fromJson(row.toColumnMap());
   }
 
   @override
@@ -102,7 +102,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<List<Account>> getAllAccounts() async {
     final results =
         await _mysqlService.query('SELECT * FROM Account ORDER BY nom, prenom');
-    return results.map((row) => Account.fromJson(row.fields)).toList();
+    return results.map((row) => Account.fromJson(row.toColumnMap())).toList();
   }
 
   @override
@@ -212,7 +212,7 @@ class AuthRepositoryImpl implements IAuthRepository {
       'UPDATE AdminRecovery SET used_at = NOW() WHERE email = ?',
       [email],
     );
-    return Account.fromJson(results.first.fields);
+    return Account.fromJson(results.first.toColumnMap());
   }
 
   @override
