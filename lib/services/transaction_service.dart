@@ -192,7 +192,7 @@ class TransactionService {
         );
       }
 
-      final record = results.first.fields;
+      final record = results.first.toColumnMap();
 
       // Exécuter le callback avec le record verrouillé
       final result = await callback(connection, record);
