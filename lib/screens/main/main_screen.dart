@@ -68,8 +68,10 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Shortcuts(
       shortcuts: <LogicalKeySet, Intent>{
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF): const SearchIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyN): const NewProspectIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF):
+            const SearchIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyN):
+            const NewProspectIntent(),
         LogicalKeySet(LogicalKeyboardKey.f5): const RefreshIntent(),
         LogicalKeySet(LogicalKeyboardKey.escape): const CloseIntent(),
       },
@@ -79,7 +81,8 @@ class _MainScreenState extends State<MainScreen> {
             setState(() => _selectedIndex = 2);
             return null;
           }),
-          NewProspectIntent: CallbackAction<NewProspectIntent>(onInvoke: (intent) {
+          NewProspectIntent:
+              CallbackAction<NewProspectIntent>(onInvoke: (intent) {
             AddProspectScreen.show(context);
             return null;
           }),

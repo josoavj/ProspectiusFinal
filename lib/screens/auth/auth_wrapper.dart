@@ -56,12 +56,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
         if (!mounted) return;
 
         if (connected) {
-          if (!await authProvider.hasAccounts()) {
+          final hasAccounts = await authProvider.hasAccounts();
+
+          if (!mounted) return;
+
+          if (!hasAccounts) {
             Navigator.of(context).pushReplacement(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
                     const RegisterScreen(isBootstrap: true),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
                   return FadeTransition(opacity: animation, child: child);
                 },
                 transitionDuration: const Duration(milliseconds: 600),
@@ -70,8 +75,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
           } else if (authProvider.isAuthenticated) {
             Navigator.of(context).pushReplacement(
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const MainScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
                   return FadeTransition(opacity: animation, child: child);
                 },
                 transitionDuration: const Duration(milliseconds: 600),
@@ -80,8 +87,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
           } else {
             Navigator.of(context).pushReplacement(
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const LoginScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
                   return FadeTransition(opacity: animation, child: child);
                 },
                 transitionDuration: const Duration(milliseconds: 600),

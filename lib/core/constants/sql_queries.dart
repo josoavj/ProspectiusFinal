@@ -1,6 +1,7 @@
 class SqlQueries {
   // Accounts
-  static const String findUserByUsername = 'SELECT * FROM Account WHERE username = ?';
+  static const String findUserByUsername =
+      'SELECT * FROM Account WHERE username = ?';
   static const String insertAccount = '''
     INSERT INTO Account (nom, prenom, email, username, password, type_compte, date_creation)
     VALUES (?, ?, ?, ?, ?, ?, NOW())
@@ -13,7 +14,7 @@ class SqlQueries {
     ORDER BY creation DESC
     LIMIT ? OFFSET ?
   ''';
-  
+
   static const String insertProspect = '''
     INSERT INTO Prospect 
     (nomp, prenomp, email, telephone, adresse, type, assignation, status, priorite, source, nom_entreprise, poste, linkedin_url, site_web, description, consentement_date, consentement_source, creation, date_update)
@@ -84,7 +85,7 @@ class SqlQueries {
 
   // Custom Fields
   static const String selectCustomFields = 'SELECT * FROM champs_personnalises';
-  
+
   static const String selectValuesByProspectId = '''
     SELECT v.*, c.nom as nom_champ 
     FROM valeurs_champs_personnalises v

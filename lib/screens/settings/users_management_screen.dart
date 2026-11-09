@@ -26,7 +26,9 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
   Future<void> _openUserActions(Account user) async {
     final auth = context.read<AuthProvider>();
     final currentUser = auth.currentUser;
-    if (currentUser == null || currentUser.typeCompte != 'Administrateur') return;
+    if (currentUser == null || currentUser.typeCompte != 'Administrateur') {
+      return;
+    }
 
     final action = await showDialog<_UserAction>(
       context: context,
@@ -52,7 +54,9 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     if (success) {
       setState(_reload);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(action.delete ? 'Compte supprimé.' : 'Rôle mis à jour.')),
+        SnackBar(
+            content:
+                Text(action.delete ? 'Compte supprimé.' : 'Rôle mis à jour.')),
       );
     } else if (auth.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -107,7 +111,9 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Impossible de charger les utilisateurs : ${snapshot.error}'));
+          return Center(
+              child: Text(
+                  'Impossible de charger les utilisateurs : ${snapshot.error}'));
         }
         final users = snapshot.data ?? const <Account>[];
         return RefreshIndicator(
@@ -115,7 +121,8 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              Text('Gestion des utilisateurs', style: Theme.of(context).textTheme.headlineSmall),
+              Text('Gestion des utilisateurs',
+                  style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 8),
               Text('${users.length} compte(s) enregistré(s).'),
               const SizedBox(height: 16),
@@ -125,7 +132,8 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                     child: ListTile(
                       onTap: () => _openUserActions(user),
                       leading: CircleAvatar(
-                        child: Text(user.nom.isEmpty ? '?' : user.nom[0].toUpperCase()),
+                        child: Text(
+                            user.nom.isEmpty ? '?' : user.nom[0].toUpperCase()),
                       ),
                       title: Text(user.fullName),
                       subtitle: Text(
@@ -213,24 +221,29 @@ class _UserActionDialogState extends State<_UserActionDialog> {
           Text(widget.user.email),
           const SizedBox(height: 20),
           DropdownButtonFormField<String>(
-            value: _role,
+            initialValue: _role,
             decoration: const InputDecoration(
               labelText: 'Rôle du compte',
               prefixIcon: Icon(Icons.badge_outlined),
             ),
             items: const [
-              DropdownMenuItem(value: 'Administrateur', child: Text('Administrateur')),
-              DropdownMenuItem(value: 'Utilisateur', child: Text('Utilisateur')),
+              DropdownMenuItem(
+                  value: 'Administrateur', child: Text('Administrateur')),
+              DropdownMenuItem(
+                  value: 'Utilisateur', child: Text('Utilisateur')),
               DropdownMenuItem(value: 'Commercial', child: Text('Commercial')),
             ],
-            onChanged: widget.isCurrentUser ? null : (value) {
-              if (value != null) setState(() => _role = value);
-            },
+            onChanged: widget.isCurrentUser
+                ? null
+                : (value) {
+                    if (value != null) setState(() => _role = value);
+                  },
           ),
           if (widget.isCurrentUser)
             const Padding(
               padding: EdgeInsets.only(top: 12),
-              child: Text('Votre propre rôle et votre compte ne peuvent pas être modifiés ici.'),
+              child: Text(
+                  'Votre propre rôle et votre compte ne peuvent pas être modifiés ici.'),
             ),
         ],
       ),

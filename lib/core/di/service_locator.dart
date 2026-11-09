@@ -23,12 +23,12 @@ class ServiceLocator {
   late final SecureStorageService secureStorage;
   late final LoggingService loggingService;
   BackupService? _backupService;
-  
+
   BackupService get backupService {
     _backupService ??= BackupService(mysqlService);
     return _backupService!;
   }
-  
+
   // Repositories
   late final IProspectRepository prospectRepository;
   late final IAuthRepository authRepository;
@@ -39,11 +39,11 @@ class ServiceLocator {
   Future<void> setup() async {
     loggingService = LoggingService();
     await loggingService.initialize();
-    
+
     secureStorage = SecureStorageService();
     mysqlService = MySQLService();
     _backupService = BackupService(mysqlService);
-    
+
     // Initialisation des dépôts
     prospectRepository = ProspectRepositoryImpl(mysqlService);
     authRepository = AuthRepositoryImpl(mysqlService);

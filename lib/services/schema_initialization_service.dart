@@ -31,7 +31,6 @@ class SchemaInitializationService {
           'Erreur lors de l\'initialisation du schéma', e, stackTrace);
       rethrow;
     }
-
   }
 
   Future<void> _createAdminRecoveryTable() async {
@@ -74,7 +73,8 @@ class SchemaInitializationService {
   Future<void> _createAccountTriggers() async {
     try {
       await _connection.query('DROP TRIGGER IF EXISTS avant_maj_compte');
-      await _connection.query('DROP TRIGGER IF EXISTS avant_ajout_compte_admin');
+      await _connection
+          .query('DROP TRIGGER IF EXISTS avant_ajout_compte_admin');
       await _connection.query('DROP TRIGGER IF EXISTS validation_email_insert');
 
       await _connection.query('''
@@ -192,7 +192,8 @@ class SchemaInitializationService {
           INDEX idx_prospect_date (id_prospect, date_interaction)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       ''');
-      AppLogger.success('Table Interaction créée/vérifiée avec suivi et assignation');
+      AppLogger.success(
+          'Table Interaction créée/vérifiée avec suivi et assignation');
     } catch (e, stackTrace) {
       AppLogger.error(
           'Erreur lors de la création de la table Interaction', e, stackTrace);
@@ -308,7 +309,8 @@ class SchemaInitializationService {
       ''');
       AppLogger.success('Table taches créée/vérifiée');
     } catch (e, stackTrace) {
-      AppLogger.error('Erreur lors de la création de la table taches', e, stackTrace);
+      AppLogger.error(
+          'Erreur lors de la création de la table taches', e, stackTrace);
       rethrow;
     }
   }
@@ -333,7 +335,8 @@ class SchemaInitializationService {
       ''');
       AppLogger.success('Table documents créée/vérifiée');
     } catch (e, stackTrace) {
-      AppLogger.error('Erreur lors de la création de la table documents', e, stackTrace);
+      AppLogger.error(
+          'Erreur lors de la création de la table documents', e, stackTrace);
       rethrow;
     }
   }
@@ -361,7 +364,10 @@ class SchemaInitializationService {
       ''');
       AppLogger.success('Tables des champs personnalisés créées/vérifiées');
     } catch (e, stackTrace) {
-      AppLogger.error('Erreur lors de la création des tables de champs personnalisés', e, stackTrace);
+      AppLogger.error(
+          'Erreur lors de la création des tables de champs personnalisés',
+          e,
+          stackTrace);
       rethrow;
     }
   }

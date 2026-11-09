@@ -4,7 +4,8 @@ import 'package:prospectius/widgets/data_state_widget.dart';
 
 void main() {
   group('SimpleStateBuilder Widget Tests', () {
-    testWidgets('should show loading indicator when isLoading is true', (WidgetTester tester) async {
+    testWidgets('should show loading indicator when isLoading is true',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -21,7 +22,8 @@ void main() {
       expect(find.text('Success'), findsNothing);
     });
 
-    testWidgets('should show error message when error is not null', (WidgetTester tester) async {
+    testWidgets('should show error message when error is not null',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -39,7 +41,8 @@ void main() {
       expect(find.text('Success'), findsNothing);
     });
 
-    testWidgets('should show child when not loading and no error', (WidgetTester tester) async {
+    testWidgets('should show child when not loading and no error',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

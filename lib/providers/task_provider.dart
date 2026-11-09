@@ -6,7 +6,7 @@ import '../core/di/service_locator.dart';
 
 class TaskProvider extends ChangeNotifier {
   final ITaskRepository _repository;
-  
+
   List<Task> _tasks = [];
   bool _isLoading = false;
   String? _error;
@@ -15,13 +15,13 @@ class TaskProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  TaskProvider({ITaskRepository? repository}) 
+  TaskProvider({ITaskRepository? repository})
       : _repository = repository ?? sl.taskRepository;
 
   Future<void> loadTasks(int prospectId) async {
     _isLoading = true;
     notifyListeners();
-    
+
     try {
       _tasks = await _repository.getTasksByProspect(prospectId);
       _error = null;

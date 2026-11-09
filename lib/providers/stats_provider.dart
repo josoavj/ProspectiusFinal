@@ -33,7 +33,8 @@ class StatsProvider extends ChangeNotifier {
     _setLoading(true);
 
     try {
-      AppLogger.info('Démarrage du chargement des stats pour user: $userId (Role: $userRole)');
+      AppLogger.info(
+          'Démarrage du chargement des stats pour user: $userId (Role: $userRole)');
       final results = await Future.wait([
         ErrorHandlingService.executeWithTimeout(
           () => _databaseService.getProspectStats(userId, userRole),

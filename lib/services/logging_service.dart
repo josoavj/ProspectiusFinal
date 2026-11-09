@@ -197,7 +197,8 @@ class LoggingService {
     String errorMessage,
     StackTrace? stackTrace,
   ) async {
-    final message = '[ERROR] EXPORT_ERROR | Stage: $stage | Message: $errorMessage';
+    final message =
+        '[ERROR] EXPORT_ERROR | Stage: $stage | Message: $errorMessage';
     await log(message, level: 'ERROR');
     if (stackTrace != null) {
       await log('Stack trace:\n$stackTrace', level: 'ERROR');

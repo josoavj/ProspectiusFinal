@@ -45,7 +45,7 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
         if (!mounted) return;
         final prospectProvider = context.read<ProspectProvider>();
         final authProvider = context.read<AuthProvider>();
-        
+
         int count = 0;
         for (var data in prospects) {
           data['userId'] = authProvider.currentUser?.id;
@@ -55,9 +55,10 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
           );
           if (success) count++;
         }
-        
+
         if (mounted) {
-          AppSnackBars.showSuccess(context, '$count prospects importés avec succès');
+          AppSnackBars.showSuccess(
+              context, '$count prospects importés avec succès');
           _loadProspects();
         }
       } catch (e) {
@@ -90,7 +91,8 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
-                      onPressed: prospectProvider.isLoading ? null : _loadProspects,
+                      onPressed:
+                          prospectProvider.isLoading ? null : _loadProspects,
                       icon: const Icon(Icons.refresh),
                       label: const Text('Actualiser'),
                       style: ElevatedButton.styleFrom(
@@ -103,13 +105,15 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
               ),
               Expanded(
                 child: SimpleStateBuilder(
-                  isLoading: prospectProvider.isLoading && prospectProvider.prospects.isEmpty,
+                  isLoading: prospectProvider.isLoading &&
+                      prospectProvider.prospects.isEmpty,
                   error: prospectProvider.error,
                   loadingWidget: const SkeletonListLoader(),
                   child: prospectProvider.prospects.isEmpty
                       ? _buildEmptyState(theme, colorScheme)
                       : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           itemCount: prospectProvider.prospects.length,
                           itemBuilder: (context, index) {
                             final prospect = prospectProvider.prospects[index];
@@ -118,7 +122,9 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
                               onTap: () {
                                 prospectProvider.selectProspect(prospect);
                                 Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => ProspectDetailScreen(prospect: prospect)),
+                                  MaterialPageRoute(
+                                      builder: (_) => ProspectDetailScreen(
+                                          prospect: prospect)),
                                 );
                               },
                             );
@@ -155,24 +161,31 @@ class _ProspectsScreenState extends State<ProspectsScreen> {
                 color: colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.person_add_outlined, size: 80, color: colorScheme.primary),
+              child: Icon(Icons.person_add_outlined,
+                  size: 80, color: colorScheme.primary),
             ),
             const SizedBox(height: 24),
             Text(
               'Commencez votre aventure',
-              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               'Votre liste de prospects est vide pour le moment. Ajoutez votre premier contact pour commencer à suivre vos opportunités.',
-              style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            Icon(Icons.arrow_downward, color: colorScheme.primary.withValues(alpha: 0.5)),
-            Text('Cliquez sur le bouton en bas à droite', 
-              style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w500, fontSize: 13)),
+            Icon(Icons.arrow_downward,
+                color: colorScheme.primary.withValues(alpha: 0.5)),
+            Text('Cliquez sur le bouton en bas à droite',
+                style: TextStyle(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13)),
           ],
         ),
       ),

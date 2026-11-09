@@ -33,7 +33,9 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
         logs = await _loggingService.getExportLogsSummary();
       } else if (_selectedTab == 'errors') {
         final errors = await _loggingService.findExportErrors();
-        logs = errors.isEmpty ? 'Aucune erreur d\'export trouvée' : errors.join('\n\n');
+        logs = errors.isEmpty
+            ? 'Aucune erreur d\'export trouvée'
+            : errors.join('\n\n');
       }
       if (mounted) setState(() => _logs = logs);
     } catch (e) {
@@ -53,9 +55,11 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
         final fileName = logFile.path.split('/').last;
         buffer.writeln('Date: $fileName\n${'-' * 40}');
         try {
-          final content = await _loggingService.readLogFileWithFallback(logFile);
+          final content =
+              await _loggingService.readLogFileWithFallback(logFile);
           final lines = content.split('\n');
-          final recentLines = lines.length > 50 ? lines.sublist(lines.length - 50) : lines;
+          final recentLines =
+              lines.length > 50 ? lines.sublist(lines.length - 50) : lines;
           for (final line in recentLines) {
             if (line.isNotEmpty) buffer.writeln(line);
           }
@@ -65,7 +69,9 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
         buffer.writeln('');
       }
       return buffer.toString();
-    } catch (e) { return 'Erreur lecture: $e'; }
+    } catch (e) {
+      return 'Erreur lecture: $e';
+    }
   }
 
   void _clearLogs() {
@@ -75,7 +81,9 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
         title: const Text('Supprimer les logs'),
         content: const Text('Cette action est irréversible.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuler')),
           TextButton(
             onPressed: () async {
               await _loggingService.cleanOldLogs(daysToKeep: 0);
@@ -83,7 +91,8 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
               Navigator.pop(context);
               _loadLogs();
             },
-            child: Text('Supprimer', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            child: Text('Supprimer',
+                style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
         ],
       ),
@@ -123,12 +132,22 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
             padding: const EdgeInsets.all(16),
             child: SegmentedButton<String>(
               segments: const [
-                ButtonSegment(value: 'all', label: Text('Tous'), icon: Icon(Icons.list)),
-                ButtonSegment(value: 'exports', label: Text('Exports'), icon: Icon(Icons.import_export)),
-                ButtonSegment(value: 'errors', label: Text('Erreurs'), icon: Icon(Icons.error_outline)),
+                ButtonSegment(
+                    value: 'all', label: Text('Tous'), icon: Icon(Icons.list)),
+                ButtonSegment(
+                    value: 'exports',
+                    label: Text('Exports'),
+                    icon: Icon(Icons.import_export)),
+                ButtonSegment(
+                    value: 'errors',
+                    label: Text('Erreurs'),
+                    icon: Icon(Icons.error_outline)),
               ],
               selected: {_selectedTab},
-              onSelectionChanged: (val) { setState(() => _selectedTab = val.first); _loadLogs(); },
+              onSelectionChanged: (val) {
+                setState(() => _selectedTab = val.first);
+                _loadLogs();
+              },
             ),
           ),
           Expanded(
@@ -149,7 +168,9 @@ class _LogsViewerScreenState extends State<LogsViewerScreen> {
                         style: TextStyle(
                           fontFamily: 'monospace',
                           fontSize: 12,
-                          color: isDark ? Colors.greenAccent[100] : Colors.greenAccent,
+                          color: isDark
+                              ? Colors.greenAccent[100]
+                              : Colors.greenAccent,
                         ),
                       ),
                     ),

@@ -263,7 +263,7 @@ class PooledDatabaseOperation {
   final ConnectionPoolService _pool = ConnectionPoolService();
 
   /// Exécute une requête SQL dans le pool
-  Future<mysql.Results> query(String sql,
+  Future<mysql.Result> query(String sql,
       [List<dynamic> values = const []]) async {
     return _pool.execute((connection) async {
       return await connection.query(sql, values);
@@ -271,7 +271,7 @@ class PooledDatabaseOperation {
   }
 
   /// Exécute une mise à jour SQL dans le pool
-  Future<mysql.Results> update(String sql,
+  Future<mysql.Result> update(String sql,
       [List<dynamic> values = const []]) async {
     return _pool.execute((connection) async {
       return await connection.query(sql, values);

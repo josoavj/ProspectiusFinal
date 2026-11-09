@@ -20,7 +20,8 @@ void main() {
       assignation: 1,
     );
 
-    testWidgets('StatusChip should display formatted status', (WidgetTester tester) async {
+    testWidgets('StatusChip should display formatted status',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -32,7 +33,8 @@ void main() {
       expect(find.text('Converti'), findsOneWidget);
     });
 
-    testWidgets('ProspectListItem should display prospect info', (WidgetTester tester) async {
+    testWidgets('ProspectListItem should display prospect info',
+        (WidgetTester tester) async {
       bool tapped = false;
       await tester.pumpWidget(
         MaterialApp(

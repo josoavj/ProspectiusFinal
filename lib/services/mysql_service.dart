@@ -285,7 +285,7 @@ class MySQLService {
     }
   }
 
-  Future<mysql.Results> query(String sql,
+  Future<mysql.Result> query(String sql,
       [List<dynamic> values = const []]) async {
     int retryCount = 0;
     const maxRetries = 3;

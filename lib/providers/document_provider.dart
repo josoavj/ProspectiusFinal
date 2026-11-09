@@ -6,7 +6,7 @@ import '../core/di/service_locator.dart';
 
 class DocumentProvider extends ChangeNotifier {
   final IDocumentRepository _repository;
-  
+
   List<Document> _documents = [];
   bool _isLoading = false;
   String? _error;
@@ -15,7 +15,7 @@ class DocumentProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  DocumentProvider({IDocumentRepository? repository}) 
+  DocumentProvider({IDocumentRepository? repository})
       : _repository = repository ?? sl.documentRepository;
 
   Future<void> loadDocuments(int prospectId) async {

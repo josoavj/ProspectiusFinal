@@ -62,11 +62,14 @@ class Prospect {
       linkedinUrl: json['linkedin_url']?.toString(),
       siteWeb: json['site_web']?.toString(),
       description: json['description']?.toString(),
-      consentementDate: json['consentement_date'] != null ? DateTime.parse(json['consentement_date'].toString()) : null,
+      consentementDate: json['consentement_date'] != null
+          ? DateTime.parse(json['consentement_date'].toString())
+          : null,
       consentementSource: json['consentement_source']?.toString(),
       creation: DateTime.parse(json['creation'].toString()),
       dateUpdate: DateTime.parse(json['date_update'].toString()),
-      assignation: (num.tryParse((json['assignation'] ?? 0).toString()) ?? 0).toInt(),
+      assignation:
+          (num.tryParse((json['assignation'] ?? 0).toString()) ?? 0).toInt(),
       version: (num.tryParse((json['version'] ?? 1).toString()) ?? 1).toInt(),
     );
   }

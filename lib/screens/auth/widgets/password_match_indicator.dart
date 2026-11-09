@@ -13,7 +13,7 @@ class PasswordMatchIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!isNotEmpty) return const SizedBox.shrink();
-    
+
     return Padding(
       padding: const EdgeInsets.only(top: 8, left: 4),
       child: Row(
@@ -25,7 +25,9 @@ class PasswordMatchIndicator extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            passwordsMatch ? 'Les mots de passe correspondent' : 'Les mots de passe sont différents',
+            passwordsMatch
+                ? 'Les mots de passe correspondent'
+                : 'Les mots de passe sont différents',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,

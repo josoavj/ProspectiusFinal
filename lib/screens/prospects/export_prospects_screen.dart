@@ -26,12 +26,7 @@ class _ExportProspectsScreenState extends State<ExportProspectsScreen> {
   String? _successMessage;
   String? _errorMessage;
 
-  final _statuses = [
-    'interesse',
-    'negociation',
-    'converti',
-    'perdu'
-  ];
+  final _statuses = ['interesse', 'negociation', 'converti', 'perdu'];
   final _types = ['particulier', 'societe', 'organisation'];
 
   @override

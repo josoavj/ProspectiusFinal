@@ -9,6 +9,7 @@ import 'package:prospectius/models/prospect.dart';
 import 'package:prospectius/models/account.dart';
 
 class MockProspectProvider extends Mock implements ProspectProvider {}
+
 class MockAuthProvider extends Mock implements AuthProvider {}
 
 void main() {
@@ -18,21 +19,29 @@ void main() {
   setUp(() {
     mockProspectProvider = MockProspectProvider();
     mockAuthProvider = MockAuthProvider();
-    
-    when(() => mockAuthProvider.currentUser).thenReturn(
-      Account(id: 1, nom: 'Admin', prenom: 'User', email: 'a@b.com', username: 'admin', typeCompte: 'Administrateur', dateCreation: DateTime.now())
-    );
+
+    when(() => mockAuthProvider.currentUser).thenReturn(Account(
+        id: 1,
+        nom: 'Admin',
+        prenom: 'User',
+        email: 'a@b.com',
+        username: 'admin',
+        typeCompte: 'Administrateur',
+        dateCreation: DateTime.now()));
     when(() => mockProspectProvider.isLoading).thenReturn(false);
     when(() => mockProspectProvider.error).thenReturn(null);
     when(() => mockProspectProvider.prospects).thenReturn([]);
-    when(() => mockProspectProvider.loadProspects(any(), any())).thenAnswer((_) async {});
+    when(() => mockProspectProvider.loadProspects(any(), any()))
+        .thenAnswer((_) async {});
   });
 
-  testWidgets('PipelineScreen should show empty columns initially', (WidgetTester tester) async {
+  testWidgets('PipelineScreen should show empty columns initially',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider<ProspectProvider>.value(value: mockProspectProvider),
+          ChangeNotifierProvider<ProspectProvider>.value(
+              value: mockProspectProvider),
           ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
         ],
         child: const MaterialApp(home: PipelineScreen()),
@@ -45,18 +54,28 @@ void main() {
     expect(find.text('PERDU'), findsOneWidget);
   });
 
-  testWidgets('PipelineScreen should show prospect cards', (WidgetTester tester) async {
+  testWidgets('PipelineScreen should show prospect cards',
+      (WidgetTester tester) async {
     final prospect = Prospect(
-      id: 1, nom: 'Doe', prenom: 'John', email: '', telephone: '', adresse: '', 
-      type: 'particulier', status: 'interesse', creation: DateTime.now(), dateUpdate: DateTime.now(), assignation: 1
-    );
+        id: 1,
+        nom: 'Doe',
+        prenom: 'John',
+        email: '',
+        telephone: '',
+        adresse: '',
+        type: 'particulier',
+        status: 'interesse',
+        creation: DateTime.now(),
+        dateUpdate: DateTime.now(),
+        assignation: 1);
 
     when(() => mockProspectProvider.prospects).thenReturn([prospect]);
 
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider<ProspectProvider>.value(value: mockProspectProvider),
+          ChangeNotifierProvider<ProspectProvider>.value(
+              value: mockProspectProvider),
           ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
         ],
         child: const MaterialApp(home: PipelineScreen()),

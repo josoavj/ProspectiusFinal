@@ -50,7 +50,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: prospectProvider.isLoading ? null : _loadClients,
+                      onPressed:
+                          prospectProvider.isLoading ? null : _loadClients,
                       icon: const Icon(Icons.refresh),
                       label: const Text('Actualiser'),
                       style: ElevatedButton.styleFrom(
@@ -63,7 +64,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
               ),
               Expanded(
                 child: SimpleStateBuilder(
-                  isLoading: prospectProvider.isLoading && prospectProvider.prospects.isEmpty,
+                  isLoading: prospectProvider.isLoading &&
+                      prospectProvider.prospects.isEmpty,
                   error: prospectProvider.error,
                   loadingWidget: const SkeletonListLoader(),
                   child: _buildClientsList(prospectProvider),
@@ -80,7 +82,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final clientColor = const Color(0xFF06CE70);
-    
+
     final clients = prospectProvider.prospects
         .where((prospect) => prospect.status == 'converti')
         .toList();
@@ -98,19 +100,22 @@ class _ClientsScreenState extends State<ClientsScreen> {
                   color: clientColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.verified_outlined, size: 80, color: clientColor),
+                child:
+                    Icon(Icons.verified_outlined, size: 80, color: clientColor),
               ),
               const SizedBox(height: 24),
               Text(
                 'Félicitations pour vos succès !',
-                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
                 'C\'est ici que vous retrouverez tous vos prospects convertis en clients. Continuez vos efforts pour remplir cette liste !',
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 32),
               OutlinedButton.icon(
@@ -130,7 +135,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
     return ListView.builder(
       padding: const EdgeInsets.all(20),
       itemCount: clients.length,
-      itemBuilder: (context, index) => _buildClientListItem(context, clients[index]),
+      itemBuilder: (context, index) =>
+          _buildClientListItem(context, clients[index]),
     );
   }
 
@@ -143,7 +149,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+        border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -157,7 +164,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
         child: InkWell(
           onTap: () {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => ProspectDetailScreen(prospect: client)),
+              MaterialPageRoute(
+                  builder: (context) => ProspectDetailScreen(prospect: client)),
             );
           },
           child: Padding(
@@ -171,7 +179,10 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     height: 60,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [clientColor, clientColor.withValues(alpha: 0.7)],
+                        colors: [
+                          clientColor,
+                          clientColor.withValues(alpha: 0.7)
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -179,7 +190,9 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        client.prenom.isNotEmpty ? client.prenom[0].toUpperCase() : '?',
+                        client.prenom.isNotEmpty
+                            ? client.prenom[0].toUpperCase()
+                            : '?',
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -196,17 +209,21 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     children: [
                       Text(
                         TextFormatter.capitalize(client.fullName),
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.business_center_outlined, size: 14, color: colorScheme.onSurfaceVariant),
+                          Icon(Icons.business_center_outlined,
+                              size: 14, color: colorScheme.onSurfaceVariant),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               client.nomEntreprise ?? 'Particulier',
-                              style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: colorScheme.onSurfaceVariant),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -221,7 +238,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: clientColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -229,7 +247,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.check_circle, size: 12, color: clientColor),
+                          Icon(Icons.check_circle,
+                              size: 12, color: clientColor),
                           const SizedBox(width: 4),
                           Text(
                             'ACTIF',
@@ -243,7 +262,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Icon(Icons.arrow_forward_ios, size: 14, color: colorScheme.outline),
+                    Icon(Icons.arrow_forward_ios,
+                        size: 14, color: colorScheme.outline),
                   ],
                 ),
               ],

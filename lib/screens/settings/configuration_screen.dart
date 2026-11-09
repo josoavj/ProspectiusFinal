@@ -109,7 +109,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             _isConnecting = false;
             _showEditMode = false;
           });
-          AppSnackBars.showSuccess(context, 'Configuration mise à jour avec succès');
+          AppSnackBars.showSuccess(
+              context, 'Configuration mise à jour avec succès');
         }
       } else if (mounted) {
         setState(() {
@@ -139,13 +140,16 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Annuler')),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 setState(() => _showEditMode = true);
               },
-              child: const Text('Continuer', style: TextStyle(color: Colors.orange)),
+              child: const Text('Continuer',
+                  style: TextStyle(color: Colors.orange)),
             ),
           ],
         );
@@ -165,7 +169,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
 
   void _handleBackup({bool customPath = false}) async {
     String? selectedDir;
-    
+
     if (customPath) {
       final excelService = ExcelService();
       selectedDir = await excelService.pickExportDirectory();
@@ -173,16 +177,19 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     }
 
     setState(() => _isBackingUp = true);
-    
+
     try {
       final backupService = sl.backupService;
-      final path = await backupService.createFullBackup(directoryPath: selectedDir);
-      
+      final path =
+          await backupService.createFullBackup(directoryPath: selectedDir);
+
       if (mounted) {
         if (path != null) {
-          AppSnackBars.showSuccess(context, 'Sauvegarde terminée avec succès !\nEmplacement : $path');
+          AppSnackBars.showSuccess(context,
+              'Sauvegarde terminée avec succès !\nEmplacement : $path');
         } else {
-          AppSnackBars.showError(context, 'Échec de la sauvegarde de la base de données');
+          AppSnackBars.showError(
+              context, 'Échec de la sauvegarde de la base de données');
         }
       }
     } finally {
@@ -193,13 +200,15 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   void _navigateToHelp(String title, String type) {
     Navigator.of(context).push(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => HelpDetailScreen(title: title, type: type),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            HelpDetailScreen(title: title, type: type),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(0.05, 0.0); // Léger glissement de droite
           const end = Offset.zero;
           const curve = Curves.easeOutCubic; // Courbe fluide
 
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
           var offsetAnimation = animation.drive(tween);
 
           return FadeTransition(
@@ -234,7 +243,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                 decoration: BoxDecoration(
                   color: warningColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: warningColor.withValues(alpha: 0.3)),
+                  border:
+                      Border.all(color: warningColor.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,42 +255,60 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                         const SizedBox(width: 12),
                         Text(
                           'Base de données',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: warningColor, fontSize: 16),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: warningColor,
+                              fontSize: 16),
                         ),
                         const SizedBox(width: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(color: warningColor, borderRadius: BorderRadius.circular(20)),
-                          child: const Text('Risqué', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                              color: warningColor,
+                              borderRadius: BorderRadius.circular(20)),
+                          child: const Text('Risqué',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'Modifier la configuration réseau de la base de données. Attention, une erreur de saisie bloquera l\'accès aux prospects.',
-                      style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.8), fontSize: 13),
+                      style: TextStyle(
+                          color: colorScheme.onSurface.withValues(alpha: 0.8),
+                          fontSize: 13),
                     ),
                     const SizedBox(height: 20),
                     if (!_showEditMode)
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildConfigInfo('Hôte', _hostController.text, colorScheme),
-                          _buildConfigInfo('Port', _portController.text, colorScheme),
-                          _buildConfigInfo('Base', _databaseController.text, colorScheme),
+                          _buildConfigInfo(
+                              'Hôte', _hostController.text, colorScheme),
+                          _buildConfigInfo(
+                              'Port', _portController.text, colorScheme),
+                          _buildConfigInfo(
+                              'Base', _databaseController.text, colorScheme),
                           const SizedBox(height: 20),
                           SizedBox(
                             width: double.infinity,
                             height: 48,
                             child: ElevatedButton.icon(
                               onPressed: _showChangeConfigDialog,
-                              icon: const Icon(Icons.settings_input_component_outlined, size: 18),
+                              icon: const Icon(
+                                  Icons.settings_input_component_outlined,
+                                  size: 18),
                               label: const Text('Modifier la configuration'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: warningColor,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
                               ),
                             ),
                           ),
@@ -303,20 +331,35 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                   subtitle: 'Adaptez l\'interface à vos préférences de travail',
                   colorScheme: colorScheme,
                   children: [
-                    const Text('Ambiance de l\'application', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const Text('Ambiance de l\'application',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
-                    Text('Choisissez un mode clair pour le jour ou sombre pour reposer vos yeux.', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                    Text(
+                        'Choisissez un mode clair pour le jour ou sombre pour reposer vos yeux.',
+                        style: TextStyle(
+                            color: colorScheme.onSurfaceVariant, fontSize: 12)),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: SegmentedButton<ThemeMode>(
                         segments: const [
-                          ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_outlined), label: Text('Clair')),
-                          ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_outlined), label: Text('Sombre')),
-                          ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.settings_suggest_outlined), label: Text('Auto')),
+                          ButtonSegment(
+                              value: ThemeMode.light,
+                              icon: Icon(Icons.light_mode_outlined),
+                              label: Text('Clair')),
+                          ButtonSegment(
+                              value: ThemeMode.dark,
+                              icon: Icon(Icons.dark_mode_outlined),
+                              label: Text('Sombre')),
+                          ButtonSegment(
+                              value: ThemeMode.system,
+                              icon: Icon(Icons.settings_suggest_outlined),
+                              label: Text('Auto')),
                         ],
                         selected: {settings.themeMode},
-                        onSelectionChanged: (Set<ThemeMode> newSelection) => settings.setThemeMode(newSelection.first),
+                        onSelectionChanged: (Set<ThemeMode> newSelection) =>
+                            settings.setThemeMode(newSelection.first),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -326,18 +369,30 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Lisibilité du texte', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                            Text('Ajustez la taille des caractères pour un confort optimal.', style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                            const Text('Lisibilité du texte',
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w600)),
+                            Text(
+                                'Ajustez la taille des caractères pour un confort optimal.',
+                                style: TextStyle(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontSize: 12)),
                           ],
                         ),
-                        Text('${(settings.fontSizeFactor * 100).toInt()}%', style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold)),
+                        Text('${(settings.fontSizeFactor * 100).toInt()}%',
+                            style: TextStyle(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.bold)),
                       ],
                     ),
                     Slider(
                       value: settings.fontSizeFactor,
-                      min: 0.8, max: 1.4, divisions: 6,
+                      min: 0.8,
+                      max: 1.4,
+                      divisions: 6,
                       activeColor: colorScheme.primary,
-                      onChanged: (double value) => settings.setFontSizeFactor(value),
+                      onChanged: (double value) =>
+                          settings.setFontSizeFactor(value),
                     ),
                   ],
                 );
@@ -352,12 +407,23 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
               subtitle: 'Diagnostic technique de votre installation',
               colorScheme: colorScheme,
               children: [
-                _buildSystemInfoItem('Version Application', 'v1.2.0 Stable', colorScheme),
-                _buildSystemInfoItem('Moteur de base de données', _dbVersion, colorScheme),
-                _buildSystemInfoItem('Mode de connexion SQL', _connMode, colorScheme),
-                _buildSystemInfoItem('Système d\'exploitation', '${Platform.operatingSystem.toUpperCase()} (${Platform.operatingSystemVersion.split(' ')[0]})', colorScheme),
-                _buildSystemInfoItem('Architecture processeur', Platform.localHostname, colorScheme, customValue: Platform.isLinux ? 'Linux Desktop' : 'Windows Desktop'),
-                _buildSystemInfoItem('Statut Serveur', 'Opérationnel', colorScheme, isSuccess: true),
+                _buildSystemInfoItem(
+                    'Version Application', 'v1.2.0 Stable', colorScheme),
+                _buildSystemInfoItem(
+                    'Moteur de base de données', _dbVersion, colorScheme),
+                _buildSystemInfoItem(
+                    'Mode de connexion SQL', _connMode, colorScheme),
+                _buildSystemInfoItem(
+                    'Système d\'exploitation',
+                    '${Platform.operatingSystem.toUpperCase()} (${Platform.operatingSystemVersion.split(' ')[0]})',
+                    colorScheme),
+                _buildSystemInfoItem('Architecture processeur',
+                    Platform.localHostname, colorScheme,
+                    customValue:
+                        Platform.isLinux ? 'Linux Desktop' : 'Windows Desktop'),
+                _buildSystemInfoItem(
+                    'Statut Serveur', 'Opérationnel', colorScheme,
+                    isSuccess: true),
               ],
             ),
             const SizedBox(height: 16),
@@ -373,35 +439,43 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                   context,
                   icon: Icons.auto_stories_outlined,
                   title: 'Guide de démarrage rapide',
-                  desc: 'Tout ce qu\'il faut savoir pour bien débuter avec vos premiers prospects.',
+                  desc:
+                      'Tout ce qu\'il faut savoir pour bien débuter avec vos premiers prospects.',
                   onTap: () => _navigateToHelp('Démarrage Rapide', 'start'),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.keyboard_alt_outlined,
                   title: 'Astuces clavier',
-                  desc: 'Gagnez du temps au quotidien grâce aux raccourcis essentiels.',
-                  onTap: () => _navigateToHelp('Raccourcis Clavier', 'keyboard'),
+                  desc:
+                      'Gagnez du temps au quotidien grâce aux raccourcis essentiels.',
+                  onTap: () =>
+                      _navigateToHelp('Raccourcis Clavier', 'keyboard'),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.verified_user_outlined,
                   title: 'Sécurité de vos données',
-                  desc: 'Comprendre comment vos informations sont protégées localement.',
-                  onTap: () => _navigateToHelp('Sécurité & Confidentialité', 'security'),
+                  desc:
+                      'Comprendre comment vos informations sont protégées localement.',
+                  onTap: () =>
+                      _navigateToHelp('Sécurité & Confidentialité', 'security'),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.manage_accounts_outlined,
                   title: 'Comptes et récupération',
-                  desc: 'Comprendre la récupération administrateur et la gestion des rôles.',
-                  onTap: () => _navigateToHelp('Comptes & Récupération', 'account'),
+                  desc:
+                      'Comprendre la récupération administrateur et la gestion des rôles.',
+                  onTap: () =>
+                      _navigateToHelp('Comptes & Récupération', 'account'),
                 ),
                 _buildDocumentationItem(
                   context,
                   icon: Icons.alternate_email_outlined,
                   title: 'Contacter l\'assistance',
-                  desc: 'Une question ou une suggestion ? Notre équipe est à votre écoute.',
+                  desc:
+                      'Une question ou une suggestion ? Notre équipe est à votre écoute.',
                   onTap: () => _navigateToHelp('Support & Contact', 'support'),
                 ),
               ],
@@ -420,19 +494,28 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                     context,
                     icon: Icons.backup_outlined,
                     title: 'Sauvegarde standard',
-                    desc: 'Dossier par défaut : ${_defaultBackupPath ?? "Chargement..."}',
-                    onTap: _isBackingUp ? () {} : () => _handleBackup(customPath: false),
-                    trailing: _isBackingUp 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.arrow_forward_ios, size: 14),
+                    desc:
+                        'Dossier par défaut : ${_defaultBackupPath ?? "Chargement..."}',
+                    onTap: _isBackingUp
+                        ? () {}
+                        : () => _handleBackup(customPath: false),
+                    trailing: _isBackingUp
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.arrow_forward_ios, size: 14),
                   ),
                   const Divider(height: 32),
                   _buildActionItem(
                     context,
                     icon: Icons.drive_file_move_outlined,
                     title: 'Sauvegarde personnalisée',
-                    desc: 'Choisissez manuellement l\'emplacement du fichier (Clé USB, Disque...)',
-                    onTap: _isBackingUp ? () {} : () => _handleBackup(customPath: true),
+                    desc:
+                        'Choisissez manuellement l\'emplacement du fichier (Clé USB, Disque...)',
+                    onTap: _isBackingUp
+                        ? () {}
+                        : () => _handleBackup(customPath: true),
                     trailing: const Icon(Icons.folder_open_outlined, size: 18),
                   ),
                   const Divider(height: 32),
@@ -440,7 +523,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                     context,
                     icon: Icons.delete_sweep_outlined,
                     title: 'Purger les prospects supprimés',
-                    desc: 'Supprime définitivement les prospects mis à la corbeille il y a plus de 30 jours.',
+                    desc:
+                        'Supprime définitivement les prospects mis à la corbeille il y a plus de 30 jours.',
                     onTap: () => _showPurgeConfirmDialog(context),
                   ),
                 ],
@@ -452,7 +536,12 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     );
   }
 
-  Widget _buildActionItem(BuildContext context, {required IconData icon, required String title, required String desc, required VoidCallback onTap, Widget? trailing}) {
+  Widget _buildActionItem(BuildContext context,
+      {required IconData icon,
+      required String title,
+      required String desc,
+      required VoidCallback onTap,
+      Widget? trailing}) {
     final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
@@ -463,7 +552,9 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10)),
               child: Icon(icon, size: 20, color: colorScheme.primary),
             ),
             const SizedBox(width: 16),
@@ -471,13 +562,18 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
                   const SizedBox(height: 2),
-                  Text(desc, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                  Text(desc,
+                      style: TextStyle(
+                          color: colorScheme.onSurfaceVariant, fontSize: 12)),
                 ],
               ),
             ),
-            trailing ?? Icon(Icons.chevron_right, size: 16, color: colorScheme.outline),
+            trailing ??
+                Icon(Icons.chevron_right, size: 16, color: colorScheme.outline),
           ],
         ),
       ),
@@ -489,21 +585,25 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirmer la purge'),
-        content: const Text('Voulez-vous supprimer définitivement les données marquées comme supprimées depuis plus de 30 jours ? Cette action est irréversible.'),
+        content: const Text(
+            'Voulez-vous supprimer définitivement les données marquées comme supprimées depuis plus de 30 jours ? Cette action est irréversible.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuler')),
           TextButton(
             onPressed: () async {
               final prospectProvider = context.read<ProspectProvider>();
               final navigator = Navigator.of(context);
-              
+
               await prospectProvider.purgeOldData(30);
-              
+
               if (!context.mounted) return;
               navigator.pop();
               AppSnackBars.showSuccess(context, 'Purge terminée avec succès');
             },
-            child: const Text('Purger maintenant', style: TextStyle(color: Colors.red)),
+            child: const Text('Purger maintenant',
+                style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -515,34 +615,42 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Text('$label: ', style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurfaceVariant, fontSize: 13)),
-          Text(value, style: TextStyle(color: colorScheme.onSurface, fontSize: 13)),
+          Text('$label: ',
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurfaceVariant,
+                  fontSize: 13)),
+          Text(value,
+              style: TextStyle(color: colorScheme.onSurface, fontSize: 13)),
         ],
       ),
     );
   }
 
-  Widget _buildSystemInfoItem(String label, String value, ColorScheme colorScheme, {bool isSuccess = false, String? customValue}) {
+  Widget _buildSystemInfoItem(
+      String label, String value, ColorScheme colorScheme,
+      {bool isSuccess = false, String? customValue}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13)),
+          Text(label,
+              style:
+                  TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13)),
           Row(
             children: [
               if (isSuccess) ...[
-                const Icon(Icons.check_circle, color: Color(0xFF06CE70), size: 14),
+                const Icon(Icons.check_circle,
+                    color: Color(0xFF06CE70), size: 14),
                 const SizedBox(width: 6),
               ],
-              Text(
-                customValue ?? value, 
-                style: TextStyle(
-                  fontWeight: FontWeight.bold, 
-                  fontSize: 13,
-                  color: isSuccess ? const Color(0xFF06CE70) : null,
-                )
-              ),
+              Text(customValue ?? value,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: isSuccess ? const Color(0xFF06CE70) : null,
+                  )),
             ],
           ),
         ],
@@ -550,7 +658,11 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     );
   }
 
-  Widget _buildDocumentationItem(BuildContext context, {required IconData icon, required String title, required String desc, required VoidCallback onTap}) {
+  Widget _buildDocumentationItem(BuildContext context,
+      {required IconData icon,
+      required String title,
+      required String desc,
+      required VoidCallback onTap}) {
     final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
@@ -561,7 +673,9 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: colorScheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10)),
               child: Icon(icon, size: 20, color: colorScheme.primary),
             ),
             const SizedBox(width: 16),
@@ -569,9 +683,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
                   const SizedBox(height: 2),
-                  Text(desc, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                  Text(desc,
+                      style: TextStyle(
+                          color: colorScheme.onSurfaceVariant, fontSize: 12)),
                 ],
               ),
             ),
@@ -604,17 +722,28 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF06CE70),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 child: _isConnecting
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
                     : const Text('Enregistrer'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton(
-                onPressed: () { _loadSavedConfig(); setState(() { _showEditMode = false; _error = null; }); },
+                onPressed: () {
+                  _loadSavedConfig();
+                  setState(() {
+                    _showEditMode = false;
+                    _error = null;
+                  });
+                },
                 child: const Text('Annuler'),
               ),
             ),
@@ -624,7 +753,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {TextInputType type = TextInputType.text, bool obscure = false}) {
+  Widget _buildTextField(TextEditingController controller, String label,
+      {TextInputType type = TextInputType.text, bool obscure = false}) {
     return TextField(
       controller: controller,
       obscureText: obscure,
@@ -632,7 +762,8 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
@@ -650,7 +781,10 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
         children: [
           Icon(Icons.error_outline, color: colorScheme.onErrorContainer),
           const SizedBox(width: 12),
-          Expanded(child: Text(_error!, style: TextStyle(color: colorScheme.onErrorContainer, fontSize: 13))),
+          Expanded(
+              child: Text(_error!,
+                  style: TextStyle(
+                      color: colorScheme.onErrorContainer, fontSize: 13))),
         ],
       ),
     );
@@ -676,8 +810,12 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(subtitle, style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(subtitle,
+                        style: TextStyle(
+                            color: colorScheme.onSurfaceVariant, fontSize: 12)),
                   ],
                 ),
               ],

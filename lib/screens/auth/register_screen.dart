@@ -165,6 +165,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ],
         ),
       );
+
+      if (!mounted) return;
     }
     AppSnackBars.showSuccess(context,
         'Inscription réussie ! Vous pouvez maintenant vous connecter.');

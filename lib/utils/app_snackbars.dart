@@ -3,7 +3,8 @@ import '../core/theme/app_colors.dart';
 
 class AppSnackBars {
   static void showSuccess(BuildContext context, String message) {
-    _show(context, message, const Color(0xFF06CE70), Icons.check_circle_outline);
+    _show(
+        context, message, const Color(0xFF06CE70), Icons.check_circle_outline);
   }
 
   static void showError(BuildContext context, String message) {
@@ -18,10 +19,11 @@ class AppSnackBars {
     _show(context, message, Colors.orangeAccent, Icons.warning_amber_outlined);
   }
 
-  static void _show(BuildContext context, String message, Color color, IconData icon) {
+  static void _show(
+      BuildContext context, String message, Color color, IconData icon) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.removeCurrentSnackBar();
-    
+
     final width = MediaQuery.of(context).size.width;
     final snackBarWidth = width > 600 ? 400.0 : width * 0.9;
 

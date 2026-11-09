@@ -40,8 +40,9 @@ void main() {
 
     test('loadProspects should update prospects list on success', () async {
       // Arrange
-      when(() => mockRepository.getProspects(any(), any(), limit: any(named: 'limit'), offset: any(named: 'offset')))
-          .thenAnswer((_) async => tProspects);
+      when(() => mockRepository.getProspects(any(), any(),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'))).thenAnswer((_) async => tProspects);
 
       // Act
       await prospectProvider.loadProspects(1, 'Utilisateur');
@@ -49,13 +50,15 @@ void main() {
       // Assert
       expect(prospectProvider.prospects, equals(tProspects));
       expect(prospectProvider.isLoading, false);
-      verify(() => mockRepository.getProspects(1, 'Utilisateur', limit: 20, offset: 0)).called(1);
+      verify(() => mockRepository.getProspects(1, 'Utilisateur',
+          limit: 20, offset: 0)).called(1);
     });
 
     test('loadProspects should set error on failure', () async {
       // Arrange
-      when(() => mockRepository.getProspects(any(), any(), limit: any(named: 'limit'), offset: any(named: 'offset')))
-          .thenThrow(Exception('Database error'));
+      when(() => mockRepository.getProspects(any(), any(),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'))).thenThrow(Exception('Database error'));
 
       // Act
       await prospectProvider.loadProspects(1, 'Utilisateur');

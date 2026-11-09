@@ -5,7 +5,8 @@ import 'package:prospectius/screens/auth/widgets/password_match_indicator.dart';
 
 void main() {
   group('Auth Widgets Tests', () {
-    testWidgets('PasswordCriteriaWidget should display criteria correctly', (WidgetTester tester) async {
+    testWidgets('PasswordCriteriaWidget should display criteria correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -21,12 +22,13 @@ void main() {
 
       expect(find.text('8 caractères minimum'), findsOneWidget);
       expect(find.text('Une majuscule (A-Z)'), findsOneWidget);
-      
-      // We can't easily check colors/icons here without more complex finders, 
+
+      // We can't easily check colors/icons here without more complex finders,
       // but we verify the texts are present.
     });
 
-    testWidgets('PasswordMatchIndicator should show nothing when empty', (WidgetTester tester) async {
+    testWidgets('PasswordMatchIndicator should show nothing when empty',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -41,7 +43,8 @@ void main() {
       expect(find.byType(Row), findsNothing);
     });
 
-    testWidgets('PasswordMatchIndicator should show match message', (WidgetTester tester) async {
+    testWidgets('PasswordMatchIndicator should show match message',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -56,7 +59,8 @@ void main() {
       expect(find.text('Les mots de passe correspondent'), findsOneWidget);
     });
 
-    testWidgets('PasswordMatchIndicator should show mismatch message', (WidgetTester tester) async {
+    testWidgets('PasswordMatchIndicator should show mismatch message',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

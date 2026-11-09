@@ -5,7 +5,8 @@ import 'package:prospectius/models/stats.dart';
 
 void main() {
   group('Dashboard Widgets Tests', () {
-    testWidgets('ConversionCard should display stats correctly', (WidgetTester tester) async {
+    testWidgets('ConversionCard should display stats correctly',
+        (WidgetTester tester) async {
       final stats = ConversionStats(
         totalProspects: 100,
         convertedClients: 25,
@@ -25,7 +26,8 @@ void main() {
       expect(find.text('25.0%'), findsOneWidget);
     });
 
-    testWidgets('PerformanceMetric should display label and percentage', (WidgetTester tester) async {
+    testWidgets('PerformanceMetric should display label and percentage',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(

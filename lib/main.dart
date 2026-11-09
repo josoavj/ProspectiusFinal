@@ -29,7 +29,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -71,7 +71,8 @@ class MyApp extends StatelessWidget {
               inputDecorationTheme: InputDecorationTheme(
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(color: Colors.grey.shade300),
@@ -82,7 +83,8 @@ class MyApp extends StatelessWidget {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.azure, width: 2),
+                  borderSide:
+                      const BorderSide(color: AppColors.azure, width: 2),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -98,8 +100,10 @@ class MyApp extends StatelessWidget {
                   backgroundColor: AppColors.azure,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  textStyle: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 15),
                 ),
               ),
               fontFamily: GoogleFonts.lexend().fontFamily,
@@ -136,7 +140,8 @@ class MyApp extends StatelessWidget {
               inputDecorationTheme: InputDecorationTheme(
                 filled: true,
                 fillColor: const Color(0xFF1E1E1E),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(color: Colors.grey.shade700),
@@ -155,8 +160,10 @@ class MyApp extends StatelessWidget {
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  textStyle: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 15),
                 ),
               ),
               drawerTheme: const DrawerThemeData(
@@ -178,8 +185,10 @@ class MyApp extends StatelessWidget {
               '/config': (_) => const DatabaseConfigScreen(),
               '/login': (_) => const LoginScreen(),
               '/prospects': (_) => const MainScreen(),
-              '/terms': (_) => const LegalDocumentScreen(type: LegalDocumentType.terms),
-              '/privacy': (_) => const LegalDocumentScreen(type: LegalDocumentType.privacy),
+              '/terms': (_) =>
+                  const LegalDocumentScreen(type: LegalDocumentType.terms),
+              '/privacy': (_) =>
+                  const LegalDocumentScreen(type: LegalDocumentType.privacy),
             },
           );
         },

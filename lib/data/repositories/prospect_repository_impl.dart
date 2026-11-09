@@ -15,7 +15,8 @@ class ProspectRepositoryImpl implements IProspectRepository {
   ProspectRepositoryImpl(this._mysqlService);
 
   @override
-  Future<List<Prospect>> getProspects(int userId, String userRole, {int limit = 20, int offset = 0}) async {
+  Future<List<Prospect>> getProspects(int userId, String userRole,
+      {int limit = 20, int offset = 0}) async {
     // Tentative de récupération depuis le cache si on est sur la première page
     if (offset == 0) {
       final cached = _cache.getProspects(userId);
@@ -29,7 +30,8 @@ class ProspectRepositoryImpl implements IProspectRepository {
       [userId, userRole, limit, offset],
     );
 
-    final prospects = results.map((row) => Prospect.fromJson(row.fields)).toList();
+    final prospects =
+        results.map((row) => Prospect.fromJson(row.toColumnMap())).toList();
 
     // Mise en cache si c'est la première page et pas admin
     if (offset == 0 && userRole != 'Administrateur') {
@@ -42,7 +44,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
   @override
   Future<void> createProspect(Map<String, dynamic> data) async {
     final connection = _mysqlService.getConnection();
-    
+
     await connection.transaction((ctx) async {
       final result = await ctx.query(
         SqlQueries.insertProspect,
@@ -83,10 +85,23 @@ class ProspectRepositoryImpl implements IProspectRepository {
   Future<void> updateProspect(int id, Map<String, dynamic> data) async {
     // Liste blanche des colonnes autorisées
     const allowedColumns = {
-      'nomp', 'prenomp', 'email', 'telephone', 'adresse', 'type',
-      'status', 'assignation', 'priorite', 'source', 'nom_entreprise',
-      'poste', 'linkedin_url', 'site_web', 'description',
-      'consentement_date', 'consentement_source'
+      'nomp',
+      'prenomp',
+      'email',
+      'telephone',
+      'adresse',
+      'type',
+      'status',
+      'assignation',
+      'priorite',
+      'source',
+      'nom_entreprise',
+      'poste',
+      'linkedin_url',
+      'site_web',
+      'description',
+      'consentement_date',
+      'consentement_source'
     };
 
     final updates = <String>[];
@@ -113,7 +128,8 @@ class ProspectRepositoryImpl implements IProspectRepository {
           final currentVersion = checkVersion.first['version'] as int;
           if (currentVersion != data['version']) {
             throw DatabaseException(
-              message: 'Conflit de modification: Les données de ce prospect ont été mises à jour par un autre utilisateur.',
+              message:
+                  'Conflit de modification: Les données de ce prospect ont été mises à jour par un autre utilisateur.',
               code: 'OPTIMISTIC_LOCK_ERROR',
             );
           }
@@ -122,13 +138,15 @@ class ProspectRepositoryImpl implements IProspectRepository {
 
       // 2. Gestion de l'historique des statuts
       if (data.containsKey('status')) {
-        final current = await ctx.query('SELECT status FROM Prospect WHERE id_prospect = ?', [id]);
+        final current = await ctx
+            .query('SELECT status FROM Prospect WHERE id_prospect = ?', [id]);
         if (current.isNotEmpty) {
           final oldStatus = current.first['status'] as String;
           final newStatus = data['status'] as String;
           if (oldStatus != newStatus) {
             int changedBy = data['userId'] ?? 1;
-            await ctx.query(SqlQueries.insertStatusHistory, [id, oldStatus, newStatus, changedBy]);
+            await ctx.query(SqlQueries.insertStatusHistory,
+                [id, oldStatus, newStatus, changedBy]);
           }
         }
       }
@@ -141,11 +159,13 @@ class ProspectRepositoryImpl implements IProspectRepository {
       );
 
       if (updateResult.affectedRows == 0) {
-        throw DatabaseException(message: 'Impossible de mettre à jour le prospect: il a peut-être été supprimé.');
+        throw DatabaseException(
+            message:
+                'Impossible de mettre à jour le prospect: il a peut-être été supprimé.');
       }
     });
-    
-    _cache.clearAll(); 
+
+    _cache.clearAll();
   }
 
   @override
@@ -165,7 +185,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
         'SELECT status, version FROM Prospect WHERE id_prospect = ?',
         [id],
       );
-      
+
       if (current.isEmpty) return;
       final oldStatus = current.first['status'] as String;
 
@@ -199,7 +219,9 @@ class ProspectRepositoryImpl implements IProspectRepository {
       [prospectId],
     );
 
-    return results.map((row) => Interaction.fromJson(row.fields)).toList();
+    return results
+        .map((row) => Interaction.fromJson(row.toColumnMap()))
+        .toList();
   }
 
   @override
@@ -207,7 +229,7 @@ class ProspectRepositoryImpl implements IProspectRepository {
     // Utilisation d'une transaction pour garantir l'atomicité
     // (L'insertion de l'interaction et la mise à jour du statut)
     final connection = _mysqlService.getConnection();
-    
+
     await connection.transaction((ctx) async {
       // 1. Insérer l'interaction
       await ctx.query(
@@ -227,9 +249,11 @@ class ProspectRepositoryImpl implements IProspectRepository {
       // Si c'est la première interaction ('nouveau'), on passe à 'interesse' par défaut
       // ou on utilise le statut spécifiquement passé dans data['newStatus']
       String? newStatus = data['newStatus'] as String?;
-      
+
       // On récupère le statut actuel pour savoir s'il faut logger
-      final currentRes = await ctx.query('SELECT status FROM Prospect WHERE id_prospect = ?', [data['prospectId']]);
+      final currentRes = await ctx.query(
+          'SELECT status FROM Prospect WHERE id_prospect = ?',
+          [data['prospectId']]);
       if (currentRes.isNotEmpty) {
         final oldStatus = currentRes.first['status'] as String;
         final targetStatus = newStatus ?? oldStatus;
@@ -260,7 +284,9 @@ class ProspectRepositoryImpl implements IProspectRepository {
       [prospectId],
     );
 
-    return results.map((row) => StatusHistory.fromJson(row.fields)).toList();
+    return results
+        .map((row) => StatusHistory.fromJson(row.toColumnMap()))
+        .toList();
   }
 
   @override
@@ -270,14 +296,17 @@ class ProspectRepositoryImpl implements IProspectRepository {
       [userId, userRole],
     );
 
-    return results.map((row) => ProspectStats(
-      status: row['status'] as String,
-      count: (row['count'] as num).toInt(),
-    )).toList();
+    return results
+        .map((row) => ProspectStats(
+              status: row['status'] as String,
+              count: (row['count'] as num).toInt(),
+            ))
+        .toList();
   }
 
   @override
-  Future<ConversionStats> getConversionStats(int userId, String userRole) async {
+  Future<ConversionStats> getConversionStats(
+      int userId, String userRole) async {
     final results = await _mysqlService.query(
       SqlQueries.conversionStats,
       [userId, userRole],

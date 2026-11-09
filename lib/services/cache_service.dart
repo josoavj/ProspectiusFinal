@@ -8,7 +8,7 @@ class CacheService {
   // Cache en mémoire
   final Map<int, List<Prospect>> _prospectsCache = {};
   final Map<int, DateTime> _lastUpdate = {};
-  
+
   // Durée de validité du cache (ex: 5 minutes)
   final Duration _cacheDuration = const Duration(minutes: 5);
 
@@ -19,9 +19,10 @@ class CacheService {
 
   List<Prospect>? getProspects(int userId) {
     if (!_prospectsCache.containsKey(userId)) return null;
-    
+
     final lastUpdate = _lastUpdate[userId];
-    if (lastUpdate == null || DateTime.now().difference(lastUpdate) > _cacheDuration) {
+    if (lastUpdate == null ||
+        DateTime.now().difference(lastUpdate) > _cacheDuration) {
       _prospectsCache.remove(userId);
       return null;
     }

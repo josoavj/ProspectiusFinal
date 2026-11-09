@@ -43,21 +43,26 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
     _nomController = TextEditingController(text: p.nom);
     _prenomController = TextEditingController(text: p.prenom);
     _emailController = TextEditingController(text: p.email);
-    
+
     if (p.telephone.isNotEmpty) {
-      _phoneControllers = p.telephone.split(', ').map((t) => TextEditingController(text: t)).toList();
+      _phoneControllers = p.telephone
+          .split(', ')
+          .map((t) => TextEditingController(text: t))
+          .toList();
     } else {
       _phoneControllers = [TextEditingController()];
     }
 
     _adresseController = TextEditingController(text: p.adresse);
     _sourceController = TextEditingController(text: p.source ?? '');
-    _nomEntrepriseController = TextEditingController(text: p.nomEntreprise ?? '');
+    _nomEntrepriseController =
+        TextEditingController(text: p.nomEntreprise ?? '');
     _posteController = TextEditingController(text: p.poste ?? '');
     _linkedinController = TextEditingController(text: p.linkedinUrl ?? '');
     _siteWebController = TextEditingController(text: p.siteWeb ?? '');
     _descriptionController = TextEditingController(text: p.description ?? '');
-    _consentementSourceController = TextEditingController(text: p.consentementSource ?? '');
+    _consentementSourceController =
+        TextEditingController(text: p.consentementSource ?? '');
 
     _selectedType = p.type;
     _selectedStatus = p.status;
@@ -179,117 +184,170 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Modifier le prospect')),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildSection(context, 'Informations Personnelles', [
-                  _buildField(_nomController, 'Nom', Icons.person),
-                  _buildField(_prenomController, 'Prénom', Icons.person_outline),
-                  _buildField(_emailController, 'Email', Icons.email_outlined, type: TextInputType.emailAddress),
-                  
-                  // Multi-phone UI
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Téléphone(s)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-                      IconButton(onPressed: _addPhoneField, icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.blue)),
-                    ],
-                  ),
-                  ...List.generate(_phoneControllers.length, (index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildSection(context, 'Informations Personnelles', [
+                    _buildField(_nomController, 'Nom', Icons.person),
+                    _buildField(
+                        _prenomController, 'Prénom', Icons.person_outline),
+                    _buildField(_emailController, 'Email', Icons.email_outlined,
+                        type: TextInputType.emailAddress),
+
+                    // Multi-phone UI
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: _buildField(
-                            _phoneControllers[index], 
-                            'Numéro ${index+1}', 
-                            Icons.phone_outlined, 
-                            type: TextInputType.phone,
-                            prefixText: '+261 ',
-                            formatters: [PhoneInputFormatter()],
-                            maxLength: 9,
-                          ),
-                        ),
-                        if (_phoneControllers.length > 1)
-                          IconButton(onPressed: () => _removePhoneField(index), icon: const Icon(Icons.remove_circle_outline, color: Colors.red, size: 20)),
+                        const Text('Téléphone(s)',
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey)),
+                        IconButton(
+                            onPressed: _addPhoneField,
+                            icon: const Icon(Icons.add_circle_outline,
+                                size: 20, color: Colors.blue)),
                       ],
                     ),
-                  )),
+                    ...List.generate(
+                        _phoneControllers.length,
+                        (index) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildField(
+                                      _phoneControllers[index],
+                                      'Numéro ${index + 1}',
+                                      Icons.phone_outlined,
+                                      type: TextInputType.phone,
+                                      prefixText: '+261 ',
+                                      formatters: [PhoneInputFormatter()],
+                                      maxLength: 9,
+                                    ),
+                                  ),
+                                  if (_phoneControllers.length > 1)
+                                    IconButton(
+                                        onPressed: () =>
+                                            _removePhoneField(index),
+                                        icon: const Icon(
+                                            Icons.remove_circle_outline,
+                                            color: Colors.red,
+                                            size: 20)),
+                                ],
+                              ),
+                            )),
 
-                  _buildField(_adresseController, 'Adresse', Icons.location_on_outlined),
-                ]),
-                const SizedBox(height: 16),
-                _buildSection(context, 'Professionnel', [
-                  _buildDropdown('Type', _selectedType, ['particulier', 'societe', 'organisation'], (val) => setState(() => _selectedType = val!), labelFormatter: TextFormatter.formatType),
-                  if (_selectedType != 'particulier') ...[
+                    _buildField(_adresseController, 'Adresse',
+                        Icons.location_on_outlined),
+                  ]),
+                  const SizedBox(height: 16),
+                  _buildSection(context, 'Professionnel', [
+                    _buildDropdown(
+                        'Type',
+                        _selectedType,
+                        ['particulier', 'societe', 'organisation'],
+                        (val) => setState(() => _selectedType = val!),
+                        labelFormatter: TextFormatter.formatType),
+                    if (_selectedType != 'particulier') ...[
+                      _buildField(
+                          _nomEntrepriseController,
+                          _selectedType == 'organisation'
+                              ? 'Organisation'
+                              : 'Entreprise',
+                          _selectedType == 'organisation'
+                              ? Icons.account_balance
+                              : Icons.business),
+                      _buildField(
+                          _posteController, 'Poste occupé', Icons.work_outline),
+                    ],
+                    _buildDropdown(
+                        'Priorité',
+                        _selectedPriorite,
+                        ['basse', 'moyenne', 'haute'],
+                        (val) => setState(() => _selectedPriorite = val!),
+                        labelFormatter: TextFormatter.formatPriority),
+                    _buildDropdown(
+                        'Statut',
+                        _selectedStatus,
+                        ['interesse', 'negociation', 'converti', 'perdu'],
+                        (val) => setState(() => _selectedStatus = val!),
+                        labelFormatter: TextFormatter.formatStatus),
+                  ]),
+                  const SizedBox(height: 16),
+                  _buildSection(context, 'Digital & Source', [
+                    _buildField(_sourceController, 'Source', Icons.source),
+                    _buildField(_siteWebController, 'Site Web', Icons.language,
+                        type: TextInputType.url),
+                    _buildField(_linkedinController, 'URL LinkedIn', Icons.link,
+                        type: TextInputType.url),
+                  ]),
+                  const SizedBox(height: 16),
+                  _buildSection(context, 'Notes', [
+                    _buildField(_descriptionController,
+                        'Description / Contexte', Icons.note_outlined,
+                        maxLines: 5),
+                  ]),
+                  const SizedBox(height: 16),
+                  _buildSection(context, 'RGPD & Conformité', [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.calendar_today_outlined),
+                      title: const Text('Date du consentement',
+                          style: TextStyle(fontSize: 14)),
+                      subtitle: Text(_consentementDate == null
+                          ? 'Non définie'
+                          : '${_consentementDate!.day}/${_consentementDate!.month}/${_consentementDate!.year}'),
+                      trailing: TextButton(
+                        onPressed: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: _consentementDate ?? DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime.now(),
+                          );
+                          if (date != null) {
+                            setState(() => _consentementDate = date);
+                          }
+                        },
+                        child: const Text('Modifier'),
+                      ),
+                    ),
                     _buildField(
-                      _nomEntrepriseController, 
-                      _selectedType == 'organisation' ? 'Organisation' : 'Entreprise',
-                      _selectedType == 'organisation' ? Icons.account_balance : Icons.business
-                    ),
-                    _buildField(_posteController, 'Poste occupé', Icons.work_outline),
-                  ],
-                  _buildDropdown('Priorité', _selectedPriorite, ['basse', 'moyenne', 'haute'], (val) => setState(() => _selectedPriorite = val!), labelFormatter: TextFormatter.formatPriority),
-                  _buildDropdown('Statut', _selectedStatus, ['interesse', 'negociation', 'converti', 'perdu'], (val) => setState(() => _selectedStatus = val!), labelFormatter: TextFormatter.formatStatus),
-                ]),
-                const SizedBox(height: 16),
-                _buildSection(context, 'Digital & Source', [
-                  _buildField(_sourceController, 'Source', Icons.source),
-                  _buildField(_siteWebController, 'Site Web', Icons.language, type: TextInputType.url),
-                  _buildField(_linkedinController, 'URL LinkedIn', Icons.link, type: TextInputType.url),
-                ]),
-                const SizedBox(height: 16),
-                _buildSection(context, 'Notes', [
-                  _buildField(_descriptionController, 'Description / Contexte', Icons.note_outlined, maxLines: 5),
-                ]),
-                const SizedBox(height: 16),
-                _buildSection(context, 'RGPD & Conformité', [
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.calendar_today_outlined),
-                    title: const Text('Date du consentement', style: TextStyle(fontSize: 14)),
-                    subtitle: Text(_consentementDate == null ? 'Non définie' : '${_consentementDate!.day}/${_consentementDate!.month}/${_consentementDate!.year}'),
-                    trailing: TextButton(
-                      onPressed: () async {
-                        final date = await showDatePicker(
-                          context: context,
-                          initialDate: _consentementDate ?? DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime.now(),
-                        );
-                        if (date != null) setState(() => _consentementDate = date);
-                      },
-                      child: const Text('Modifier'),
+                        _consentementSourceController,
+                        'Source du consentement (ex: Formulaire web)',
+                        Icons.verified_user_outlined),
+                  ]),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: _handleSave,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Enregistrer les modifications',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   ),
-                  _buildField(_consentementSourceController, 'Source du consentement (ex: Formulaire web)', Icons.verified_user_outlined),
-                ]),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: _handleSave,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorScheme.primary, 
-                      foregroundColor: colorScheme.onPrimary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Enregistrer les modifications', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  ),
-                ),
-                const SizedBox(height: 40),
-              ],
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
-          ),
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, List<Widget> children) {
+  Widget _buildSection(
+      BuildContext context, String title, List<Widget> children) {
     final colorScheme = Theme.of(context).colorScheme;
     return Card(
       child: Padding(
@@ -297,16 +355,27 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colorScheme.primary)),
+            Text(title,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: colorScheme.primary)),
             const SizedBox(height: 16),
-            ...children.expand((w) => [w, const SizedBox(height: 12)]).toList()..removeLast(),
+            ...children.expand((w) => [w, const SizedBox(height: 12)]).toList()
+              ..removeLast(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildField(TextEditingController controller, String label, IconData icon, {TextInputType type = TextInputType.text, int maxLines = 1, String? prefixText, List<TextInputFormatter>? formatters, int? maxLength}) {
+  Widget _buildField(
+      TextEditingController controller, String label, IconData icon,
+      {TextInputType type = TextInputType.text,
+      int maxLines = 1,
+      String? prefixText,
+      List<TextInputFormatter>? formatters,
+      int? maxLength}) {
     return TextField(
       controller: controller,
       keyboardType: type,
@@ -319,12 +388,15 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
         prefixText: prefixText,
         counterText: '',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       ),
     );
   }
 
-  Widget _buildDropdown(String label, String value, List<String> items, Function(String?) onChanged, {String Function(String)? labelFormatter}) {
+  Widget _buildDropdown(String label, String value, List<String> items,
+      Function(String?) onChanged,
+      {String Function(String)? labelFormatter}) {
     return DropdownButtonFormField<String>(
       initialValue: value,
       onChanged: onChanged,
@@ -333,10 +405,12 @@ class _EditProspectScreenState extends State<EditProspectScreen> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
-      items: items.map((e) => DropdownMenuItem(
-        value: e, 
-        child: Text(labelFormatter != null ? labelFormatter(e) : e),
-      )).toList(),
+      items: items
+          .map((e) => DropdownMenuItem(
+                value: e,
+                child: Text(labelFormatter != null ? labelFormatter(e) : e),
+              ))
+          .toList(),
     );
   }
 }
