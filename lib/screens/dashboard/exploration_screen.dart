@@ -21,7 +21,12 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
   String _sortBy = 'date_desc';
   List<Prospect> _filteredProspects = [];
 
-  final List<String> _categories = ['Tous', 'Entreprise', 'Particulier', 'Organisation'];
+  final List<String> _categories = [
+    'Tous',
+    'Entreprise',
+    'Particulier',
+    'Organisation'
+  ];
 
   @override
   void initState() {
@@ -55,17 +60,29 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
       final matchesCategory = _selectedCategory == 'Tous' ||
           prospect.type.toLowerCase() == _selectedCategory.toLowerCase();
 
-      final matchesDate = (_startDate == null || prospect.creation.isAfter(_startDate!.subtract(const Duration(days: 1)))) &&
-          (_endDate == null || prospect.creation.isBefore(_endDate!.add(const Duration(days: 1))));
+      final matchesDate = (_startDate == null ||
+              prospect.creation
+                  .isAfter(_startDate!.subtract(const Duration(days: 1)))) &&
+          (_endDate == null ||
+              prospect.creation
+                  .isBefore(_endDate!.add(const Duration(days: 1))));
 
       return matchesSearch && matchesCategory && matchesDate;
     }).toList();
 
     switch (_sortBy) {
-      case 'date_desc': _filteredProspects.sort((a, b) => b.creation.compareTo(a.creation)); break;
-      case 'date_asc': _filteredProspects.sort((a, b) => a.creation.compareTo(b.creation)); break;
-      case 'nom': _filteredProspects.sort((a, b) => a.fullName.compareTo(b.fullName)); break;
-      case 'status': _filteredProspects.sort((a, b) => a.status.compareTo(b.status)); break;
+      case 'date_desc':
+        _filteredProspects.sort((a, b) => b.creation.compareTo(a.creation));
+        break;
+      case 'date_asc':
+        _filteredProspects.sort((a, b) => a.creation.compareTo(b.creation));
+        break;
+      case 'nom':
+        _filteredProspects.sort((a, b) => a.fullName.compareTo(b.fullName));
+        break;
+      case 'status':
+        _filteredProspects.sort((a, b) => a.status.compareTo(b.status));
+        break;
     }
     if (mounted) setState(() {});
   }
@@ -98,13 +115,20 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${_filteredProspects.length} résultat(s)', style: const TextStyle(fontWeight: FontWeight.bold)),
-                if (_filteredProspects.length < context.read<ProspectProvider>().prospects.length)
-                  TextButton(onPressed: _clearFilters, child: const Text('Tout afficher')),
+                Text('${_filteredProspects.length} résultat(s)',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                if (_filteredProspects.length <
+                    context.read<ProspectProvider>().prospects.length)
+                  TextButton(
+                      onPressed: _clearFilters,
+                      child: const Text('Tout afficher')),
               ],
             ),
             const SizedBox(height: 12),
-            if (_filteredProspects.isEmpty) _buildEmptyState(colorScheme) else _buildProspectsList(),
+            if (_filteredProspects.isEmpty)
+              _buildEmptyState(colorScheme)
+            else
+              _buildProspectsList(),
           ],
         ),
       ),
@@ -117,12 +141,19 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
       decoration: InputDecoration(
         hintText: 'Recherche rapide...',
         prefixIcon: const Icon(Icons.search),
-        suffixIcon: _searchController.text.isNotEmpty 
-          ? IconButton(icon: const Icon(Icons.clear), onPressed: () { _searchController.clear(); _filterProspects(); }) 
-          : null,
+        suffixIcon: _searchController.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  _searchController.clear();
+                  _filterProspects();
+                })
+            : null,
         filled: true,
         fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
       ),
     );
   }
@@ -134,18 +165,25 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Catégorie', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            const Text('Catégorie',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              children: _categories.map((c) => ChoiceChip(
-                label: Text(c),
-                selected: _selectedCategory == c,
-                onSelected: (val) { if (val) setState(() => _selectedCategory = c); _filterProspects(); },
-              )).toList(),
+              children: _categories
+                  .map((c) => ChoiceChip(
+                        label: Text(c),
+                        selected: _selectedCategory == c,
+                        onSelected: (val) {
+                          if (val) setState(() => _selectedCategory = c);
+                          _filterProspects();
+                        },
+                      ))
+                  .toList(),
             ),
             const SizedBox(height: 16),
-            const Text('Trier par', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            const Text('Trier par',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
             _buildSortDropdown(colorScheme),
           ],
         ),
@@ -158,7 +196,10 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
       value: _sortBy,
       isExpanded: true,
       underline: Container(height: 1, color: colorScheme.outlineVariant),
-      onChanged: (val) { if (val != null) setState(() => _sortBy = val); _filterProspects(); },
+      onChanged: (val) {
+        if (val != null) setState(() => _sortBy = val);
+        _filterProspects();
+      },
       items: const [
         DropdownMenuItem(value: 'date_desc', child: Text('Plus récents')),
         DropdownMenuItem(value: 'date_asc', child: Text('Plus anciens')),
@@ -178,11 +219,16 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
-            title: Text(p.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(p.fullName,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text('${TextFormatter.formatType(p.type)} • ${p.email}'),
             trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProspectDetailScreen(prospect: p))),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => ProspectDetailScreen(prospect: p))),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       },
@@ -197,7 +243,8 @@ class _ExplorationScreenState extends State<ExplorationScreen> {
           children: [
             Icon(Icons.search_off, size: 48, color: colorScheme.outline),
             const SizedBox(height: 16),
-            Text('Aucun résultat', style: TextStyle(color: colorScheme.onSurfaceVariant)),
+            Text('Aucun résultat',
+                style: TextStyle(color: colorScheme.onSurfaceVariant)),
           ],
         ),
       ),
