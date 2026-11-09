@@ -7,7 +7,7 @@ import 'package:mysql1/mysql1.dart';
 
 class MockMySQLService extends Mock implements MySQLService {}
 
-class MockResults extends Mock implements Results {}
+class MockResults extends Mock implements Result {}
 
 class MockResultRow extends Mock implements ResultRow {}
 
@@ -39,7 +39,7 @@ void main() {
         'assignation': 1,
       };
 
-      when(() => mockRow.fields).thenReturn(rowData);
+      when(() => mockRow.toColumnMap()).thenReturn(rowData);
       when(() => mockRow[any()])
           .thenAnswer((inv) => rowData[inv.positionalArguments[0]]);
 
