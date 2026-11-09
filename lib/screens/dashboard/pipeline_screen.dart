@@ -17,7 +17,12 @@ class PipelineScreen extends StatefulWidget {
 }
 
 class _PipelineScreenState extends State<PipelineScreen> {
-  final List<String> _statuses = ['interesse', 'negociation', 'converti', 'perdu'];
+  final List<String> _statuses = [
+    'interesse',
+    'negociation',
+    'converti',
+    'perdu'
+  ];
   final ScrollController _horizontalController = ScrollController();
 
   @override
@@ -55,19 +60,25 @@ class _PipelineScreenState extends State<PipelineScreen> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final isWideScreen = constraints.maxWidth > 1400;
-                
+
                 final content = Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: _statuses.map((status) {
-                    final prospects = provider.prospects.where((p) => p.status == status).toList();
-                    final column = _buildPipelineColumn(status, prospects, isWideScreen);
+                    final prospects = provider.prospects
+                        .where((p) => p.status == status)
+                        .toList();
+                    final column =
+                        _buildPipelineColumn(status, prospects, isWideScreen);
                     return isWideScreen ? Expanded(child: column) : column;
                   }).toList(),
                 );
 
                 return ScrollConfiguration(
                   behavior: ScrollConfiguration.of(context).copyWith(
-                    dragDevices: {PointerDeviceKind.touch, PointerDeviceKind.mouse},
+                    dragDevices: {
+                      PointerDeviceKind.touch,
+                      PointerDeviceKind.mouse
+                    },
                   ),
                   child: Scrollbar(
                     controller: _horizontalController,
@@ -76,8 +87,9 @@ class _PipelineScreenState extends State<PipelineScreen> {
                       controller: _horizontalController,
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.all(16.0),
-                      child: isWideScreen 
-                          ? SizedBox(width: constraints.maxWidth - 32, child: content)
+                      child: isWideScreen
+                          ? SizedBox(
+                              width: constraints.maxWidth - 32, child: content)
                           : content,
                     ),
                   ),
@@ -90,7 +102,8 @@ class _PipelineScreenState extends State<PipelineScreen> {
     );
   }
 
-  Widget _buildPipelineColumn(String status, List<Prospect> prospects, bool isWideScreen) {
+  Widget _buildPipelineColumn(
+      String status, List<Prospect> prospects, bool isWideScreen) {
     final colorScheme = Theme.of(context).colorScheme;
     final statusColor = _getStatusColor(status);
 
@@ -100,23 +113,25 @@ class _PipelineScreenState extends State<PipelineScreen> {
         final prospect = details.data;
         final auth = context.read<AuthProvider>();
         context.read<ProspectProvider>().updateProspectStatus(
-          auth.currentUser!.id,
-          auth.currentUser!.typeCompte,
-          prospect.id,
-          status,
-        );
+              auth.currentUser!.id,
+              auth.currentUser!.typeCompte,
+              prospect.id,
+              status,
+            );
       },
       builder: (context, candidateData, rejectedData) {
         return Container(
           width: isWideScreen ? null : 280,
           margin: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: candidateData.isNotEmpty 
-                ? colorScheme.primary.withValues(alpha: 0.1) 
+            color: candidateData.isNotEmpty
+                ? colorScheme.primary.withValues(alpha: 0.1)
                 : colorScheme.surfaceContainerLow.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: candidateData.isNotEmpty ? colorScheme.primary : colorScheme.outlineVariant.withValues(alpha: 0.2),
+              color: candidateData.isNotEmpty
+                  ? colorScheme.primary
+                  : colorScheme.outlineVariant.withValues(alpha: 0.2),
             ),
           ),
           child: Column(
@@ -130,21 +145,25 @@ class _PipelineScreenState extends State<PipelineScreen> {
                     Text(
                       TextFormatter.formatStatus(status).toUpperCase(),
                       style: TextStyle(
-                        fontWeight: FontWeight.w800, 
+                        fontWeight: FontWeight.w800,
                         fontSize: 10,
                         color: colorScheme.onSurfaceVariant,
                         letterSpacing: 1.2,
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         '${prospects.length}',
-                        style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11),
+                        style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11),
                       ),
                     ),
                   ],
@@ -167,12 +186,16 @@ class _PipelineScreenState extends State<PipelineScreen> {
                           decoration: BoxDecoration(
                             color: colorScheme.surface,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: colorScheme.primary, width: 2),
+                            border: Border.all(
+                                color: colorScheme.primary, width: 2),
                           ),
-                          child: Text(prospect.fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          child: Text(prospect.fullName,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
-                      childWhenDragging: Opacity(opacity: 0.2, child: _buildProspectCard(prospect)),
+                      childWhenDragging: Opacity(
+                          opacity: 0.2, child: _buildProspectCard(prospect)),
                       child: _buildProspectCard(prospect),
                     );
                   },
@@ -196,10 +219,14 @@ class _PipelineScreenState extends State<PipelineScreen> {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+          side: BorderSide(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         ),
         child: InkWell(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProspectDetailScreen(prospect: prospect))),
+          onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => ProspectDetailScreen(prospect: prospect))),
           borderRadius: BorderRadius.circular(14),
           child: IntrinsicHeight(
             child: Row(
@@ -208,7 +235,8 @@ class _PipelineScreenState extends State<PipelineScreen> {
                   width: 4,
                   decoration: BoxDecoration(
                     color: priorityColor,
-                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
+                    borderRadius: const BorderRadius.horizontal(
+                        left: Radius.circular(14)),
                   ),
                 ),
                 Expanded(
@@ -219,23 +247,28 @@ class _PipelineScreenState extends State<PipelineScreen> {
                       children: [
                         Text(
                           prospect.fullName,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           TextFormatter.formatType(prospect.type),
-                          style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: colorScheme.onSurfaceVariant),
                         ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.access_time, size: 10, color: colorScheme.outline),
+                            Icon(Icons.access_time,
+                                size: 10, color: colorScheme.outline),
                             const SizedBox(width: 4),
                             Text(
                               '${prospect.creation.day}/${prospect.creation.month}',
-                              style: TextStyle(fontSize: 10, color: colorScheme.outline),
+                              style: TextStyle(
+                                  fontSize: 10, color: colorScheme.outline),
                             ),
                           ],
                         ),
@@ -253,19 +286,27 @@ class _PipelineScreenState extends State<PipelineScreen> {
 
   Color _getPriorityColor(String priority) {
     switch (priority.toLowerCase()) {
-      case 'haute': return Colors.redAccent;
-      case 'moyenne': return Colors.orangeAccent;
-      default: return AppColors.azure;
+      case 'haute':
+        return Colors.redAccent;
+      case 'moyenne':
+        return Colors.orangeAccent;
+      default:
+        return AppColors.azure;
     }
   }
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'interesse': return Colors.amber;
-      case 'negociation': return Colors.orange;
-      case 'converti': return const Color(0xFF06CE70);
-      case 'perdu': return Colors.red;
-      default: return Colors.grey;
+      case 'interesse':
+        return Colors.amber;
+      case 'negociation':
+        return Colors.orange;
+      case 'converti':
+        return const Color(0xFF06CE70);
+      case 'perdu':
+        return Colors.red;
+      default:
+        return Colors.grey;
     }
   }
 }
