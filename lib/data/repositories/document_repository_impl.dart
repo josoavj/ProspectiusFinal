@@ -15,7 +15,7 @@ class DocumentRepositoryImpl implements IDocumentRepository {
       [prospectId],
     );
 
-    return results.map((row) => Document.fromJson(row.fields)).toList();
+    return results.map((row) => Document.fromJson(row.toColumnMap())).toList();
   }
 
   @override
