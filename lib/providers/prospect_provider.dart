@@ -9,7 +9,7 @@ import '../core/di/service_locator.dart';
 
 class ProspectProvider extends ChangeNotifier {
   final IProspectRepository _repository;
-  
+
   List<Prospect> _prospects = [];
   final List<Interaction> _interactions = [];
   List<StatusHistory> _statusHistory = [];
@@ -24,7 +24,7 @@ class ProspectProvider extends ChangeNotifier {
   String? get error => _error;
   Prospect? get selectedProspect => _selectedProspect;
 
-  ProspectProvider({IProspectRepository? repository}) 
+  ProspectProvider({IProspectRepository? repository})
       : _repository = repository ?? sl.prospectRepository;
 
   int _currentPage = 0;
@@ -33,28 +33,25 @@ class ProspectProvider extends ChangeNotifier {
 
   bool get hasMore => _hasMore;
 
-  Future<void> loadProspects(int userId, String userRole, {bool refresh = true}) async {
+  Future<void> loadProspects(int userId, String userRole,
+      {bool refresh = true}) async {
     if (refresh) {
       _currentPage = 0;
       _prospects = [];
       _hasMore = true;
     }
-    
+
     if (!_hasMore && !refresh) return;
 
     _setLoading(true);
     try {
-      final newProspects = await _repository.getProspects(
-        userId, 
-        userRole,
-        limit: _pageSize, 
-        offset: _currentPage * _pageSize
-      );
-      
+      final newProspects = await _repository.getProspects(userId, userRole,
+          limit: _pageSize, offset: _currentPage * _pageSize);
+
       if (newProspects.length < _pageSize) {
         _hasMore = false;
       }
-      
+
       _prospects.addAll(newProspects);
       _currentPage++;
       _error = null;
@@ -65,13 +62,15 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> createProspect(Map<String, dynamic> data, String userRole) async {
+  Future<bool> createProspect(
+      Map<String, dynamic> data, String userRole) async {
     _setLoading(true);
     try {
       await _repository.createProspect(data);
       final userIdStr = data['userId']?.toString();
-      final userId = userIdStr != null ? num.tryParse(userIdStr)?.toInt() : null;
-      
+      final userId =
+          userIdStr != null ? num.tryParse(userIdStr)?.toInt() : null;
+
       if (userId != null) {
         await loadProspects(userId, userRole);
       }
@@ -84,7 +83,8 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateProspect(int userId, String userRole, int prospectId, Map<String, dynamic> data) async {
+  Future<bool> updateProspect(int userId, String userRole, int prospectId,
+      Map<String, dynamic> data) async {
     _setLoading(true);
     try {
       await _repository.updateProspect(prospectId, data);
@@ -98,7 +98,8 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> deleteProspect(int userId, String userRole, int prospectId) async {
+  Future<bool> deleteProspect(
+      int userId, String userRole, int prospectId) async {
     try {
       await _repository.deleteProspect(prospectId);
       await loadProspects(userId, userRole);
@@ -109,7 +110,9 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateProspectStatus(int userId, String userRole, int prospectId, String newStatus, {int? version}) async {
+  Future<bool> updateProspectStatus(
+      int userId, String userRole, int prospectId, String newStatus,
+      {int? version}) async {
     try {
       await _repository.updateStatus(prospectId, newStatus, userId);
       await loadProspects(userId, userRole);
@@ -134,7 +137,8 @@ class ProspectProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> createInteraction(int prospectId, int userId, String type, String note, DateTime date) async {
+  Future<bool> createInteraction(int prospectId, int userId, String type,
+      String note, DateTime date) async {
     try {
       await _repository.createInteraction({
         'prospectId': prospectId,
@@ -174,7 +178,8 @@ class ProspectProvider extends ChangeNotifier {
         'newStatus': newStatus,
       });
       await loadInteractions(prospectId);
-      await loadProspects(userId, userRole); // Rafraîchir pour voir le nouveau statut
+      await loadProspects(
+          userId, userRole); // Rafraîchir pour voir le nouveau statut
       return true;
     } catch (e) {
       _error = _formatError(e);
