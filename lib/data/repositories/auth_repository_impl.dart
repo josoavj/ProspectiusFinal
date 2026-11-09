@@ -13,7 +13,8 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<bool> hasAccounts() async {
-    final results = await _mysqlService.query('SELECT COUNT(*) AS total FROM Account');
+    final results =
+        await _mysqlService.query('SELECT COUNT(*) AS total FROM Account');
     return (results.first['total'] as num?)?.toInt() != 0;
   }
 
@@ -65,14 +66,16 @@ class AuthRepositoryImpl implements IAuthRepository {
     );
 
     if (results.isEmpty) {
-      throw AuthException(message: 'Utilisateur non trouvé', code: 'USER_NOT_FOUND');
+      throw AuthException(
+          message: 'Utilisateur non trouvé', code: 'USER_NOT_FOUND');
     }
 
     final row = results.first;
     final hashedPassword = row['password'] as String;
 
     if (!BCrypt.checkpw(password, hashedPassword)) {
-      throw AuthException(message: 'Mot de passe incorrect', code: 'INVALID_PASSWORD');
+      throw AuthException(
+          message: 'Mot de passe incorrect', code: 'INVALID_PASSWORD');
     }
 
     return Account.fromJson(row.fields);
@@ -81,7 +84,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<void> createAccount(Map<String, String> data) async {
     final passwordHash = BCrypt.hashpw(data['password']!, BCrypt.gensalt());
-    
+
     await _mysqlService.query(
       SqlQueries.insertAccount,
       [
@@ -97,7 +100,8 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<List<Account>> getAllAccounts() async {
-    final results = await _mysqlService.query('SELECT * FROM Account ORDER BY nom, prenom');
+    final results =
+        await _mysqlService.query('SELECT * FROM Account ORDER BY nom, prenom');
     return results.map((row) => Account.fromJson(row.fields)).toList();
   }
 
@@ -117,7 +121,8 @@ class AuthRepositoryImpl implements IAuthRepository {
           'SELECT type_compte FROM Account WHERE id_compte = ?',
           [accountId],
         );
-        if (current.isNotEmpty && current.first['type_compte'] == 'Administrateur') {
+        if (current.isNotEmpty &&
+            current.first['type_compte'] == 'Administrateur') {
           throw AuthException(
             message: 'Le dernier administrateur ne peut pas être rétrogradé.',
             code: 'LAST_ADMIN',
@@ -149,7 +154,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       [accountId],
     );
     if (target.isEmpty) {
-      throw AuthException(message: 'Compte introuvable.', code: 'ACCOUNT_NOT_FOUND');
+      throw AuthException(
+          message: 'Compte introuvable.', code: 'ACCOUNT_NOT_FOUND');
     }
     if (target.first['type_compte'] == 'Administrateur') {
       final admins = await _mysqlService.query(
@@ -188,7 +194,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       'SELECT a.*, r.code_hash FROM Account a JOIN AdminRecovery r ON r.email = a.email WHERE a.email = ? AND a.type_compte = ? AND r.used_at IS NULL',
       [email, 'Administrateur'],
     );
-    if (results.isEmpty || !BCrypt.checkpw(recoveryCode, results.first['code_hash'] as String)) {
+    if (results.isEmpty ||
+        !BCrypt.checkpw(recoveryCode, results.first['code_hash'] as String)) {
       throw AuthException(
         message: 'Adresse e-mail ou code de récupération incorrect.',
         code: 'INVALID_RECOVERY',
