@@ -6,7 +6,9 @@ import 'package:prospectius/services/mysql_service.dart';
 import 'package:mysql1/mysql1.dart';
 
 class MockMySQLService extends Mock implements MySQLService {}
+
 class MockResults extends Mock implements Results {}
+
 class MockResultRow extends Mock implements ResultRow {}
 
 void main() {
@@ -22,7 +24,7 @@ void main() {
     test('getProspects should return list from database', () async {
       final mockRow = MockResultRow();
       final mockResults = MockResults();
-      
+
       final rowData = {
         'id_prospect': 1,
         'nomp': 'Doe',
@@ -38,15 +40,18 @@ void main() {
       };
 
       when(() => mockRow.fields).thenReturn(rowData);
-      when(() => mockRow[any()]).thenAnswer((inv) => rowData[inv.positionalArguments[0]]);
-      
+      when(() => mockRow[any()])
+          .thenAnswer((inv) => rowData[inv.positionalArguments[0]]);
+
       // Stubbing map since Results is an Iterable
       when(() => mockResults.map<Prospect>(any())).thenAnswer((invocation) {
-        final fn = invocation.positionalArguments[0] as Prospect Function(ResultRow);
+        final fn =
+            invocation.positionalArguments[0] as Prospect Function(ResultRow);
         return [fn(mockRow)];
       });
 
-      when(() => mockMySQL.query(any(), any())).thenAnswer((_) async => mockResults);
+      when(() => mockMySQL.query(any(), any()))
+          .thenAnswer((_) async => mockResults);
 
       final result = await repository.getProspects(1, 'Utilisateur');
 
